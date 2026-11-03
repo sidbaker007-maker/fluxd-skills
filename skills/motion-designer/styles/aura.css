@@ -1,0 +1,165 @@
+/* Aura — the look */
+.st-aura { background: var(--bg); }
+.st-aura .md-bg { background: radial-gradient(120% 90% at 50% 110%, var(--bg-hi) 0%, var(--bg) 62%); }
+
+/* sky: the colour field the light lives in */
+.au-sky { position: absolute; inset: 0; background: linear-gradient(180deg, var(--bg) 0%, var(--bg-hi) 100%); opacity: 0.85; }
+.au-blobs { position: absolute; inset: 0; }
+.au-blob { position: absolute; left: 0; top: 0; width: calc(var(--u) * 95); height: calc(var(--u) * 95); border-radius: 50%; opacity: 0.55; }
+.au-blob.b1 { background: radial-gradient(circle, var(--o1) 0%, transparent 66%); }
+.au-blob.b2 { background: radial-gradient(circle, var(--o2) 0%, transparent 66%); opacity: 0.45; }
+.au-blob.b3 { background: radial-gradient(circle, var(--o3) 0%, transparent 68%); opacity: 0.7; width: calc(var(--u) * 130); height: calc(var(--u) * 130); }
+.au-blob.b4 { background: radial-gradient(circle, var(--o4) 0%, transparent 64%); opacity: 0.32; width: calc(var(--u) * 70); height: calc(var(--u) * 70); }
+.au-blob.b5 { background: radial-gradient(circle, var(--o2) 0%, transparent 64%); opacity: 0.3; }
+.pal-dawn .au-blob { opacity: 0.6; }
+.au-motes { position: absolute; inset: 0; }
+.au-mote { position: absolute; left: 0; top: 0; width: calc(var(--u) * 1.1); height: calc(var(--u) * 1.1); border-radius: 50%; background: radial-gradient(circle, #fff 0%, var(--o4) 40%, transparent 72%); }
+.pal-dawn .au-mote { background: radial-gradient(circle, #fff 0%, var(--o1) 45%, transparent 72%); }
+
+/* the dusk orb: a glossy sphere of sunset light */
+.au-orb { position: absolute; left: 0; top: 0; width: calc(var(--u) * 100); height: calc(var(--u) * 100); border-radius: 50%; transform-origin: 50% 50%;
+  box-shadow: 0 0 calc(var(--u) * 14) calc(var(--u) * 2) var(--glow), 0 0 calc(var(--u) * 40) calc(var(--u) * 6) color-mix(in srgb, var(--glow) 45%, transparent); }
+.au-orb i { position: absolute; inset: 0; border-radius: 50%; }
+.au-core { background: radial-gradient(circle at 50% 120%, var(--o4) 0%, transparent 46%), radial-gradient(circle at 50% 62%, var(--o1) 0%, var(--o2) 38%, var(--o3) 74%, color-mix(in srgb, var(--o3) 60%, #000) 100%); }
+.au-swirl { overflow: hidden; mix-blend-mode: screen; opacity: 0.55;
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, color-mix(in srgb, var(--o4) 70%, transparent) 60deg, transparent 130deg, color-mix(in srgb, var(--o2) 60%, transparent) 220deg, transparent 300deg); filter: blur(calc(var(--u) * 3)); }
+.au-rim { box-shadow: inset 0 calc(var(--u) * -3) calc(var(--u) * 8) rgba(0,0,0,0.35), inset 0 calc(var(--u) * 1.2) calc(var(--u) * 2) rgba(255,255,255,0.35), inset 0 0 0 calc(var(--u) * 0.15) rgba(255,255,255,0.25); }
+.au-spec { background: radial-gradient(ellipse 34% 22% at 34% 22%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.12) 55%, transparent 72%); }
+.pal-mono .au-orb { box-shadow: 0 0 calc(var(--u) * 12) calc(var(--u) * 1) var(--glow); }
+.au-vig { position: absolute; inset: 0; background: radial-gradient(130% 100% at 50% 45%, transparent 55%, color-mix(in srgb, var(--bg) 80%, #000) 100%); opacity: 0.7; }
+.pal-dawn .au-vig { opacity: 0.25; }
+
+/* type */
+.st-aura .title { color: var(--ink); text-shadow: 0 calc(var(--u) * 0.4) calc(var(--u) * 4) color-mix(in srgb, var(--bg) 55%, transparent); }
+.st-aura .w.em .wi { text-shadow: none; background: linear-gradient(100deg, var(--o4) 0%, var(--o1) 48%, var(--o2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 0.04em; }
+.pal-mono .w.em .wi { background: linear-gradient(100deg, #fff, #9b9ba6); -webkit-background-clip: text; background-clip: text; }
+.pal-dawn .title { text-shadow: none; }
+.st-aura .sub, .st-aura .label { color: var(--muted); font-weight: 400; }
+.st-aura .k-hook .title { }
+.st-aura .k-statement .title { }
+.st-aura .k-hook .box, .st-aura .k-statement .box { max-width: calc(var(--u) * 150); }
+.st-aura.portrait .k-hook .box { transform: translateY(calc(var(--u) * -14)); }
+.st-aura .kicker {
+  display: inline-flex; align-items: center; gap: 0.7em; padding: 0.75em 1.3em; border-radius: 999px; letter-spacing: 0.08em;
+  background: var(--glass); border: 1px solid var(--glass-line); color: var(--ink); font-size: calc(var(--u) * 2.7);
+  backdrop-filter: blur(calc(var(--u) * 2)); -webkit-backdrop-filter: blur(calc(var(--u) * 2));
+}
+.st-aura .kicker::before { content: ""; width: 0.6em; height: 0.6em; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0.9em var(--accent); }
+
+/* glass: everything that sits on the light */
+.st-aura { --r: 3.4; }
+.st-aura .card, .st-aura .k-steps .it, .st-aura .k-compare .col, .st-aura .k-list .it {
+  position: relative; background: var(--glass); border: 1px solid var(--glass-line); color: var(--ink);
+  backdrop-filter: blur(calc(var(--u) * 2.4)) saturate(1.3); -webkit-backdrop-filter: blur(calc(var(--u) * 2.4)) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.st-aura .card::before, .st-aura .k-steps .it::before, .st-aura .k-compare .col::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(120% 80% at 18% 0%, color-mix(in srgb, var(--o4) 22%, transparent) 0%, transparent 55%);
+}
+.st-aura .card > *, .st-aura .k-compare .col > * { position: relative; }
+.st-aura .card .ic { border-radius: 30%; background: radial-gradient(circle at 30% 25%, var(--o4), var(--o1) 55%, var(--o2)); color: #fff; box-shadow: 0 0 calc(var(--u) * 3) var(--glow); }
+.st-aura .card .ct { font-weight: var(--dw); letter-spacing: -0.03em; }
+.st-aura .k-features .grid { gap: calc(var(--u) * 2.2); }
+
+/* list: glass rows */
+.st-aura .k-list .items { gap: calc(var(--u) * 1.4); }
+.st-aura .k-list .it { padding: calc(var(--u) * 1.8) calc(var(--u) * 2.6); border-radius: calc(var(--u) * 2.6); font-size: calc(var(--u) * 3.8); }
+.st-aura .it .bul { background: radial-gradient(circle at 30% 25%, var(--o4), var(--o1) 60%, var(--o2)); color: #fff; box-shadow: 0 0 calc(var(--u) * 2) var(--glow); width: calc(var(--u) * 4.6); height: calc(var(--u) * 4.6); }
+.st-aura .k-list .box, .st-aura .k-steps .box { max-width: calc(var(--u) * 104); }
+.st-aura.landscape .k-list .box, .st-aura.landscape .k-steps .box { margin-right: calc(var(--u) * 26); }
+.st-aura .k-list .title, .st-aura .k-steps .title { }
+.st-aura .k-steps .it { padding: calc(var(--u) * 2.4) calc(var(--u) * 3); border-radius: calc(var(--u) * 3); }
+.st-aura .k-steps .no { font-family: var(--f-num); font-weight: 700; font-size: 1.3em; color: var(--accent); text-shadow: 0 0 0.5em var(--glow); }
+
+/* stat: dot-matrix lights */
+.st-aura .k-stat .num { font-family: var(--f-num); font-weight: 700; font-variation-settings: "ROND" 100; letter-spacing: 0; color: var(--ink);
+  text-shadow: 0 0 calc(var(--u) * 2) var(--glow), 0 0 calc(var(--u) * 7) var(--glow); }
+.st-aura .k-stat .pre, .st-aura .k-stat .suf { font-size: 0.5em; }
+.st-aura .k-stat .label { color: var(--ink); opacity: 0.86; font-size: calc(var(--u) * 3.8); max-width: 26ch; }
+.pal-dawn .k-stat .num { color: var(--accent); text-shadow: 0 0 calc(var(--u) * 3) var(--glow); }
+
+/* screen: devices float in the light */
+.st-aura { --dev-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 10) rgba(0,0,0,0.38), 0 0 calc(var(--u) * 12) color-mix(in srgb, var(--glow) 55%, transparent); --chrome: rgba(255,255,255,0.12); }
+.st-aura .dev.phone { background: linear-gradient(160deg, #3a3a44, #0d0d12 40%, #1c1c24); border-radius: calc(var(--u) * 6.4); }
+.st-aura .dev.browser, .st-aura .dev.window { background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(calc(var(--u) * 2)); -webkit-backdrop-filter: blur(calc(var(--u) * 2)); border-radius: calc(var(--u) * 2.4); padding: 0 calc(var(--u) * 0.8) calc(var(--u) * 0.8); }
+.st-aura .dev.browser .bar, .st-aura .dev.window .bar { background: transparent; }
+.st-aura .dev .bar i { background: rgba(255,255,255,0.32); }
+.st-aura .dev .bar .url { background: rgba(255,255,255,0.1); color: var(--ink); opacity: 0.75; }
+.st-aura .dev.browser .scr, .st-aura .dev.window .scr { border-radius: calc(var(--u) * 1.6); }
+.st-aura .dev.plain { border-radius: calc(var(--u) * 2.6); border: 1px solid var(--glass-line); }
+.pal-dawn .dev .bar i { background: rgba(0,0,0,0.18); }
+.pal-dawn .dev .bar .url { background: rgba(0,0,0,0.06); color: var(--ink); }
+.st-aura .call { background: var(--glass); color: var(--ink); border: 1px solid var(--glass-line); backdrop-filter: blur(calc(var(--u) * 2)); -webkit-backdrop-filter: blur(calc(var(--u) * 2));
+  font-weight: 500; box-shadow: 0 calc(var(--u) * 1) calc(var(--u) * 4) rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.2); }
+.st-aura .call::before { content: ""; display: inline-block; width: 0.55em; height: 0.55em; border-radius: 50%; margin-right: 0.6em; vertical-align: 0.08em; background: var(--accent); box-shadow: 0 0 0.8em var(--accent); }
+.st-aura .k-screen .title { }
+
+/* compare */
+.st-aura .k-compare .col { border-radius: calc(var(--u) * 3.4); }
+.st-aura .k-compare .col.after { background: linear-gradient(150deg, color-mix(in srgb, var(--o1) 55%, transparent), color-mix(in srgb, var(--o2) 45%, transparent)); color: #fff; border-color: rgba(255,255,255,0.3); box-shadow: 0 0 calc(var(--u) * 8) color-mix(in srgb, var(--glow) 60%, transparent); }
+.pal-dawn .k-compare .col.after, .pal-mono .k-compare .col.after { color: var(--accent-ink); background: var(--accent); }
+.st-aura .k-compare .lbl { font-family: var(--f-mono); }
+.st-aura .k-compare ul { font-weight: 450; }
+
+/* quote */
+.st-aura .k-quote .qm { color: transparent; background: linear-gradient(180deg, var(--o4), var(--o1)); -webkit-background-clip: text; background-clip: text; }
+.st-aura .k-quote .title { font-weight: 450; }
+.st-aura .k-quote .nm { color: var(--ink); }
+
+/* chart: glass capsules filled with light */
+.st-aura .k-chart .col { background: var(--glass); border: 1px solid var(--glass-line); border-radius: calc(var(--u) * 2.4); overflow: hidden; padding: calc(var(--u) * 0.6); }
+.st-aura .k-chart .fill { border-radius: calc(var(--u) * 1.8); background: color-mix(in srgb, var(--ink) 26%, transparent); }
+.st-aura .k-chart .bar.hi .fill { background: linear-gradient(180deg, var(--o4), var(--o1) 50%, var(--o2)); box-shadow: 0 0 calc(var(--u) * 4) var(--glow); }
+.st-aura .k-chart .bv { font-family: var(--f-num); font-weight: 700; text-shadow: 0 0 calc(var(--u) * 2) var(--glow); }
+
+/* logo + outro */
+.st-aura .k-logo .wordmark { font-weight: var(--dw); }
+.st-aura .k-outro .title { }
+.st-aura .k-logo .box, .st-aura .k-outro .box { transform: translateY(calc(var(--u) * -10)); }
+.st-aura .cta { background: linear-gradient(100deg, var(--o4), var(--o1) 50%, var(--o2)); color: #fff; font-weight: 650; box-shadow: 0 0 calc(var(--u) * 5) var(--glow), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 0 0 100vmax rgba(40,10,40,0.16); text-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+.pal-mono .cta { background: #fff; color: #0b0b0d; text-shadow: none; }
+.st-aura .k-outro .url { color: var(--ink); opacity: 0.7; font-family: var(--f-mono); }
+.st-aura .k-words .title { }
+
+/* phones: callouts float beside the phone, on the side facing the words (alternating on tall frames) */
+.st-aura .dev-phone .dev.phone { max-height: calc(var(--u) * 76); }
+.st-aura .k-screen.dev-phone .call { left: auto; right: calc(50% + var(--u) * 21); }
+.st-aura .k-screen.dev-phone.media-left .call { right: auto; left: calc(50% + var(--u) * 21); }
+.st-aura .k-screen.dev-phone .call[data-i="0"] { top: 20%; bottom: auto; }
+.st-aura .k-screen.dev-phone .call[data-i="1"] { top: 42%; bottom: auto; }
+.st-aura .k-screen.dev-phone .call[data-i="2"] { top: 64%; bottom: auto; }
+.st-aura .k-screen.dev-phone .call[data-i="3"] { top: 82%; bottom: auto; }
+.st-aura:not(.landscape) .k-screen.dev-phone .call[data-i="1"], .st-aura:not(.landscape) .k-screen.dev-phone .call[data-i="3"] { right: auto; left: calc(50% + var(--u) * 21); }
+.st-aura.landscape .k-hook .box { transform: translateY(calc(var(--u) * -8)); }
+.st-aura .k-chart .bv, .st-aura .k-steps .no { font-variation-settings: "ROND" 100; }
+
+/* Doto's period and percent read as a "+" and an "x" at display size: those two come from Geist Mono */
+@font-face { font-family: "Aura Punct"; src: url("fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; unicode-range: U+002E, U+0025, U+002C; }
+.st-aura .k-stat .num, .st-aura .k-chart .bv { font-family: "Aura Punct", var(--f-num); }
+.st-aura .k-stat .suf { font-weight: 300; margin-left: 0.08em; }
+
+.st-aura .k-quote .qm { display: none; }
+.st-aura .k-quote .title { }
+.st-aura .k-quote .by { padding: 0.6em 1.2em; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); }
+/* tall frames: headings carry more of the frame */
+.st-aura.portrait .k-screen .title, .st-aura.tall .k-screen .title { }
+.st-aura.portrait .k-screens .title, .st-aura.portrait .k-features .title, .st-aura.portrait .k-compare .title, .st-aura.portrait .k-chart .title { }
+.st-aura.portrait .k-list .title, .st-aura.portrait .k-steps .title { }
+.st-aura.portrait .k-quote .title { }
+.st-aura.portrait .k-hook .title { }
+.st-aura.portrait .k-statement .title { }
+
+/* sizes live on the root so a font pairing's own sizes (inline on #root) win */
+.st-aura { --ts-hook: 10.5; --ts-statement: 7.6; --ts-list: 6.6; --ts-screen: 7.4; --ts-quote: 6.8; --ts-logo: 13; --ts-outro: 8.6; --ts-words: 16; --ts-stat: 30; }
+.st-aura.portrait, .st-aura.tall { --ts-hook: 12; --ts-statement: 9.4; --ts-screen: 8.4; --ts-screens: 8.4; --ts-features: 8.4; --ts-compare: 8.4; --ts-chart: 8.4; --ts-list: 8.4; --ts-quote: 8; }
+
+/* Dawn is light: emphasis and the button need darker light to read */
+.pal-dawn .w.em .wi { background: linear-gradient(100deg, #E5582F 0%, #D23E55 55%, #A8326E 100%); -webkit-background-clip: text; background-clip: text; }
+.pal-dawn .cta { background: linear-gradient(100deg, #E5582F, #C93A62); }
+.pal-dawn .au-swirl { opacity: 0.4; }
+.st-aura.square .k-hook .box { transform: translateY(calc(var(--u) * -10)); }
+/* text on glass over the bright orb keeps its contrast: a tinted backing behind the frost */
+.st-aura .call { background: color-mix(in srgb, var(--bg) 58%, transparent); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35); }
+.pal-dawn .st-aura .call, .st-aura.pal-dawn .call { background: color-mix(in srgb, #ffffff 70%, transparent); text-shadow: none; }

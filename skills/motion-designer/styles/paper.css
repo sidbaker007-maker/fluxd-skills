@@ -1,0 +1,128 @@
+/* Paper — the look */
+.st-paper { --r: 3.2; --line-w: calc(var(--u) * 0.42); --sticker-shadow: calc(var(--u) * 0.7) calc(var(--u) * 0.9) 0 var(--paper-line); }
+.st-paper .title { color: var(--ink); font-variation-settings: var(--dvs, normal); }
+.st-paper .w.em { color: var(--accent); font-style: italic; }
+.st-paper .w.em .wi { padding-right: 0.06em; }
+/* the hand-drawn underline under the italic word */
+.st-paper .mk {
+  display: block; z-index: -1; left: -0.04em; right: -0.02em; bottom: -0.04em; height: 0.24em; background: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 24' preserveAspectRatio='none'><path d='M3 15 C 40 5, 80 21, 120 11 S 180 7, 197 13' fill='none' stroke='%23000' stroke-width='7' stroke-linecap='round'/></svg>");
+  background-size: 100% 100%; -webkit-mask: none;
+  filter: none; opacity: 1;
+}
+.st-paper .mk { background-color: transparent; }
+/* colour the squiggle with the accent through a mask */
+.st-paper .mk { -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 24' preserveAspectRatio='none'><path d='M3 15 C 40 5, 80 21, 120 11 S 180 7, 197 13' fill='none' stroke='%23000' stroke-width='7' stroke-linecap='round'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 24' preserveAspectRatio='none'><path d='M3 15 C 40 5, 80 21, 120 11 S 180 7, 197 13' fill='none' stroke='%23000' stroke-width='7' stroke-linecap='round'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; background-image: none; background-color: var(--accent3); }
+.st-paper .sub { color: var(--muted); font-size: calc(var(--u) * 3.5); font-weight: 450; }
+
+/* pebbles */
+.pp-decor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.pp-blob { position: absolute; display: block; }
+.pp-blob svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.pp-blob path { fill: var(--fill, var(--accent)); }
+.pp-splat { position: absolute; z-index: 30; display: block; width: calc(var(--u) * 20); height: calc(var(--u) * 20); margin: calc(var(--u) * -10) 0 0 calc(var(--u) * -10); border-radius: 50%; background: var(--fill, var(--accent)); pointer-events: none; }
+.st-paper .tr { z-index: 1; }
+
+/* kicker: a small sticker label */
+.st-paper .kicker { font-family: var(--f-text); font-weight: 700; letter-spacing: 0.02em; text-transform: none; font-size: calc(var(--u) * 2.8); color: var(--ink);
+  padding: calc(var(--u) * 0.8) calc(var(--u) * 2); border-radius: 999px; background: var(--surface); border: var(--line-w) solid var(--paper-line); box-shadow: calc(var(--u) * 0.35) calc(var(--u) * 0.45) 0 var(--paper-line); }
+
+/* words: each one on its own pebble */
+.st-paper .k-words .wd { display: grid; place-items: center; }
+.st-paper .pp-wblob { position: absolute; left: 50%; top: 50%; width: calc(var(--u) * 78); height: calc(var(--u) * 62); margin: calc(var(--u) * -31) 0 0 calc(var(--u) * -39); }
+.st-paper.portrait .pp-wblob { width: calc(var(--u) * 92); height: calc(var(--u) * 92); margin: calc(var(--u) * -46) 0 0 calc(var(--u) * -46); }
+.st-paper .k-words .title { position: relative; max-width: calc(var(--u) * 70); color: var(--paper-line); }
+.st-paper .k-words .wd[data-i="1"] .title, .st-paper .k-words .wd[data-i="4"] .title { color: #fff; }
+
+/* stat on a pebble */
+.st-paper .pp-numwrap { position: relative; width: 100%; display: grid; place-items: center; }
+.st-paper .pp-numblob { position: absolute; left: 50%; top: 50%; width: calc(var(--u) * 46); height: calc(var(--u) * 40); margin: calc(var(--u) * -20) 0 0 calc(var(--u) * -23); }
+.st-paper .k-stat .num { position: relative; font-variation-settings: var(--dvs, normal); color: var(--ink); --ts-stat: 30; letter-spacing: -0.03em; }
+.st-paper .k-stat .label { position: relative; font-family: var(--f-display); font-variation-settings: var(--dvs, normal); font-size: calc(var(--u) * 4.6); line-height: 1.1; max-width: 24ch; }
+
+/* list: sticker pills, every bullet its own colour */
+.st-paper .k-list .box, .st-paper .k-steps .box { align-items: center; text-align: center; }
+.st-paper .k-list .title, .st-paper .k-steps .title { text-align: center; }
+.st-paper .items { align-items: center; gap: calc(var(--u) * 1.8); }
+.st-paper .it { background: var(--surface); border: var(--line-w) solid var(--paper-line); border-radius: 999px; padding: calc(var(--u) * 1.3) calc(var(--u) * 3.2) calc(var(--u) * 1.3) calc(var(--u) * 1.3); box-shadow: var(--sticker-shadow); font-weight: 600; font-size: calc(var(--u) * 3.8); }
+.st-paper .it:nth-child(odd) { rotate: -1.6deg; }
+.st-paper .it:nth-child(even) { rotate: 1.4deg; }
+.st-paper .it .bul { border: var(--line-w) solid var(--paper-line); color: var(--paper-line); width: calc(var(--u) * 5.6); height: calc(var(--u) * 5.6); }
+.st-paper .it:nth-child(4n+2) .bul { background: var(--accent2); }
+.st-paper .it:nth-child(4n+3) .bul { background: var(--accent3); }
+.st-paper .it:nth-child(4n+4) .bul { background: var(--c4); }
+.st-paper .k-steps .items { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 2.4); }
+.st-paper.portrait .k-steps .items { flex-direction: column; }
+.st-paper .k-steps .it { border-radius: calc(var(--u) * var(--r)); padding: calc(var(--u) * 2.6) calc(var(--u) * 3); flex-direction: column; align-items: flex-start; text-align: left; width: calc(var(--u) * 34); gap: calc(var(--u) * 1.6); background: var(--surface); }
+.st-paper.portrait .k-steps .it { width: 100%; flex-direction: row; align-items: center; }
+.st-paper .k-steps .no { font-family: var(--f-display); font-variation-settings: var(--dvs, normal); color: var(--paper-line); font-size: calc(var(--u) * 4); font-weight: var(--dw); width: calc(var(--u) * 8); height: calc(var(--u) * 8); border-radius: 50%; display: grid; place-items: center; background: var(--accent); border: var(--line-w) solid var(--paper-line); flex: none; }
+.st-paper .k-steps .it:nth-child(2) .no { background: var(--accent2); }
+.st-paper .k-steps .it:nth-child(3) .no { background: var(--accent3); }
+.st-paper .k-steps .it:nth-child(4) .no { background: var(--c4); }
+
+/* cards: stickers with an outline and a hard shadow, never quite straight */
+.st-paper .card { border: var(--line-w) solid var(--paper-line); box-shadow: var(--sticker-shadow); background: var(--surface); }
+.st-paper .card:nth-child(odd) { rotate: -1.8deg; }
+.st-paper .card:nth-child(even) { rotate: 1.6deg; }
+.st-paper .card .ic { border: var(--line-w) solid var(--paper-line); color: var(--paper-line); border-radius: calc(var(--u) * 2); width: calc(var(--u) * 7.4); height: calc(var(--u) * 7.4); }
+.st-paper .card:nth-child(4n+2) .ic { background: var(--accent2); }
+.st-paper .card:nth-child(4n+3) .ic { background: var(--accent3); }
+.st-paper .card:nth-child(4n+4) .ic { background: var(--c4); }
+.st-paper .card .ic svg { stroke-width: 2.4; }
+.st-paper .card .ct { font-variation-settings: var(--dvs, normal); font-size: calc(var(--u) * 4.4); letter-spacing: -0.02em; }
+.st-paper .card .cx { font-size: calc(var(--u) * 2.7); }
+
+/* devices: chunky, outlined, a touch askew */
+.st-paper { --dev-shadow: calc(var(--u) * 1.1) calc(var(--u) * 1.4) 0 var(--paper-line); --chrome: var(--surface); }
+.st-paper .dev.phone { background: var(--paper-line); border: var(--line-w) solid var(--paper-line); }
+.st-paper .dev.plain, .st-paper .dev.browser, .st-paper .dev.window { border: var(--line-w) solid var(--paper-line); border-radius: calc(var(--u) * 2.6); }
+.st-paper .dev .bar { border-bottom: var(--line-w) solid var(--paper-line); }
+.st-paper .dev .bar i:nth-child(1) { background: var(--accent); }
+.st-paper .dev .bar i:nth-child(2) { background: var(--accent3); }
+.st-paper .dev .bar i:nth-child(3) { background: var(--c4); }
+.st-paper .k-screen .dev { rotate: 2deg; }
+.st-paper .k-screen.media-left .dev { rotate: -2deg; }
+.st-paper .k-screens .devwrap:nth-child(odd) .dev { rotate: -3deg; }
+.st-paper .k-screens .devwrap:nth-child(even) .dev { rotate: 2.5deg; translate: 0 calc(var(--u) * 2); }
+.st-paper .call { background: var(--surface); color: var(--ink); border: var(--line-w) solid var(--paper-line); box-shadow: calc(var(--u) * 0.4) calc(var(--u) * 0.5) 0 var(--paper-line); font-weight: 700; font-size: calc(var(--u) * 2.8); }
+.st-paper .call[data-i="0"] { background: var(--accent3); rotate: -4deg; }
+.st-paper .call[data-i="1"] { background: var(--accent2); color: #fff; rotate: 3deg; }
+.st-paper .call[data-i="2"] { background: var(--c4); rotate: -2deg; }
+
+/* compare: a grey sticker crossed out, then the bright one */
+.st-paper .k-compare .col { border: var(--line-w) solid var(--paper-line); box-shadow: var(--sticker-shadow); border-radius: calc(var(--u) * var(--r)); }
+.st-paper .k-compare .col.before { background: color-mix(in srgb, var(--surface) 70%, var(--bg)); rotate: -1.5deg; }
+.st-paper .k-compare .col.after { rotate: 1.5deg; color: var(--accent-ink); }
+.st-paper .k-compare .lbl { font-family: var(--f-text); font-weight: 800; letter-spacing: 0.04em; opacity: 1; }
+.st-paper .k-compare ul { font-family: var(--f-display); font-variation-settings: var(--dvs, normal); font-weight: var(--dw); font-size: calc(var(--u) * 4); }
+.st-paper .strike { background: var(--accent); height: 0.12em; border-radius: 99px; }
+
+/* quote in a speech bubble */
+.st-paper .k-quote .box { background: var(--surface); border: var(--line-w) solid var(--paper-line); box-shadow: var(--sticker-shadow); border-radius: calc(var(--u) * 4); padding: calc(var(--u) * 5) calc(var(--u) * 6); max-width: calc(var(--u) * 140); rotate: -1deg; }
+.st-paper .k-quote .qm { color: var(--accent); font-size: calc(var(--u) * 16); }
+.st-paper .k-quote .title { font-variation-settings: var(--dvs, normal); font-weight: var(--dw); --ts-quote: 6.4; line-height: 1.08; }
+.st-paper .k-quote .av { border: var(--line-w) solid var(--paper-line); }
+
+/* chart: fat rounded pills in every colour */
+.st-paper .k-chart .fill { border-radius: calc(var(--u) * 2.2); border: var(--line-w) solid var(--paper-line); background: var(--accent2); }
+.st-paper .k-chart .bar:nth-child(3n+2) .fill { background: var(--accent3); }
+.st-paper .k-chart .bar:nth-child(3n+3) .fill { background: var(--c4); }
+.st-paper .k-chart .bar.hi .fill { background: var(--accent); }
+.st-paper .k-chart .bv { font-variation-settings: var(--dvs, normal); }
+.st-paper .k-chart .bl { font-weight: 700; color: var(--ink); }
+
+/* logo + outro */
+.st-paper .cta { background: var(--accent); color: var(--accent-ink); border: var(--line-w) solid var(--paper-line); box-shadow: var(--sticker-shadow); font-weight: 800; font-size: calc(var(--u) * 3.6); padding: calc(var(--u) * 2.2) calc(var(--u) * 5); rotate: -2deg; }
+.st-paper .k-outro .url { color: var(--ink); font-weight: 600; }
+.st-paper .k-logo .wordmark { font-variation-settings: var(--dvs, normal); }
+.st-paper .k-screen .title { --ts-screen: 9.5; }
+.st-paper .k-features .title, .st-paper .k-screens .title, .st-paper .k-compare .title, .st-paper .k-chart .title { --ts-features: 8.5; --ts-screens: 8.5; --ts-compare: 8; --ts-chart: 8; }
+.st-paper .k-list .title, .st-paper .k-steps .title { --ts-list: 8.5; }
+
+/* tall frames: the content kinds get a bigger unit so they fill the height (every format's short side is 1080 px) */
+.st-paper.portrait .scene:is(.kind-list, .kind-steps, .kind-features, .kind-compare, .kind-quote, .kind-chart, .kind-screens, .kind-outro, .kind-logo) .k-wrap { --u: calc(10.8px * 1.3); }
+.st-paper.portrait .scene.kind-screen .k-wrap { --u: calc(10.8px * 1.15); }
+.st-paper.tall .scene:is(.kind-list, .kind-steps, .kind-features, .kind-compare, .kind-quote, .kind-chart) .k-wrap { --u: calc(10.8px * 1.1); }
+.st-paper:is(.square, .tall) .k-steps .items { flex-direction: column; align-items: stretch; }
+.st-paper:is(.square, .tall) .k-steps .it { width: 100%; flex-direction: row; align-items: center; }
+.st-paper.portrait .card .ct { font-size: calc(var(--u) * 4); }
