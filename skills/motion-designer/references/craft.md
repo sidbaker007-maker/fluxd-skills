@@ -1,56 +1,52 @@
-# Craft: the words and the timing
+# Craft: Anti-Slop Motion Design Principles, Humanistic Scripting, and Voiceover Timing
 
-The kit handles easing, staggering, sound sync, fitting and transitions. What it can't do is write.
-The words decide whether the video is good.
+This file codifies the core craft rules synthesized from classic animation theory (Frank Thomas & Ollie Johnston's *12 Principles of Animation* via Alan Becker), modern motion design direction (Ben Marriott, School of Motion / Joey Korenman, Nowack Design, Joshua Craigie, Herman Huang), and UX in Motion (Kamron Robinson / Google Play, Issara Willenskomer).
 
-## Words on screen
+Every generated video must feel **characterful, intentional, and human-directed** — never like generic "AI slop."
 
-- **One idea per scene.** A display line is <= 8 words; a hook <= 7. If a line needs a comma and an "and", split it.
-- **Say the benefit, show the feature.** "Ship in an afternoon" on screen, the feature in the screenshot.
-- **Concrete beats clever.** "1,240 apps launched this month" beats "Join thousands of happy makers".
-- **Their words first.** Lift phrases from their site, README or outline; tighten them; keep their voice.
-- **One emphasis per line**, on the word that carries the meaning (`*minutes*`, `*free*`, `*twice*`). Never
-  emphasise the product name in the hook.
-- **No filler**: no "Introducing..." on its own scene, no "Revolutionary", "Seamless", "Unlock", "Elevate",
-  "Next-level", "Supercharge", "Game-changing", "In today's fast-paced world".
-- **Numbers are real or absent.** Write them as people say them: "2x", "1,240", "$4.2M", "98%".
-- **Lists**: 3-4 items, 1-4 words each, parallel grammar ("Plan it. Ship it. Grow it.").
-- **The ending** has three things only: the name, one call to action ("Start free", "Get it on the App
-  Store", "Join the waitlist"), the URL. No socials list.
-- Sentence case by default; the style may set caps. Don't type words in capitals yourself.
-- `words` scenes: 2-5 single words or very short phrases, each with its own full-frame beat.
+## 1. The 3 Functional Outcomes of Motion Design (Kamron Robinson / Google Play)
 
-## Pace (the kit enforces it)
+Before adding any movement, verify which of the three functional outcomes it serves:
 
-Fast, not rushed. A scene lasts until its headline has landed, plus about 0.14 s per word on screen and
-a short beat - most scenes come out at 2-3 s, a busy chart or a screen with callouts 3-4 s. Then it snaps
-to the music's beat. Nobody needs 4 seconds to read one line. If a scene feels slow, it has too little
-on it (merge it) or too much (split it) - don't pad it with `dur`. The built-in frame check (`frames`)
-flags any line that's on screen too briefly to read.
+1. **Motion Enhances Stability**: Uses spatial continuity, match cuts, and physical feedback between states so transitions feel coherent and grounded in physical law rather than jarring.
+2. **Motion Sells the Subtext**: Communicates emotional or thematic weight through *how* an element moves:
+   - *Gritty / Handmade / Archival (`vox` style)*: Posterized 8-12 fps ("on-twos / on-threes") stop-motion wiggle, step keyframes, tactile halftone print, and damped pendulum physics.
+   - *High-Tech / Investigative Telemetry (`polymath`, `data`, `terminal`)*: High-frame-rate (24-60 fps) exponential curves (`cubic-bezier(0.16, 1, 0.3, 1)`), tabular numerals, and razor-sharp vector schematics.
+3. **Motion Feels Premium**: High-craft curve sculpting, observational micro-details, and restraint elevate perceived authority and viewer retention.
 
-## Rhythm
+## 2. The 6 Anti-Slop Choreography Laws (Built Into `kit.js`)
 
-- Open fast: the hook lands in the first second.
-- Alternate density: a busy scene (screens, features) is followed by a simple one (statement, stat).
-- Change something big at each cut: the kind, the side, the tone, or the scale.
-- End on a hold: the outro stays ~1.5 s after its last element lands.
+1. **Anticipation & Eye-Lead (Ben Marriott's #1 Skill)**:
+   - Never fire a primary movement from a dead stop without warning. Preceding a major entrance or slide with a **3-to-4 frame preparatory movement in the opposite direction** (the `slingshot` and `pop` moves in `kit.js` pull back/crouch before releasing) acts as an optical flare that locks the viewer's eye onto the coordinates *before* the main action fires.
+2. **Volume-Preserving Squash & Stretch (`scaleX * scaleY ≈ 1.0`, Alan Becker)**:
+   - When an element stretches at peak velocity (`scaleY: 1.06`), its perpendicular axis narrows (`scaleX: 0.94`); when it squashes on landing (`scaleY: 0.88`), it widens (`scaleX: 1.14`). Never scale a single axis in isolation without conserving area/mass.
+   - All SVG schematic and chalk strokes use `vector-effect: non-scaling-stroke` (Ben Marriott's stroke rule) so stroke weights never distort during scale or squash transforms.
+3. **Follow-Through, Overlapping Action & Anti-Twinning (Alan Becker + Joshua Craigie)**:
+   - *"Nothing stops all at once."* When a card or column (`rise`, `vecCard`) lands, the container settles with a subtle overshoot while child elements (`h3`, `p`, `li`, metric readouts) drag behind by **2 to 4 frames** (`0.04s - 0.09s` stagger).
+   - **Anti-Twinning**: Paired columns (`pivot`, `compare`) and multi-card grids (`telescope`, `features`) never move in robotic lockstep symmetry — always offset their timing and entry vectors.
+4. **Selective Stillness — "Not Everything Needs to Move" (Nowack Design)**:
+   - The human eye snaps to movement. Establish **one unmistakable #1 focal point per beat**. Keep background grids and secondary labels calm while the primary headline or chart animates, and trigger secondary callouts only *after* (`after(te)`) the primary element has landed.
+5. **Match Cuts & The 80/20 Transition Restraint Rule (Ben Marriott + Herman Huang)**:
+   - When every cut has a flashy wipe or glitch, none of them stand out ("TikTok whiplash").
+   - Use clean `cut` or Ben Marriott's **Scale/Velocity Match Cut (`matchCut`)** — which accelerates scale by `+4.5%` (`power3.in`) into the cut and decelerates (`expo.out`) out of the cut — for **75-80% of scene transitions**, reserving full-frame wipes (`vecScan`, `vxWhip`, `scan`) for major Movement shifts.
+6. **The 3x Reading Rule & Dual-Layer Scripting (Alan Becker + Polymathic Director)**:
+   - Separate what is **heard** (`vo` at 130-145 WPM with `[AUDIO PAUSE: Xs]` markers) from what is **seen** (`text` / `title` distilled to **<= 8 kinetic words**).
+   - Every on-screen text element must remain legible long enough to be read comfortably (or across the full spoken `vo` window).
 
-## Screens
+## 3. The 5 Humanistic Scripting Rules (For `polymath` & `vox` Voiceovers)
 
-- A screenshot must read at the size it's shown. A full desktop page at 40% width is mush: crop to the
-  part that matters (ffmpeg `crop`), or use `device: "plain"` with a tight crop, or a phone shot.
-- Long screenshots scroll by themselves inside the device (the `pan` move). A short one zooms slowly.
-  `move: "still"` holds it.
-- `callouts` are 1-3 words, at most 3, pointing at something that's actually on that screen.
-- Screen recordings (`.mp4/.mov`) play inside the device for the scene's length, muted.
-- `device`: `iphone` for app screenshots (tall), `macbook` for websites and desktop apps, `display` (Studio
-  Display) for a bigger, calmer shot, `ipad` for tablet apps - real photographed hardware. `browser`
-  (with `url`), `window` and `plain` are drawn frames for when real hardware would be wrong.
+1. **Telescoping Scale Jump**: Anchor abstract concepts in a tactile micro-object, then pull back by orders of magnitude (`10^-6 m -> 10^0 m -> 10^6 m`, paired with `"kind": "telescope"`).
+2. **The McPhee Pivot**: Intercut two timelines at peak mechanical tension with a hard cut (`"kind": "pivot"`, `"transition": "cut"`).
+3. **Kinetic Verb-First Scripting**: Replace static "to be" verbs (*is, was, represents*) with physical directional verbs (*cuts, locks, tracks, clamps, fractures, bends*).
+4. **Lexicon Friction**: Pair technical nouns (*anamorphic squeeze, silver halide, phase-locked loop, sovereign default*) with blunt verbs. Ban AI/corporate filler (*revolutionary, seamless, delve, game-changing*).
+5. **Counter-Intuitive Premise Inversion**: State a common myth, strike it through on screen, and falsify it with an empirical data anomaly (`"kind": "anomaly"`).
 
-## Things that make it look AI-made (avoid)
+## 4. Mandatory 7-Point Anti-Slop Motion Audit (Run Before Delivery)
 
-- Every scene the same layout and size. Vary kind, side, tone and scale.
-- Five features in a grid. Three, or split them across scenes.
-- Lorem-ish copy, invented stats, invented testimonials, fake logos of customers.
-- Emojis as icons (the kit has real icons: `references/video-json.md` -> icons).
-- A wall of text on the ending.
+1. **Hierarchy & Stillness Check**: Does each scene have one clear focal point, with secondary callouts delayed until after the headline lands?
+2. **Anticipation & Eye-Lead Check**: Do primary cards/columns use preparatory wind-up (`pop`, `slingshot`, `vecCard`, `vxCutout`) rather than flat linear slides?
+3. **Easing & Spacing Check**: Are all movements driven by exponential/spring curves (or intentional `steps(1)` stop-motion in `vox`)?
+4. **Follow-Through & Offset Check**: Do child elements stagger 2-4 frames behind their parent containers?
+5. **Volume & Stroke Check**: Is perpendicular volume preserved during squash/stretch, and are SVG strokes protected with `non-scaling-stroke`?
+6. **Transition Intentionality Check**: Do `cut` and `matchCut` handle the majority of cuts so signature wipes (`vecScan`, `vxWhip`) feel earned?
+7. **Audio-Visual Sync Check**: Does the `-16 LUFS` soundtrack hit on keyframe extremes and duck cleanly during `[AUDIO PAUSE: Xs]` windows?

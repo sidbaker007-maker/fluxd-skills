@@ -1,81 +1,59 @@
-# Deciding from an outline
+# Deciding from an Outline or Polymathic Blueprint
 
-The person gave you a sentence or a paragraph. Turn it into five decisions, each with a one-line `why`
-written in their terms ("You want it to stop the scroll on X" — not "kinetic typography maximises
-salience"). All five are switches on the storyboard, so decide fast and decide well.
+Turn a short prompt or a `polymathic-investigative-director` blueprint into five concrete decisions, each with a one-line `why`. Every decision is a live toggle on the Storyboard.
 
-## 1. Purpose (what the video has to do)
+## 1. Purpose & Workflow Mode
 
-| signal in the outline | purpose | the video's job |
-|---|---|---|
-| "launch", "introducing", "new", "out now", "we just shipped" | launch | name it, show it, say why it matters, where to get it |
-| screenshots, "my app", "SaaS", "dashboard", "feature" | product demo | the product is the hero; every claim shown on a real screen |
-| "announce", "we raised", "hiring", "event", "join us" | announcement | one message, unmissable, a date/place/link |
-| numbers, "results", "grew", "report", "year in review" | data story | one number that matters, the context, the takeaway |
-| "explain", "how it works", "what is" | explainer | the problem, the idea, 3 steps, the payoff |
-| "hook", "for X", "viral", "ad", "promo" | social hook | first second stops the scroll; one idea; CTA |
-| "teaser", "trailer", "coming soon", "brand film" | teaser | mood and anticipation; reveal late; little text |
-| "logo", "intro", "sting", "outro card" | sting | 3–6 s, the mark and maybe a line |
+| Signal in the Prompt / Blueprint | Purpose | Primary Job |
+| :--- | :--- | :--- |
+| `polymathic-investigative-director` blueprint, Axis A-D, 6-Movement essay, 5-Stage Reel, "investigative explainer" | **investigative explainer** | Falsify a surface myth with empirical data, physical laws, and kinetic visuals timed to ~135 WPM voiceover |
+| Numbers, "results", "grew", "report", GDELT, UN Comtrade, Cinemetrics | **data story** | Anchor the thesis in one unmistakable metric, trajectory, and takeaway |
+| "explain", "how it works", mechanism, paradox | **explainer** | Show the anomaly, the mechanism in 3 steps or scales, and the systemic resolution |
+| "launch", "introducing", "new", "we just shipped" | **launch** | Name it, show it, state why it matters, and where to get it |
+| Screenshots, "my app", "SaaS", "dashboard" | **product demo** | Every claim proven on a real hardware frame |
+| "hook", "for X", "viral", "Reel", "Short" | **social hook / reel** | Stop the scroll in second 1; invert the assumption; close hard |
 
-## 2. Style
+## 2. Style (8 Built-In Styles)
 
-Match the *feeling* the product should have, then the content type.
+- **Polymath (`polymath`)** - Deep obsidian dark-mode (`#0B0B0B`), 35mm film grain, vector registration reticles, dual functional accent tokens (`--accent` & `--accent2`), and empirical repository HUD (`FIG. 01 // MOVEMENT`, `SOURCE // ...`, `TC 00:00:00:00`). Default for `polymathic-investigative-director` features and Reels across Axes A-D.
+  - Palettes: `0 = Obsidian` (Vermilion + Cyan), `1 = Halide` (35mm Tungsten Amber + Anamorphic Blue), `2 = Sovereign` (Deficit Crimson + Comtrade Teal), `3 = Chalkboard` (Chalk Gold + Phase Vector Blue).
+  - Fonts: `0 = Space Grotesk` (Editorial Telemetry), `1 = McPhee Serif` (Instrument Serif literary non-fiction), `2 = Formalist` (Fraunces serif), `3 = Telemetry Tight` (Inter Tight).
+- **Data (`data`)** - Drafting grid with rulers, mono labels, animated line/bar/donut/rank charts, and leader-line annotations. Ideal for research reports and quantitative breakdowns (`Palette 2 = Terminal` or `3 = Midnight` for dark mode).
+- **Terminal (`terminal`)** - Monospace `$` prompt typing, glyph scramble decoding, phosphor scan band, and git-diff comparisons. Ideal for computational pipelines, code, and systems logs.
+- **Keynote (`keynote`)** - Black stage with sweeping light, 3D hardware reveals, and gradient-sheen typography. Ideal for hardware, optical instruments, or software demos.
+- **Kinetic (`kinetic`)** - Giant grotesque poster type that stretches and slams on the beat, flipping between paper, ink, and accent tones.
+- **Aura (`aura`)** - Soft glowing dusk orb over frosted glass cards and dot-matrix numbers.
+- **Paper (`paper`)** - Warm editorial paper with organic SVG pebbles, hand-underlined italic serifs, and tilted sticker cards.
+- **Story (`story`)** - Flat illustrated characters acting out a scenario in simple sets with speech bubbles.
 
-- **Kinetic** — loud, confident, poster-like. Words are the image. Hooks, launches, manifestos, events.
-  Not for calm/luxury brands or videos that are mostly UI.
-- **Keynote** — the Apple product film. Dark (or studio white), big devices, slow reveals, gradient words.
-  Apps, SaaS, hardware, anything with good screens. The safe premium default for products.
-- **Aura** — soft, glowing, glassy, calm. AI products, fintech, wellness, subscriptions, "premium but warm".
-- **Paper** — playful, editorial, colourful shapes, serif with an italic word. Consumer apps, creators,
-  friendly brands, explainers for normal people.
-- **Terminal** — mono type, typing, grids. Dev tools, APIs, CLIs, agents, infra — an audience of builders.
-- **Data** — grids, charts that draw, count-ups, annotations. Results, reports, research, fundraising.
-- **Story** — flat illustrated people act it out in simple sets (they walk in, type, think, cheer), with
-  speech bubbles and a narrator's line. A customer's moment, before → after, explainers for normal people.
-  Write it as a tiny plot: who, the problem, the turn (your product), the payoff.
-
-Their brand beats the table: a brand that is already loud and colourful → Kinetic or Paper even for a
-SaaS; a dark minimal dev brand → Terminal or Keynote. If they gave a reference ("like Apple", "like
-Stripe's videos", "like a little animated story"), that decides it. Pick two alternates that are *different* from
-each other (e.g. picked Keynote → alternates Kinetic and Aura), so the storyboard comparison is a real choice.
-
-Fonts and palettes: start at index 0 unless the brand says otherwise (their brand colour goes in
-`brand.color`; a dark brand → the style's dark palette).
+Always pick a primary `style` plus two `alternates` (for investigative explainers, `"style": "polymath", "alternates": ["data", "terminal"]` or `["data", "keynote"]`).
 
 ## 3. Format
 
-| where it goes | format |
-|---|---|
-| X / Twitter, YouTube, a website hero, a pitch deck, LinkedIn video | 16:9 |
-| TikTok, Reels, Shorts, Stories | 9:16 |
-| Instagram feed, LinkedIn feed | 1:1 or 4:5 |
-| not said | 16:9 (and offer a 9:16 version at the end) |
+| Target Platform / Deliverable | Format | Resolution |
+| :--- | :--- | :--- |
+| YouTube Feature (15-30 min movements), X/Twitter, Desktop Web | `16:9` | `1920x1080` |
+| Companion Reel (1-3 min 5-Stage short), YouTube Shorts, TikTok | `9:16` | `1080x1920` |
+| Square Feed / Carousel | `1:1` | `1080x1080` |
+| Vertical Feed | `4:5` | `1080x1350` |
 
-## 4. Length
+## 4. Length & Voiceover Pacing
 
-| purpose | natural length | scenes |
-|---|---|---|
-| sting | 3–6 s | 1–2 |
-| social hook | 10–20 s | 4–6 |
-| announcement | 15–25 s | 4–7 |
-| launch | 20–35 s | 6–9 |
-| product demo | 25–45 s | 7–11 |
-| explainer, data story | 30–60 s | 8–14 |
-| teaser | 15–30 s | 4–7 |
+| Clip Type | Typical Runtime | Scenes | Timing Strategy |
+| :--- | :--- | :--- | :--- |
+| Single Movement / Scene Clip | 15-35 s | 4-7 | `"length": null` + `"vo"` at `"wpm": 135` (or explicit `"length": 20` / `30`) |
+| 5-Stage Companion Reel | 45-90 s (up to 180 s) | 6-12 | `"wpm": 135` with `"vo"` + `[AUDIO PAUSE: Xs]` per stage |
+| Full Multi-Movement Explainer | 60-180 s | 8-18 | `"timestamp": "MM:SS - MM:SS"` per scene or `"vo"` pacing |
+| Product Launch / Promo | 20-35 s | 6-9 | Reading-time auto-fit or `"length": 25` |
 
-Leave `length: null` (natural, from reading time) unless they named one. Shorter is almost always better:
-when in doubt, cut a scene.
+## 5. Scene Architecture for Polymathic Explainers
 
-## 5. The scenes
+- **5-Stage Short-Form Reel (1-3 min)**:
+  1. **Hook** (`hook` or `anomaly`): Counter-intuitive visual/data hook in <= 8 on-screen words.
+  2. **Surface Myth** (`anomaly` or `compare`): State the common assumption and fracture it.
+  3. **Scientific Pivot** (`telescope` or `pivot`): Execute a Telescoping Scale Jump (Micro -> Meso -> Macro) or McPhee Structural Braid.
+  4. **Empirical Proof** (`telemetry`, `line`, `chart`, `rank`, or `stat`): Show the Matplotlib dark-mode figure, vector schematic, or time-series proof with repository citation (`source`).
+  5. **Mic-Drop Close** (`statement` or `outro`): Final philosophical/systemic synthesis with `[AUDIO PAUSE: 2s]`.
 
-A shape that works for most videos:
-
-1. **Hook** (0–3 s): the promise or the tension, in ≤ 8 words. Not the product name.
-2. **Problem or context** (optional): `statement`, or `compare` (before/after).
-3. **The thing**: `screen` / `screens` with the product — or `words` for a fast beat.
-4. **Proof**: `stat` (a real number), `features` (3 max), `quote` (a real one), `chart`.
-5. **How** (optional): `steps` — three, short.
-6. **Ending**: `outro` with the name, one call to action, the URL. (`logo` for a sting.)
-
-Vary the kinds: never two of the same kind in a row except `screen` (and then with different devices or sides).
-Every scene has one job; if you need "and", it's two scenes.
+- **6-Movement Long-Form Feature Clips**:
+  Generate either a unified multi-movement overview clip or one dedicated motion clip per Movement (I: Inciting Anomaly -> II: Surface Myth -> III: Empirical Investigation -> IV: Cinematic Anatomy -> V: Systemic Diagnosis -> VI: Philosophical Resolution).

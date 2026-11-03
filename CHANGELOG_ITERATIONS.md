@@ -8,3 +8,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v02-2026.11.03-motion-designer-v1.1-gemini` (2026-11-03) — Adapted motion-designer v1.1 for Gemini skill architecture
 - Adapted `motion-designer` SKILL.md and execution workflow for Gemini Web and local CLI usage.
 
+## `v03-2026.11.03-motion-designer-v1.2-cli-rtx` (2026-11-03) — Upgraded motion-designer v1.2 for local Linux CLI & NVIDIA RTX 3050 Ti NVENC
+- Added `doctor.js` RTX 3050 hardware detection (`h264_nvenc`), headless Chromium capture, and local CLI pipeline.
+

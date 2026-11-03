@@ -173,3 +173,6 @@
 .st-data .k-chart.has-note .dt-axis { top: calc(var(--u) * 9); }
 .st-data .kicker { font-size: calc(var(--u) * 2.7); }
 .dt-note .nt { font-size: calc(var(--u) * 2.6); }
+
+/* Prevent rightmost chart bar annotations from overflowing frame or colliding with title */
+.st-data .k-chart .bar:last-child .bar-note { right: 0; left: auto; max-width: calc(var(--u) * 32); }

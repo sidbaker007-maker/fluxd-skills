@@ -1,24 +1,27 @@
-// board: builds a 100% self-contained interactive Storyboard HTML for Gemini Canvas (and also supports --serve on localhost).
+// board: the storyboard page. Plays the real composition live, lets the person change every
+// decision (style, format, length, font, colour, sound, words) and re-composes as they go.
+// Resolves 0 when they click "Approve and render"; their notes are saved into video.json.
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import http from "node:http";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { compose, readJSON, writeJSON, styleList, loadMD, FORMATS, ASSETS, FONTS, RUNTIME, STYLES_DIR } from "./compose.js";
-import { PRESETS } from "./audio.js";
+import { compose, readJSON, writeJSON, styleList, loadMD, FORMATS, ASSETS, FONTS } from "./compose.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PAGE = path.join(here, "../board/page.html");
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".gif": "image/gif", ".mp4": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm", ".m4v": "video/mp4", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4" };
 
+// what the page may change (anything else in video.json stays as the agent wrote it)
 const TOP = ["style", "format", "length", "font", "palette", "direction"];
+// "ask" is the person's note to the agent; "note" is an on-screen field in some styles (Data's annotations)
 const fieldsOf = (st, kinds, kind) => ((st.kinds && st.kinds[kind] && st.kinds[kind].fields) || (kinds[kind] && kinds[kind].fields) || []);
 const EDITABLE = (v) => typeof v === "string" || typeof v === "number" || (Array.isArray(v) && v.every((x) => typeof x === "string" || typeof x === "number"));
 
 function applyPatch(v, p) {
   const MD = loadMD();
   const st = MD.styles[v.style] || {};
+  // a brand font/palette (an object) is kept aside when a preset is picked, so "Brand" can bring it back
   for (const k of ["font", "palette"]) {
     if (!(k in p)) continue;
     if (v[k] && typeof v[k] === "object") v[`brand_${k}`] = v[k];
@@ -76,150 +79,11 @@ function view(work, v, report) {
   };
 }
 
-function toDataUri(filePath) {
-  if (!fs.existsSync(filePath)) return null;
-  const ext = path.extname(filePath).toLowerCase();
-  const mime = TYPES[ext] ? TYPES[ext].split(";")[0] : "application/octet-stream";
-  const b64 = fs.readFileSync(filePath).toString("base64");
-  return `data:${mime};base64,${b64}`;
-}
-
-export async function buildStandaloneBoard(work, { out = null } = {}) {
-  const vfile = path.join(work, "video.json");
-  let v = readJSON(vfile);
-  (v.scenes || []).forEach((s, i) => { if (!s.id) s.id = `s${i + 1}`; });
-  if (!Array.isArray(v.choices)) v.choices = [...new Set([v.style, ...(v.alternates || [])])];
-  v.approved = true;
-  v.approvedAt = v.approvedAt || new Date().toISOString();
-  writeJSON(vfile, v);
-
-  const report = compose(work);
-
-  // Compress mix.wav to compact AAC m4a data URI for Canvas audio playback
-  let mixDataUri = null;
-  const wavPath = path.join(work, "build/assets/mix.wav");
-  if (fs.existsSync(wavPath)) {
-    const tmpM4a = path.join(os.tmpdir(), `md-mix-${process.pid}.m4a`);
-    const ff = spawnSync("ffmpeg", ["-v", "error", "-y", "-i", wavPath, "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", tmpM4a]);
-    if (ff.status === 0 && fs.existsSync(tmpM4a)) {
-      mixDataUri = `data:audio/mp4;base64,${fs.readFileSync(tmpM4a).toString("base64")}`;
-      fs.rmSync(tmpM4a, { force: true });
-    }
-  }
-
-  // Collect runtime & style files
-  const runtime = {
-    gsap: fs.readFileSync(path.join(ASSETS, "vendor/gsap.min.js"), "utf8"),
-    kitJs: fs.readFileSync(path.join(RUNTIME, "kit.js"), "utf8"),
-    kitCss: fs.readFileSync(path.join(RUNTIME, "kit.css"), "utf8"),
-    typeJs: fs.readFileSync(path.join(RUNTIME, "type.js"), "utf8"),
-  };
-  const stylesBundle = {};
-  for (const st of styleList()) {
-    stylesBundle[st.id] = {
-      js: fs.readFileSync(path.join(STYLES_DIR, `${st.id}.js`), "utf8"),
-      css: fs.readFileSync(path.join(STYLES_DIR, `${st.id}.css`), "utf8"),
-    };
-  }
-
-  // Collect icons
-  const icons = {};
-  const iconsDir = path.join(ASSETS, "icons");
-  for (const f of fs.readdirSync(iconsDir)) {
-    if (!f.endsWith(".svg")) continue;
-    const name = f.slice(0, -4);
-    icons[name] = fs.readFileSync(path.join(iconsDir, f), "utf8").replace(/<!--[\s\S]*?-->/g, "").replace(/\s*class="[^"]*"/, "").replace(/\s+/g, " ").trim();
-  }
-
-  // Collect hardware devices
-  const devJson = readJSON(path.join(ASSETS, "devices/devices.json"), {});
-  const devices = {};
-  for (const [k, meta] of Object.entries(devJson)) {
-    devices[k] = { ...meta, src: toDataUri(path.join(ASSETS, "devices", meta.file)) };
-  }
-
-  // Collect project media assets referenced in video.json
-  const mediaMap = {};
-  const addMedia = (src) => {
-    if (!src || typeof src !== "string" || mediaMap[src]) return;
-    const abs = path.isAbsolute(src) ? src : path.resolve(work, src);
-    if (!fs.existsSync(abs)) return;
-    mediaMap[src] = {
-      dataUri: toDataUri(abs),
-      svgText: /\.svg$/i.test(abs) ? fs.readFileSync(abs, "utf8") : null,
-    };
-  };
-  if (v.brand && v.brand.logo) addMedia(v.brand.logo);
-  for (const s of v.scenes || []) {
-    if (s.media) [].concat(s.media).forEach(addMedia);
-  }
-
-  // Embed fonts used by chosen style + alternates so they work offline & in Canvas
-  const MD = loadMD();
-  const activeStyleIds = new Set([v.style, ...(v.choices || v.alternates || [])]);
-  const fontFams = new Set(["Inter", "JetBrains Mono"]);
-  for (const sid of activeStyleIds) {
-    const st = MD.styles[sid];
-    if (!st) continue;
-    for (const f of st.fonts || []) {
-      if (f.display) fontFams.add(f.display);
-      if (f.text) fontFams.add(f.text);
-      if (f.mono) fontFams.add(f.mono);
-    }
-  }
-  const fontFacesCss = [];
-  for (const fam of fontFams) {
-    const files = FONTS[fam];
-    if (!files) continue;
-    for (const [file, weight, style, stretch] of files) {
-      const uri = toDataUri(path.join(ASSETS, "fonts", file));
-      if (uri) {
-        fontFacesCss.push(`@font-face{font-family:"${fam}";src:url("${uri}") format("woff2");font-weight:${weight};font-style:${style};${stretch ? `font-stretch:${stretch};` : ""}font-display:block}`);
-      }
-    }
-  }
-
-  const presetBpms = Object.fromEntries(Object.entries(PRESETS).map(([k, p]) => [k, p.bpm]));
-  const bundlePayload = {
-    video: v,
-    initialState: view(work, v, report),
-    runtime,
-    styles: stylesBundle,
-    icons,
-    devices,
-    media: mediaMap,
-    fontFacesCss: fontFacesCss.join("\n"),
-    mixDataUri,
-    presetBpms,
-  };
-
-  // Escape </script> inside JSON payload
-  const safeJson = JSON.stringify(bundlePayload).replace(/<\/script/gi, "<\\/script");
-  const pageTemplate = fs.readFileSync(PAGE, "utf8");
-  const html = pageTemplate.replace("<!--__MD_STANDALONE_BUNDLE__-->", () => `<script>window.__MD_STANDALONE = ${safeJson};</script>`);
-
-  const slug = (v.title || "video").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "video";
-  const boardFile = out ? path.resolve(out) : path.join(work, "storyboard.html");
-  fs.writeFileSync(boardFile, html);
-
-  let canvasFile = null;
-  for (const base of [process.cwd(), work]) {
-    const m = base.match(/^(\/working_dir\/[^/]+)/);
-    if (m) {
-      const outDir = path.join(m[1], "artifacts/file_generation/ttl=63d/output");
-      fs.mkdirSync(outDir, { recursive: true });
-      canvasFile = path.join(outDir, `${slug}-storyboard.html`);
-      fs.copyFileSync(boardFile, canvasFile);
-      break;
-    }
-  }
-  return { boardFile, canvasFile };
-}
-
 export async function serveBoard(work, { open = false, port = 0 } = {}) {
   const vfile = path.join(work, "video.json");
   let v = readJSON(vfile);
   (v.scenes || []).forEach((s, i) => { if (!s.id) s.id = `s${i + 1}`; });
+  // the styles on offer stay the same while they flip between them (the pick + its alternates)
   if (!Array.isArray(v.choices)) v.choices = [...new Set([v.style, ...(v.alternates || [])])];
   writeJSON(vfile, v);
   const orig = JSON.parse(JSON.stringify(v));
@@ -227,6 +91,7 @@ export async function serveBoard(work, { open = false, port = 0 } = {}) {
   let report = compose(work);
   const alts = () => {
     for (const id of (v.choices || v.alternates || []).filter((x) => x !== v.style)) {
+      // alternates wear the brand look too: custom fonts/palettes carry over, presets start at 0
       try { compose(work, { video: { ...v, style: id, font: typeof v.font === "object" ? v.font : 0, palette: typeof v.palette === "object" ? v.palette : 0, brand: { ...(v.brand || {}) } }, out: path.join(work, ".alts", id), audio: false }); } catch (e) { warn.push(`${id}: ${e.message}`); }
     }
   };
@@ -243,6 +108,7 @@ export async function serveBoard(work, { open = false, port = 0 } = {}) {
     if (!fs.existsSync(f) || !fs.statSync(f).isFile()) return send(res, 404, "not found", "text/plain");
     const type = TYPES[path.extname(f).toLowerCase()] || "application/octet-stream";
     const size = fs.statSync(f).size;
+    // media needs ranges for seeking
     const range = req.headers.range && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
     if (range) {
       const a = range[1] ? +range[1] : 0, b = range[2] ? +range[2] : size - 1;
@@ -299,6 +165,7 @@ export async function serveBoard(work, { open = false, port = 0 } = {}) {
   }
   const code = await done;
   server.close();
+  // tell the agent what the person changed
   const changes = [];
   for (const k of ["style", "format", "length", "font", "palette"]) if (JSON.stringify(orig[k]) !== JSON.stringify(v[k])) changes.push(`${k}: ${JSON.stringify(orig[k])} → ${JSON.stringify(v[k])}`);
   if (JSON.stringify((orig.brand || {}).color) !== JSON.stringify((v.brand || {}).color)) changes.push(`brand colour → ${(v.brand || {}).color || "none"}`);

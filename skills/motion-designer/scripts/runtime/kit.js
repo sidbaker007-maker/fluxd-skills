@@ -66,6 +66,33 @@
     return (v < 0 ? "-" : "") + s;
   };
   const readSecs = (str) => 0.45 + MD.count(str) * 0.24; // ~4 words a second, plus a beat to land
+  // Polymathic Investigative Director: voiceover WPM (~135 WPM = 0.444s/word) + [AUDIO PAUSE: Xs] markers + timestamp ranges
+  MD.parsePause = function (s) {
+    if (!s || typeof s !== "object") return 0;
+    let p = typeof s.pause === "number" ? s.pause : 0;
+    const raw = `${s.vo || ""} ${s.text || ""} ${s.sub || ""} ${s.audio || ""}`;
+    const re = /\[(?:AUDIO\s+)?PAUSE:\s*([\d.]+)\s*s(?:ec(?:onds?)?)?\]/gi;
+    let m;
+    while ((m = re.exec(raw)) !== null) p += parseFloat(m[1]) || 0;
+    return p;
+  };
+  MD.parseTimestamp = function (ts) {
+    if (!ts || typeof ts !== "string") return null;
+    const m = ts.match(/(\d+):(\d+(?:\.\d+)?)\s*[-–—to]+\s*(\d+):(\d+(?:\.\d+)?)/i);
+    if (!m) return null;
+    const t0 = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+    const t1 = parseInt(m[3], 10) * 60 + parseFloat(m[4]);
+    return t1 > t0 ? { t0, t1, dur: +(t1 - t0).toFixed(3) } : null;
+  };
+  MD.voSecs = function (s, wpm = 135) {
+    if (!s || typeof s !== "object") return 0;
+    const pause = MD.parsePause(s);
+    if (!s.vo && !pause) return 0;
+    const cleanVo = String(s.vo || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "").trim();
+    const words = cleanVo ? MD.count(cleanVo) : 0;
+    const rate = 60 / Math.max(80, Math.min(220, +wpm || 135));
+    return (words > 0 ? 0.35 + words * rate : 0) + pause;
+  };
 
   // ---------- media ----------
   const isVideo = (p) => /\.(mp4|mov|m4v|webm)$/i.test(p || "");
@@ -118,6 +145,15 @@
   MD.moves = {
     show: { len: () => 0, run: (tl, els, at) => tl.set(els, { opacity: 1 }, at) },
     hide: { len: () => 0, run: (tl, els, at) => tl.set(els, { opacity: 0 }, at) },
+    kcapWord: {
+      len: () => 0,
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 0.35);
+        tl.set(els, { backgroundColor: "var(--accent)", color: "var(--accent-ink)", scale: 1.08 }, at);
+        tl.to(els, { scale: 1.0, duration: Math.min(0.15, d * 0.5), ease: "power2.out" }, at);
+        tl.set(els, { backgroundColor: "transparent", color: "#F8FAFC", scale: 1 }, at + d);
+      },
+    },
     fadeIn: {
       len: (n, o) => D(o, "d", 0.6) + D(o, "st", 0.08) * (n - 1),
       run: (tl, els, at, o) => tl.fromTo(els, { opacity: 0 }, { opacity: 1, duration: D(o, "d", 0.6), stagger: D(o, "st", 0.08), ease: "power2.out" }, at),
@@ -189,13 +225,53 @@
       len: (n, o) => D(o, "d", 1.8),
       run: (tl, els, at, o) => tl.fromTo(els, { opacity: 0, letterSpacing: D(o, "from", "0.6em"), filter: "blur(8px)" }, { opacity: 1, letterSpacing: D(o, "to", "0.08em"), filter: "blur(0px)", duration: D(o, "d", 1.8), ease: "power3.out" }, at),
     },
+    // Volume-preserving Squash & Stretch pop with 3-frame anticipation compression (Alan Becker + Ben Marriott)
     pop: {
-      len: (n, o) => D(o, "d", 0.7) + D(o, "st", 0.09) * (n - 1),
-      run: (tl, els, at, o) => tl.fromTo(els, { opacity: 0, scale: D(o, "from", 0.6) }, { opacity: 1, scale: 1, duration: D(o, "d", 0.7), stagger: D(o, "st", 0.09), ease: D(o, "ease", "back.out(1.7)") }, at),
+      len: (n, o) => D(o, "d", 0.72) + D(o, "st", 0.09) * (n - 1),
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 0.72), st = D(o, "st", 0.09);
+        gsap.set(els, { opacity: 0, scaleX: 1.12, scaleY: 0.89, y: 8 });
+        tl.to(els, {
+          keyframes: [
+            { opacity: 1, scaleX: 1.14, scaleY: 0.88, y: 10, duration: d * 0.16, ease: "power2.in" }, // 3-frame anticipation crouch (volume 1.14*0.88=1.00)
+            { scaleX: 0.94, scaleY: 1.06, y: -4, duration: d * 0.42, ease: "expo.out" },              // upward stretch & overshoot (volume 0.94*1.06=1.00)
+            { scaleX: 1.02, scaleY: 0.98, y: 1, duration: d * 0.22, ease: "sine.inOut" },             // follow-through settle
+            { scaleX: 1, scaleY: 1, y: 0, duration: d * 0.20, ease: "power2.out" },
+          ],
+          stagger: st,
+        }, at);
+      },
     },
+    // Layered entrance with Overlapping Action & Follow-Through on child elements (nothing stops all at once)
     rise: {
       len: (n, o) => D(o, "d", 1.0) + D(o, "st", 0.12) * (n - 1),
-      run: (tl, els, at, o) => tl.fromTo(els, { opacity: 0, yPercent: D(o, "y", 18), rotationX: D(o, "rx", 18), transformPerspective: 1600 }, { opacity: 1, yPercent: 0, rotationX: 0, duration: D(o, "d", 1.0), stagger: D(o, "st", 0.12), ease: "expo.out" }, at),
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 1.0), st = D(o, "st", 0.12);
+        tl.fromTo(els, { opacity: 0, yPercent: D(o, "y", 18), rotationX: D(o, "rx", 14), scaleX: 0.97, scaleY: 1.03, transformPerspective: 1600 }, { opacity: 1, yPercent: 0, rotationX: 0, scaleX: 1, scaleY: 1, duration: d, stagger: st, ease: "expo.out" }, at);
+        // Overlapping drag on inner headings, text & badges (2-4 frame offset)
+        els.forEach((el, idx) => {
+          const kids = el.querySelectorAll("h3, p, li, .ts-head, .pv-hdr, .tm-mv");
+          if (kids.length) {
+            tl.fromTo(kids, { y: 12, opacity: 0 }, { y: 0, opacity: 1, duration: d * 0.65, stagger: 0.045, ease: "power3.out" }, at + idx * st + 0.08);
+          }
+        });
+      },
+    },
+    // Ben Marriott 3-Frame Slingshot Anticipation Move (pulls backward before shooting into place)
+    slingshot: {
+      len: (n, o) => D(o, "d", 0.78) + D(o, "st", 0.09) * (n - 1),
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 0.78), st = D(o, "st", 0.09), dir = D(o, "dir", 1);
+        gsap.set(els, { opacity: 0, x: -36 * dir, rotation: -2.5 * dir });
+        tl.to(els, {
+          keyframes: [
+            { opacity: 1, x: -52 * dir, rotation: -4.5 * dir, scaleX: 0.94, scaleY: 1.06, duration: d * 0.24, ease: "power2.out" }, // wind-up in opposite direction
+            { x: 10 * dir, rotation: 1.2 * dir, scaleX: 1.04, scaleY: 0.96, duration: d * 0.44, ease: "expo.out" },                 // high-velocity release + overshoot
+            { x: 0, rotation: 0, scaleX: 1, scaleY: 1, duration: d * 0.32, ease: "power3.out" },                                    // follow-through settle
+          ],
+          stagger: st,
+        }, at);
+      },
     },
     scaleIn: {
       len: (n, o) => D(o, "d", 1.1) + D(o, "st", 0.1) * (n - 1),
@@ -247,6 +323,109 @@
     strike: {
       len: (n, o) => D(o, "d", 0.4) + 0.12 * (n - 1),
       run: (tl, els, at, o) => tl.fromTo(units(els, ".strike"), { scaleX: 0 }, { scaleX: 1, duration: D(o, "d", 0.4), stagger: 0.12, ease: "power3.inOut" }, at),
+    },
+    lineDraw: {
+      len: (n, o) => D(o, "d", 1.8),
+      run: (tl, els, at, o) => els.forEach((plot) => {
+        const vals = JSON.parse(plot.dataset.values || "[]");
+        const top = +plot.dataset.top || Math.max(...vals, 1);
+        const w = plot.offsetWidth || 800, h = plot.offsetHeight || 360;
+        if (!vals.length || !w || !h) return;
+        const pts = vals.map((v, i) => [vals.length === 1 ? w : (i / (vals.length - 1)) * w, h - (v / top) * h]);
+        const d = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("");
+        const svg = plot.querySelector("svg");
+        if (!svg) return;
+        svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+        const line = svg.querySelector(".dl-line"), area = svg.querySelector(".dl-area");
+        if (line) line.setAttribute("d", d);
+        if (area) area.setAttribute("d", `${d}L${w},${h}L0,${h}Z`);
+        svg.querySelectorAll(".dl-pt").forEach((c, i) => { if (pts[i]) { c.setAttribute("cx", pts[i][0]); c.setAttribute("cy", pts[i][1]); } });
+        const L = line && line.getTotalLength ? line.getTotalLength() : 1000;
+        if (line) line.style.strokeDasharray = `${L} ${L}`;
+        const dot = plot.querySelector(".dl-dot"), end = plot.querySelector(".dl-end");
+        const last = pts[pts.length - 1];
+        if (end && last) { end.style.left = last[0] + "px"; end.style.top = last[1] + "px"; }
+        const p = { v: 0 };
+        const draw = () => {
+          if (!line) return;
+          line.style.strokeDashoffset = L * (1 - p.v);
+          if (line.getPointAtLength) {
+            const q = line.getPointAtLength(L * p.v);
+            if (dot) { dot.style.left = q.x + "px"; dot.style.top = q.y + "px"; }
+          }
+        };
+        draw();
+        const dur = D(o, "d", 1.8);
+        tl.fromTo(p, { v: 0 }, { v: 1, duration: dur, ease: "power2.inOut", onUpdate: draw, onReverseComplete: draw }, at);
+        if (area) tl.fromTo(area, { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power1.out" }, at + dur * 0.6);
+        tl.fromTo(svg.querySelectorAll(".dl-pt"), { scale: 0, transformOrigin: "50% 50%", transformBox: "fill-box" }, { scale: 1, duration: 0.3, stagger: dur / Math.max(1, vals.length), ease: "back.out(3)" }, at);
+        if (dot) tl.fromTo(dot, { opacity: 0 }, { opacity: 1, duration: 0.2 }, at);
+      }),
+    },
+    ring: {
+      len: (n, o) => D(o, "d", 1.6),
+      run: (tl, els, at, o) => els.forEach((arc) => {
+        const C = 2 * Math.PI * 42;
+        const share = Math.max(0, Math.min(1, +arc.dataset.share || 0));
+        arc.style.strokeDasharray = `${C} ${C}`;
+        tl.fromTo(arc, { strokeDashoffset: C }, { strokeDashoffset: C * (1 - share), duration: D(o, "d", 1.6), ease: "expo.out" }, at);
+      }),
+    },
+    // 3Blue1Brown frame-coupled oscillator + waveform + s-plane pole updater
+    mathOsc: {
+      len: (n, o) => D(o, "d", 2.4),
+      run: (tl, els, at, o, c, s) => els.forEach((stage) => {
+        const sigma = parseFloat(stage.dataset.sigma || "0.35");
+        const wd = parseFloat(stage.dataset.wd || "3.2");
+        const wExt = parseFloat(stage.dataset.wext || "1.85");
+        const pTrans = stage.querySelector(".m3-trans");
+        const pSteady = stage.querySelector(".m3-steady");
+        const pTotal = stage.querySelector(".m3-total");
+        const springPath = stage.querySelector(".m3-spring");
+        const massBox = stage.querySelector(".m3-mass");
+        const dot = stage.querySelector(".m3-tip");
+        const W = 560, midY = 98, amp = 46;
+        const calcTr = (t) => Math.exp(-sigma * t) * Math.cos(wd * t);
+        const calcSt = (t) => 0.72 * Math.cos(wExt * t - 0.4);
+        const calcTot = (t) => calcTr(t) + calcSt(t);
+        const state = { p: 0 };
+        const draw = () => {
+          const prog = Math.max(0.02, state.p);
+          const maxX = Math.round(W * prog);
+          let dTr = "", dSt = "", dTot = "", lastX = 40, lastY = midY;
+          for (let px = 0; px <= maxX; px += 4) {
+            const tm = (px / W) * 12.0;
+            const x = 40 + px;
+            const y1 = midY - calcTr(tm) * amp;
+            const y2 = midY - calcSt(tm) * amp;
+            const y3 = midY - calcTot(tm) * amp;
+            dTr += `${px === 0 ? "M" : "L"}${x.toFixed(1)},${y1.toFixed(1)}`;
+            dSt += `${px === 0 ? "M" : "L"}${x.toFixed(1)},${y2.toFixed(1)}`;
+            dTot += `${px === 0 ? "M" : "L"}${x.toFixed(1)},${y3.toFixed(1)}`;
+            lastX = x; lastY = y3;
+          }
+          if (pTrans) pTrans.setAttribute("d", dTr);
+          if (pSteady) pSteady.setAttribute("d", dSt);
+          if (pTotal) pTotal.setAttribute("d", dTot);
+          if (dot) { dot.setAttribute("cx", lastX.toFixed(1)); dot.setAttribute("cy", lastY.toFixed(1)); }
+          const curT = prog * 12.0;
+          const disp = calcTot(curT);
+          const massX = 320 + disp * 95;
+          const anchorX = 60, spY = 238;
+          let spD = `M${anchorX},${spY}`;
+          const coils = 14;
+          for (let i = 1; i <= coils; i++) {
+            const cx = anchorX + ((massX - 34 - anchorX) * i) / coils;
+            const cy = spY + (i === coils ? 0 : (i % 2 === 0 ? -18 : 18));
+            spD += `L${cx.toFixed(1)},${cy.toFixed(1)}`;
+          }
+          if (springPath) springPath.setAttribute("d", spD);
+          if (massBox) { massBox.setAttribute("x", (massX - 34).toFixed(1)); massBox.setAttribute("y", "212"); }
+        };
+        draw();
+        const runDur = s ? Math.max(2.0, s.dur - 0.6) : D(o, "d", 3.2);
+        tl.fromTo(state, { p: 0.02 }, { p: 1, duration: runDur, ease: "none", onUpdate: draw, onStart: draw, onReverseComplete: draw }, at);
+      }),
     },
     // continuous moves (len 0: they don't delay the hero frame)
     float: {
@@ -525,6 +704,310 @@
         return e;
       },
     },
+    line: {
+      fields: ["kicker", "title", "values", "labels", "unit", "prefix", "note"],
+      min: (s) => Math.max(3.2, (s.title ? readSecs(s.title) * 0.6 : 0) + 2.2),
+      markup: (s, c) => {
+        const num = (v) => (typeof v === "number" ? v : parseFloat(String(v).replace(/[^\d.\-]/g, "")) || 0);
+        const vals = (s.values || []).map(num);
+        const top = Math.max(1, ...vals) * 1.1;
+        const labels = s.labels || [];
+        const last = vals.length ? s.values[s.values.length - 1] : 0;
+        const p = MD.parseNumber(`${s.prefix || ""}${last}${s.unit || ""}`) || { pre: "", to: num(last), dec: 0, suf: "", sep: false };
+        const endVal = `<span class="pre">${esc(p.pre)}</span><span class="val" data-to="${p.to}" data-dec="${p.dec}" data-sep="${p.sep ? 1 : 0}">${MD.formatNumber(p.to, p.dec, p.sep)}</span><span class="suf">${esc(p.suf)}</span>`;
+        return `<div class="k k-line"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="16">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="dt-frame"><div class="plot dl-plot" data-values="${esc(JSON.stringify(vals))}" data-top="${top}"><svg preserveAspectRatio="none"><path class="dl-area"/><path class="dl-line"/>${vals.map(() => '<circle class="dl-pt" r="5"/>').join("")}</svg><i class="dl-dot"></i><div class="dl-end"><div class="bv">${endVal}</div></div></div><div class="dl-x">${labels.map((l) => `<span>${esc(l)}</span>`).join("")}</div></div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        let t = 0.1;
+        if (s.kicker) e.push(ev(0.05, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) { const te = titleEvent(c, s, 0.1, s.title, ".title"); e.push(te); t = after(te) - 0.3; }
+        e.push(ev(t, ".dl-x span", "fadeIn", Math.max(1, (s.labels || []).length), { st: 0.05, d: 0.4 }));
+        e.push(ev(t + 0.2, ".dl-plot", "lineDraw", 1, { d: 1.8 }, sfxOf(c, "bars"), "start"));
+        e.push(ev(t + 0.2, ".dl-end .val", "count", 1, { d: 1.8 }));
+        return e;
+      },
+    },
+    donut: {
+      fields: ["kicker", "title", "value", "label"],
+      min: (s) => Math.max(2.8, 1.8 + readSecs(s.label || "") * 0.5),
+      markup: (s, c) => {
+        const p = MD.parseNumber(s.value) || { pre: "", to: 0, dec: 0, suf: "%", sep: false };
+        const share = /%/.test(p.suf) ? p.to / 100 : Math.min(1, p.to);
+        const num = `<span class="pre">${esc(p.pre)}</span><span class="val" data-to="${p.to}" data-dec="${p.dec}" data-sep="${p.sep ? 1 : 0}">${MD.formatNumber(p.to, p.dec, p.sep)}</span><span class="suf">${esc(p.suf)}</span>`;
+        return `<div class="k k-donut"><div class="dd-wrap"><div class="dd-ring"><svg viewBox="0 0 100 100"><circle class="dd-track" cx="50" cy="50" r="42"/><circle class="dd-arc" cx="50" cy="50" r="42" data-share="${share.toFixed(4)}"/></svg><div class="dd-num">${num}</div></div><div class="dd-copy">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="20">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.label ? `<p class="label">${MD.tx(s.label)}</p>` : ""}</div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [ev(0.1, ".dd-ring", "scaleIn", 1, { d: 0.7 }), ev(0.25, ".dd-arc", "ring", 1, { d: 1.6 }, sfxOf(c, "count"), "end"), ev(0.25, ".dd-num .val", "count", 1, { d: 1.6 })];
+        if (s.kicker) e.push(ev(0.2, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.3, s.title, ".title"));
+        if (s.label) e.push(ev(0.85, ".label", T(c, "body", "fadeUp"), MD.count(s.label)));
+        return e;
+      },
+    },
+    rank: {
+      fields: ["kicker", "title", "items", "unit", "prefix"],
+      min: (s) => Math.max(3.0, (s.title ? readSecs(s.title) * 0.5 : 0) + (s.items || []).length * 0.28 + 1.2),
+      markup: (s, c) => {
+        const num = (v) => (typeof v === "number" ? v : parseFloat(String(v).replace(/[^\d.\-]/g, "")) || 0);
+        const items = (s.items || []).map((x) => (typeof x === "string" ? { label: x, value: 0 } : x));
+        const max = Math.max(1, ...items.map((x) => Math.abs(num(x.value))));
+        const hi = items.reduce((bi, x, i) => (num(x.value) > num((items[bi] || {}).value) ? i : bi), 0);
+        return `<div class="k k-rank"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="16">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="rk-rows">${items.map((x, i) => {
+          const p = MD.parseNumber(`${s.prefix || ""}${x.display || x.value}${s.unit || ""}`) || { pre: "", to: num(x.value), dec: 0, suf: "", sep: false };
+          return `<div class="rk${(x.highlight != null ? x.highlight : i === hi) ? " hi" : ""}" data-i="${i}"><span class="rl">${esc(x.label)}</span><span class="rt"><i class="rf" style="--v:${(Math.abs(num(x.value)) / max).toFixed(4)}"></i></span><span class="bv"><span class="pre">${esc(p.pre)}</span><span class="val" data-to="${p.to}" data-dec="${p.dec}" data-sep="${p.sep ? 1 : 0}">${MD.formatNumber(p.to, p.dec, p.sep)}</span><span class="suf">${esc(p.suf)}</span></span></div>`;
+        }).join("")}</div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        let t = 0.1;
+        if (s.kicker) e.push(ev(0.05, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) { const te = titleEvent(c, s, 0.1, s.title, ".title"); e.push(te); t = after(te) - 0.3; }
+        const n = (s.items || []).length;
+        e.push(ev(t, ".rl", "fadeUp", n, { y: 10, st: 0.08, d: 0.5 }));
+        e.push(ev(t + 0.15, ".rf", "growX", n, { d: 1.1, st: 0.09 }, sfxOf(c, "bars"), "start"));
+        e.push(ev(t + 0.15, ".bv", "fadeIn", n, { st: 0.09, d: 0.4 }));
+        e.push(ev(t + 0.15, ".val", "count", n, { d: 1.1 + 0.09 * (n - 1) }));
+        return e;
+      },
+    },
+    // Polymathic Investigative Director Kind 1: Counter-Intuitive Premise Inversion (Myth vs Empirical Anomaly)
+    anomaly: {
+      label: "Premise Inversion",
+      fields: ["kicker", "myth", "text", "value", "label"],
+      min: (s) => Math.max(3.4, readSecs(s.myth || "") * 0.7 + readSecs(s.text || s.title || "") + 1.0),
+      markup: (s, c) => {
+        const claim = s.text || s.title || "";
+        const p = s.value ? MD.parseNumber(s.value) : null;
+        const badge = s.value ? `<div class="an-stat"><div class="an-val">${p ? `<span class="pre">${esc(p.pre)}</span><span class="val" data-to="${p.to}" data-dec="${p.dec}" data-sep="${p.sep ? 1 : 0}">${MD.formatNumber(p.to, p.dec, p.sep)}</span><span class="suf">${esc(p.suf)}</span>` : esc(s.value)}</div>${s.label ? `<div class="an-lbl">${MD.tx(s.label)}</div>` : ""}</div>` : "";
+        return `<div class="k k-anomaly"><div class="box">${kicker(s, c)}${s.myth ? `<div class="an-myth"><span class="an-tag">COMMON ASSUMPTION</span><p class="an-myth-tx"><span class="tx">${MD.tx(s.myth)}<i class="strike"></i></span></p></div>` : ""}<div class="an-truth"><span class="an-tag truth">EMPIRICAL ANOMALY</span><h2 class="title" data-fit data-maxh="${s.value ? 34 : 46}">${MD.tx(claim, { split: splitFor(T(c, "title", "maskUp")) })}</h2>${badge}</div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.myth) {
+          e.push(ev(0.15, ".an-myth", "fadeUp", 1, { y: 18 }));
+          e.push(ev(0.85, ".an-myth", "strike", 1, { d: 0.45 }, sfxOf(c, "strike") || "scratch", "start"));
+          t = 1.15;
+        }
+        e.push(ev(t, ".an-truth .an-tag", "fadeIn", 1, { d: 0.35 }));
+        const claim = s.text || s.title || "";
+        const te = titleEvent(c, s, t + 0.1, claim, ".title");
+        e.push(te, ...emphEvents(s, c, claim, ".title", after(te) - 0.2));
+        if (s.value) {
+          e.push(ev(t + 0.35, ".an-stat", T(c, "card", "pop"), 1, {}, sfxOf(c, "count") || "thump", "start"));
+          if (MD.parseNumber(s.value)) e.push(ev(t + 0.35, ".an-stat .val", "count", 1, { d: 1.4 }));
+        }
+        return e;
+      },
+    },
+    // Polymathic Investigative Director Kind 2: The Telescoping Scale Jump (Micro -> Meso -> Macro)
+    telescope: {
+      label: "Telescoping Scale Jump",
+      fields: ["kicker", "title", "items"],
+      min: (s) => Math.max(3.8, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.8),
+      markup: (s, c) => {
+        const raw = s.scales || s.items || [
+          "10⁻⁷ m | Micro Object | Tactile sensory anchor",
+          "10⁰ m | Physical Law | Mechanical coupling",
+          "10⁷ m | Macro System | Geopolitical architecture",
+        ];
+        const tiers = ["MICRO ANCHOR", "PHYSICAL MECHANISM", "MACRO ARCHITECTURE"];
+        const nodes = raw.slice(0, 4).map((it, i) => {
+          if (typeof it === "string") {
+            const parts = it.split("|").map((x) => x.trim());
+            if (parts.length >= 3) return { scale: parts[0], title: parts[1], text: parts.slice(2).join(" ") };
+            if (parts.length === 2) return { scale: tiers[i] || `10^${i * 4}`, title: parts[0], text: parts[1] };
+            return { scale: tiers[i] || `STAGE 0${i + 1}`, title: parts[0], text: "" };
+          }
+          return { scale: it.scale || tiers[i] || `STAGE 0${i + 1}`, title: it.title || it.label || "", text: it.text || it.sub || "" };
+        });
+        return `<div class="k k-telescope"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="18">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ts-stage"><svg class="ts-rings" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet"><circle class="ts-c c1" cx="100" cy="110" r="32"/><circle class="ts-c c2" cx="300" cy="110" r="58"/><circle class="ts-c c3" cx="500" cy="110" r="88"/><line class="ts-ln" x1="132" y1="110" x2="242" y2="110"/><line class="ts-ln" x1="358" y1="110" x2="412" y2="110"/></svg><div class="ts-grid">${nodes.map((nd, i) => `<div class="ts-card" data-i="${i}"><div class="ts-head"><span class="ts-idx">0${i + 1}</span><span class="ts-mag">${esc(nd.scale)}</span></div><h3 class="ts-ct">${MD.tx(nd.title)}</h3>${nd.text ? `<p class="ts-cx">${MD.tx(nd.text)}</p>` : ""}</div>`).join("")}</div></div></div></div>`;
+      },
+      plan: (s, c, dur) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) { const te = titleEvent(c, s, 0.12, s.title, ".title"); e.push(te); t = after(te) - 0.25; }
+        e.push(ev(t, ".ts-rings", "draw", 1, { d: 1.5 }));
+        const n = Math.min(4, (s.scales || s.items || [1, 2, 3]).length);
+        const gap = Math.min(0.65, Math.max(0.32, (dur - t - 1.2) / Math.max(1, n)));
+        for (let i = 0; i < n; i++) {
+          e.push(ev(t + 0.15 + i * gap, `.ts-card[data-i="${i}"]`, T(c, "card", "rise"), 1, {}, sfxOf(c, "card") || "blip", "start"));
+        }
+        return e;
+      },
+    },
+    // Polymathic Investigative Director Kind 3: The "McPhee Pivot" (Structural Braiding of 2 Timelines)
+    pivot: {
+      label: "McPhee Structural Pivot",
+      fields: ["kicker", "title", "before", "after"],
+      min: (s) => Math.max(3.6, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.4),
+      markup: (s, c) => {
+        const A = s.threadA || s.before || { label: "TIMELINE A · PHYSICAL SYSTEM", items: ["Micro-scale mechanical tension"] };
+        const B = s.threadB || s.after || { label: "TIMELINE B · GEOPOLITICAL SHIFT", items: ["Macro-scale structural rupture"] };
+        const renderCol = (cls, d, defLbl) => {
+          const items = Array.isArray(d.items) ? d.items : (d.text ? [d.text] : []);
+          return `<div class="pv-col ${cls}"><div class="pv-hdr"><span class="pv-lbl">${esc(d.label || defLbl)}</span>${d.time || d.year ? `<span class="pv-yr">${esc(d.time || d.year)}</span>` : ""}</div>${d.title ? `<h3 class="pv-sub">${MD.tx(d.title)}</h3>` : ""}<ul>${items.map((x, i) => `<li data-i="${i}">${MD.tx(x)}</li>`).join("")}</ul></div>`;
+        };
+        return `<div class="k k-pivot"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="18">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="pv-braid">${renderCol("pv-a", A, "TIMELINE A")}<div class="pv-lock"><i class="pv-line"></i><span class="pv-node">PIVOT</span><i class="pv-line"></i></div>${renderCol("pv-b", B, "TIMELINE B")}</div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) { const te = titleEvent(c, s, 0.12, s.title, ".title"); e.push(te); t = after(te) - 0.3; }
+        e.push(ev(t, ".pv-a", "slingshot", 1, { dir: 1, d: 0.75 }, sfxOf(c, "card") || "swish", "start"));
+        e.push(ev(t + 0.38, ".pv-lock", "pop", 1, { d: 0.52 }, "thump", "start"));
+        e.push(ev(t + 0.52, ".pv-b", "slingshot", 1, { dir: -1, d: 0.75 }, sfxOf(c, "card") || "swish", "start"));
+        return e;
+      },
+    },
+    // Polymathic Investigative Director Kind 4: Signature Telemetry Overlay & Vector Schematic
+    telemetry: {
+      label: "Telemetry & Vector Schematic",
+      fields: ["kicker", "title", "sub", "media", "callouts"],
+      min: (s) => Math.max(3.4, (s.title ? readSecs(s.title) * 0.6 : 0) + (s.callouts || []).length * 0.45 + 1.4),
+      markup: (s, c) => {
+        const diagType = s.diagram || "phase";
+        const svgDiag = () => {
+          if (diagType === "optics") {
+            return `<svg class="tm-svg" viewBox="0 0 640 360"><rect class="tm-box" x="16" y="16" width="608" height="328" rx="6"/><ellipse class="tm-lens" cx="260" cy="180" rx="28" ry="125"/><ellipse class="tm-lens l2" cx="410" cy="180" rx="22" ry="105"/><path class="tm-ray r1" d="M40,95 L260,110 L410,165 L590,180"/><path class="tm-ray r2" d="M40,180 L260,180 L410,180 L590,180"/><path class="tm-ray r3" d="M40,265 L260,250 L410,195 L590,180"/><circle class="tm-focal" cx="590" cy="180" r="9"/><line class="tm-ret" x1="590" y1="40" x2="590" y2="320"/></svg>`;
+          }
+          if (diagType === "spectrum") {
+            return `<svg class="tm-svg" viewBox="0 0 640 360"><rect class="tm-box" x="16" y="16" width="608" height="328" rx="6"/><path class="tm-ray r1" d="M40,240 Q95,80 140,210 T240,110 T340,230 T440,70 T540,195 L600,220"/><path class="tm-ray r2" d="M40,280 Q110,190 180,250 T320,160 T460,240 L600,275"/><line class="tm-ret" x1="440" y1="36" x2="440" y2="324"/><circle class="tm-focal" cx="440" cy="70" r="8"/></svg>`;
+          }
+          if (diagType === "network") {
+            return `<svg class="tm-svg" viewBox="0 0 640 360"><rect class="tm-box" x="16" y="16" width="608" height="328" rx="6"/><line class="tm-ray r2" x1="130" y1="110" x2="310" y2="95"/><line class="tm-ray r2" x1="130" y1="110" x2="240" y2="255"/><line class="tm-ray r1" x1="310" y1="95" x2="495" y2="165"/><line class="tm-ray r1" x1="240" y1="255" x2="495" y2="165"/><line class="tm-ray r3" x1="310" y1="95" x2="240" y2="255"/><circle class="tm-node" cx="130" cy="110" r="14"/><circle class="tm-node" cx="310" cy="95" r="18"/><circle class="tm-node" cx="240" cy="255" r="15"/><circle class="tm-focal" cx="495" cy="165" r="22"/></svg>`;
+          }
+          return `<svg class="tm-svg" viewBox="0 0 640 360"><rect class="tm-box" x="16" y="16" width="608" height="328" rx="6"/><path class="tm-ray r1" d="M120,260 C110,90 290,50 320,180 C350,310 530,270 520,110 C510,40 360,70 320,180 C280,290 140,300 190,155"/><circle class="tm-focal" cx="320" cy="180" r="8"/><circle class="tm-node" cx="520" cy="110" r="7"/><line class="tm-ret" x1="320" y1="32" x2="320" y2="328"/><line class="tm-ret" x1="48" y1="180" x2="592" y2="180"/></svg>`;
+        };
+        const visual = s.media ? `<div class="tm-media">${MD.media(s.media, c)}<i class="tm-crosshair"></i></div>` : `<div class="tm-schem">${svgDiag()}</div>`;
+        const calls = (s.callouts || []).map((x, i) => `<div class="tm-call" data-i="${i}"><span class="tm-cidx">0${i + 1}</span><span>${MD.tx(x)}</span></div>`).join("");
+        const metrics = (s.metrics || []).map((m, i) => `<div class="tm-met" data-i="${i}"><span class="tm-ml">${esc(m.label || "")}</span><span class="tm-mv">${esc(m.value || "")}</span></div>`).join("");
+        return `<div class="k k-telemetry"><div class="tm-layout"><div class="tm-copy">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="38">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}${metrics ? `<div class="tm-metrics">${metrics}</div>` : ""}${calls ? `<div class="tm-calls">${calls}</div>` : ""}</div><div class="tm-stage">${visual}</div></div></div>`;
+      },
+      plan: (s, c, dur) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) { const te = titleEvent(c, s, 0.15, s.title, ".title"); e.push(te); t = after(te) - 0.25; }
+        if (s.sub) e.push(ev(Math.max(0.45, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
+        if (s.media) e.push(ev(0.15, ".tm-media", T(c, "media", "scaleIn"), 1, {}, sfxOf(c, "media"), "start"));
+        else e.push(ev(0.15, ".tm-schem", "draw", 1, { d: 1.6 }, sfxOf(c, "media") || "riser-air", "start"));
+        const nm = (s.metrics || []).length;
+        if (nm) e.push(ev(t + 0.2, ".tm-met", "fadeUp", nm, { st: 0.1 }));
+        const nc = (s.callouts || []).length;
+        const gap = nc ? Math.min(0.65, Math.max(0.3, (dur - t - 1.1) / nc)) : 0;
+        (s.callouts || []).forEach((x, i) => e.push(ev(t + 0.35 + i * gap, `.tm-call[data-i="${i}"]`, T(c, "callout", "pop"), 1, {}, sfxOf(c, "callout") || "blip", "start")));
+        return e;
+      },
+    },
+    // Vox Mixed-Media & Cutout Collage Kind (supports single or layered JPG/PNG cutouts + raw MP4 footage + SVG chalk annotations)
+    collage: {
+      label: "Vox Mixed-Media Collage",
+      fields: ["kicker", "title", "sub", "media", "callouts"],
+      min: (s) => Math.max(3.4, (s.title ? readSecs(s.title) * 0.6 : 0) + (s.callouts || []).length * 0.4 + 1.4),
+      markup: (s, c) => {
+        const ms = [].concat(s.media || []).filter(Boolean).slice(0, 3);
+        const isColor = s.color ? " is-color" : "";
+        const annType = s.annotation || "circle";
+        const chalkSvg = annType === "arrow"
+          ? `<svg class="vx-chalk" viewBox="0 0 320 220"><path class="vx-ch-path" d="M35,175 Q140,45 255,95"/><path class="vx-ch-path" d="M230,72 L262,98 L224,114"/></svg>`
+          : `<svg class="vx-chalk" viewBox="0 0 320 220"><path class="vx-ch-path" d="M160,26 C245,22 296,62 292,112 C288,165 232,198 154,194 C75,190 26,154 30,104 C34,56 92,28 172,32"/></svg>`;
+        const stageHtml = ms.length
+          ? `<div class="vx-stack n${ms.length}">${ms.map((m, i) => `<div class="vx-cutout-card c${i}${isColor}" data-i="${i}">${MD.media(m, c)}</div>`).join("")}${chalkSvg}</div>`
+          : `<div class="vx-stack n1"><div class="vx-cutout-card c0"><svg class="vx-archival-svg" viewBox="0 0 480 320"><rect width="480" height="320" fill="#EAE4D3"/><circle cx="240" cy="145" r="78" fill="#18181B"/><path d="M90,305 L165,165 L235,235 L315,130 L405,305 Z" fill="#3F3C37"/><rect x="34" y="24" width="140" height="26" fill="#FACC15"/><text x="44" y="42" font-family="monospace" font-size="14" font-weight="bold" fill="#18181B">EXHIBIT A // CUTOUT</text></svg></div>${chalkSvg}</div>`;
+        const calls = (s.callouts || []).map((x, i) => `<div class="vx-call" data-i="${i}"><span class="vx-cno">#0${i + 1}</span><span>${MD.tx(x)}</span></div>`).join("");
+        return `<div class="k k-collage"><div class="vx-layout"><div class="vx-copy">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="40">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}${calls ? `<div class="vx-calls">${calls}</div>` : ""}</div><div class="vx-stage">${stageHtml}</div></div></div>`;
+      },
+      plan: (s, c, dur) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) {
+          const te = titleEvent(c, s, 0.14, s.title, ".title");
+          e.push(te, ...emphEvents(s, c, s.title, ".title", after(te) - 0.25));
+          t = after(te) - 0.2;
+        }
+        if (s.sub) e.push(ev(Math.max(0.45, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
+        const ms = [].concat(s.media || ["default"]).slice(0, 3);
+        ms.forEach((_, i) => e.push(ev(0.18 + i * 0.18, `.vx-cutout-card[data-i="${i}"], .vx-cutout-card.c${i}`, T(c, "media", "pop"), 1, {}, sfxOf(c, "media") || "card-place", "start")));
+        e.push(ev(Math.max(0.65, t + 0.2), ".vx-chalk", "draw", 1, { d: 0.95 }, "scratch", "start"));
+        const nc = (s.callouts || []).length;
+        const gap = nc ? Math.min(0.55, Math.max(0.28, (dur - t - 1.0) / nc)) : 0;
+        (s.callouts || []).forEach((x, i) => e.push(ev(t + 0.3 + i * gap, `.vx-call[data-i="${i}"]`, T(c, "callout", "pop"), 1, {}, sfxOf(c, "callout") || "tap", "start")));
+        return e;
+      },
+    },
+    // 3Blue1Brown Mathematical Animation Engine Kind (Semantic Equations, Frame-Coupled Oscillator & s-Plane Poles)
+    math: {
+      label: "3Blue1Brown Math & s-Plane",
+      fields: ["kicker", "title", "equation", "transform", "callouts"],
+      min: (s) => Math.max(4.0, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.8),
+      markup: (s, c) => {
+        const eq1 = s.equation || "m x''(t) + μ x'(t) + k x(t) = F₀ cos(ω t)";
+        const eq2 = s.transform || "X(s) = F₀ s / [(m s² + μ s + k)(s² + ω²)]";
+        const sigma = s.sigma ?? 0.35, wd = s.wd ?? 3.2, wExt = s.wExt ?? 1.85;
+        const calls = (s.callouts || [
+          "x(t) Total Response (#58C4DD)",
+          "Transient Decay e^(-σt) (#F0AC5F)",
+          "Steady Forcing cos(ωt) (#FFFF00)",
+          "s-Plane Poles -σ ± iω (#FC6255)",
+        ]).map((x, i) => `<div class="m3-leg" data-i="${i}"><i class="m3-swatch s${i % 5}"></i><span>${MD.tx(x)}</span></div>`).join("");
+        return `<div class="k k-math"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="15">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="m3-eqbar"><div class="m3-eq eq1">${esc(eq1)}</div><span class="m3-arr">⟶</span><div class="m3-eq eq2">${esc(eq2)}</div></div><div class="m3-stage" data-sigma="${sigma}" data-wd="${wd}" data-wext="${wExt}"><svg class="m3-wave-svg" viewBox="0 0 620 330"><line class="m3-axis" x1="40" y1="98" x2="600" y2="98"/><line class="m3-axis" x1="40" y1="18" x2="40" y2="178"/><text x="555" y="90" fill="#8C8881" font-family="monospace" font-size="13">t (sec)</text><text x="48" y="32" fill="#58C4DD" font-family="monospace" font-size="13">x(t)</text><path class="m3-trans" d=""/><path class="m3-steady" d=""/><path class="m3-total" d=""/><circle class="m3-tip" cx="40" cy="98" r="6"/><line class="m3-wall" x1="60" y1="204" x2="60" y2="272"/><path class="m3-spring" d="M60,238 L286,238"/><rect class="m3-mass" x="286" y="212" width="68" height="52" rx="6"/><text x="90" y="200" fill="#F0AC5F" font-family="monospace" font-size="12">COUPLED SPRING-MASS m·x'' + μ·x' + k·x</text></svg><svg class="m3-splane-svg" viewBox="0 0 320 330"><rect class="m3-sp-bg" x="15" y="15" width="290" height="300" rx="6"/><line class="m3-sp-grid" x1="15" y1="90" x2="305" y2="90"/><line class="m3-sp-grid" x1="15" y1="240" x2="305" y2="240"/><line class="m3-sp-grid" x1="95" y1="15" x2="95" y2="315"/><line class="m3-sp-grid" x1="255" y1="15" x2="255" y2="315"/><line class="m3-axis" x1="15" y1="165" x2="305" y2="165"/><line class="m3-axis" x1="195" y1="15" x2="195" y2="315"/><text x="262" y="156" fill="#8C8881" font-family="monospace" font-size="12">Re(s)</text><text x="202" y="34" fill="#8C8881" font-family="monospace" font-size="12">Im(s)</text><circle class="m3-pole-ring" cx="125" cy="78" r="16"/><circle class="m3-pole-ring" cx="125" cy="252" r="16"/><circle class="m3-pole p-damped" cx="125" cy="78" r="7"/><circle class="m3-pole p-damped" cx="125" cy="252" r="7"/><circle class="m3-pole p-forced" cx="195" cy="112" r="7"/><circle class="m3-pole p-forced" cx="195" cy="218" r="7"/></svg></div><div class="m3-legs">${calls}</div></div></div>`;
+      },
+      plan: (s, c, dur) => {
+        const e = [];
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        e.push(ev(0.2, ".m3-eq.eq1", "fadeUp", 1, { y: 14, d: 0.5 }));
+        e.push(ev(0.75, ".m3-arr, .m3-eq.eq2", "fadeUp", 2, { y: 14, st: 0.12, d: 0.55 }, "bell", "start"));
+        e.push(ev(0.3, ".m3-stage", "mathOsc", 1, { d: Math.max(2.2, dur - 0.6) }, "riser-air", "start"));
+        e.push(ev(0.5, ".m3-pole", "pop", 4, { st: 0.12 }, "blip", "start"));
+        e.push(ev(0.65, ".m3-leg", "fadeUp", 4, { st: 0.1, y: 12 }));
+        return e;
+      },
+    },
+    // Geographic Map & Route Flyover Kind (Vox / Johnny Harris / Remotion Maps style)
+    map: {
+      label: "Geographic Map & Route Flyover",
+      fields: ["kicker", "title", "sub", "origin", "dest", "routes", "metrics", "callouts"],
+      min: (s) => Math.max(3.8, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.6),
+      markup: (s, c) => {
+        const orig = s.origin || { name: "ORIGIN HUB", coord: "22.3°N, 87.3°E", x: 640, y: 215 };
+        const dest = s.dest || { name: "TARGET NODE", coord: "37.7°N, 122.4°W", x: 185, y: 165 };
+        const ox = orig.x ?? 640, oy = orig.y ?? 215;
+        const dx = dest.x ?? 185, dy = dest.y ?? 165;
+        const mx = (ox + dx) / 2, my = Math.min(oy, dy) - 85;
+        const mets = (s.metrics || [
+          { label: "ORIGIN", value: orig.coord || "22.3°N, 87.3°E" },
+          { label: "DESTINATION", value: dest.coord || "37.7°N, 122.4°W" },
+          { label: "VECTOR SPAN", value: s.distance || "12,480 KM" },
+        ]).map((m) => `<div class="mp-m"><span class="mp-ml">${esc(m.label)}</span><strong class="mp-mv">${esc(m.value)}</strong></div>`).join("");
+        const calls = (s.callouts || []).map((x, i) => `<div class="mp-call" data-i="${i}"><span class="mp-cno">0${i + 1}</span><span>${MD.tx(x)}</span></div>`).join("");
+        return `<div class="k k-map"><div class="mp-layout"><div class="mp-copy">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="34">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="mp-mets">${mets}</div>${calls ? `<div class="mp-calls">${calls}</div>` : ""}</div><div class="mp-stage"><div class="mp-cam"><svg class="mp-svg" viewBox="0 0 860 440"><defs><radialGradient id="mpGlow" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></radialGradient></defs><rect class="mp-ocean" width="860" height="440" rx="10"/><g class="mp-grid"><line x1="0" y1="110" x2="860" y2="110"/><line x1="0" y1="220" x2="860" y2="220"/><line x1="0" y1="330" x2="860" y2="330"/><line x1="215" y1="0" x2="215" y2="440"/><line x1="430" y1="0" x2="430" y2="440"/><line x1="645" y1="0" x2="645" y2="440"/></g><g class="mp-land"><path d="M95,95 L235,80 L285,155 L240,235 L180,225 L120,165 Z"/><path d="M235,250 L295,265 L315,365 L265,405 L230,335 Z"/><path d="M395,85 L495,75 L525,155 L465,180 L405,155 Z"/><path d="M415,190 L515,195 L535,315 L475,375 L425,295 Z"/><path d="M520,80 L745,75 L785,185 L715,255 L615,245 L555,175 Z"/><path d="M675,295 L775,290 L790,365 L705,380 Z"/></g><circle cx="${mx}" cy="${(oy + dy) / 2}" r="190" fill="url(#mpGlow)"/><path class="mp-route-bg" d="M${ox},${oy} Q${mx},${my} ${dx},${dy}"/><path class="mp-route" d="M${ox},${oy} Q${mx},${my} ${dx},${dy}"/><g class="mp-pin p-orig"><circle class="mp-ring" cx="${ox}" cy="${oy}" r="22"/><circle class="mp-dot" cx="${ox}" cy="${oy}" r="7"/><rect class="mp-tag" x="${ox - 68}" y="${oy + 14}" width="136" height="24" rx="4"/><text x="${ox}" y="${oy + 30}" text-anchor="middle" class="mp-txt">${esc(orig.name)}</text></g><g class="mp-pin p-dest"><circle class="mp-ring" cx="${dx}" cy="${dy}" r="26"/><circle class="mp-dot" cx="${dx}" cy="${dy}" r="8"/><rect class="mp-tag" x="${dx - 68}" y="${dy + 14}" width="136" height="24" rx="4"/><text x="${dx}" y="${dy + 30}" text-anchor="middle" class="mp-txt">${esc(dest.name)}</text></g></svg></div></div></div></div>`;
+      },
+      plan: (s, c, dur) => {
+        const e = [];
+        let t = 0.08;
+        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) {
+          const te = titleEvent(c, s, 0.14, s.title, ".title");
+          e.push(te, ...emphEvents(s, c, s.title, ".title", after(te) - 0.25));
+          t = after(te) - 0.2;
+        }
+        if (s.sub) e.push(ev(Math.max(0.45, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
+        e.push(ev(0.18, ".mp-stage", T(c, "card", "rise"), 1, {}, "whoosh", "start"));
+        e.push(ev(0.35, ".p-orig", "pop", 1, {}, "blip", "start"));
+        e.push(ev(0.55, ".mp-route", "draw", 1, { d: Math.min(2.2, dur * 0.48) }, "riser-air", "start"));
+        e.push(ev(0.55 + Math.min(2.0, dur * 0.44), ".p-dest", "pop", 1, {}, "bell", "start"));
+        e.push(ev(Math.max(0.5, t), ".mp-m", "fadeUp", 3, { st: 0.09, y: 12 }));
+        (s.callouts || []).forEach((_, i) => e.push(ev(t + 0.35 + i * 0.28, `.mp-call[data-i="${i}"]`, "pop", 1, {}, "tap", "start")));
+        return e;
+      },
+    },
     // anything the kinds above can't say: your own HTML + events, styled by the theme's tokens
     custom: {
       fields: ["html"],
@@ -538,6 +1021,15 @@
   // run(tl, out, inn, at, ov, c): at = the boundary; out/inn = the .k layers of the two scenes
   MD.transitions = {
     cut: { ov: 0, run: () => {} },
+    // Ben Marriott Scale/Velocity Match Cut: accelerates ~4% into the cut (Ease-In) and decelerates out of the cut (Ease-Out)
+    matchCut: {
+      ov: 0.32,
+      run: (tl, out, inn, at, ov) => {
+        const half = ov / 2;
+        tl.fromTo(out, { scale: 1, opacity: 1 }, { scale: 1.045, opacity: 0, duration: half, ease: "power3.in" }, at - half);
+        tl.fromTo(inn, { scale: 0.955, opacity: 0 }, { scale: 1, opacity: 1, duration: half * 1.35, ease: "expo.out" }, at - half * 0.25);
+      },
+    },
     fade: {
       ov: 0.5,
       run: (tl, out, inn, at, ov) => {
@@ -650,7 +1142,7 @@
       if (register) register(tl);
       else window.__timelines["main"] = tl;
       if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
-      if (/[?&]sb=1/.test(location.search) || P.sb || window.__MD_SB) storyboardMode(tl, P);
+      if (/[?&]sb=1/.test(location.search)) storyboardMode(tl, P);
     };
     // wait for the fonts and every image, so fitting and scrolling measure the real thing
     const imgs = Array.from(document.images).map((im) => (im.decode ? im.decode().catch(() => {}) : null));
@@ -733,9 +1225,7 @@
       }
     };
     window.MDP = { seek, duration: P.duration, ready: true };
-    const t0 = P.initialTime != null ? +P.initialTime : +(new URLSearchParams(location.search).get("t") || 0);
-    seek(t0);
-    window.addEventListener("message", (e) => { if (e.data && e.data.md === "seek" && typeof e.data.t === "number") seek(e.data.t); });
+    seek(+(new URLSearchParams(location.search).get("t") || 0));
     window.parent && window.parent.postMessage({ md: "ready" }, "*");
   }
 })(typeof window !== "undefined" ? window : globalThis);

@@ -1,5 +1,6 @@
 // compose: video.json → a HyperFrames project in <work>/build (index.html + assets). No rendering here.
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
 import crypto from "node:crypto";
@@ -11,21 +12,29 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const SKILL = path.resolve(here, "../..");
 export const RUNTIME = path.join(SKILL, "scripts/runtime");
 export const ASSETS = path.join(SKILL, "assets");
+export const CACHE_ROOT = path.join(os.tmpdir(), "motion-designer-cache-v2");
+export const CACHE_ASSETS = path.join(CACHE_ROOT, "assets");
 export const STYLES_DIR = path.join(SKILL, "styles");
 
-
-export function ensureBinaryAssets() {
-  const bundleFile = path.join(ASSETS, "binary-assets.json");
-  const testFont = path.join(ASSETS, "fonts/Inter-Variable.woff2");
-  if (fs.existsSync(testFont) || !fs.existsSync(bundleFile)) return;
-  const map = JSON.parse(fs.readFileSync(bundleFile, "utf8"));
-  for (const [rel, b64] of Object.entries(map)) {
-    const dst = path.join(SKILL, rel);
-    fs.mkdirSync(path.dirname(dst), { recursive: true });
-    if (!fs.existsSync(dst)) fs.writeFileSync(dst, Buffer.from(b64, "base64"));
+// Auto-extract bundled binary assets (.woff2, .webp, .svg) into OS temp cache so SKILL_DIR stays pure text
+try {
+  const bfile = path.join(ASSETS, "binary-assets.json");
+  if (fs.existsSync(bfile)) {
+    const map = JSON.parse(fs.readFileSync(bfile, "utf8"));
+    for (const [rel, b64] of Object.entries(map)) {
+      const dest = path.join(CACHE_ROOT, rel);
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.writeFileSync(dest, Buffer.from(b64, "base64"));
+      }
+    }
   }
-}
-ensureBinaryAssets();
+} catch {}
+const assetFile = (...segs) => {
+  const pCache = path.join(CACHE_ASSETS, ...segs);
+  if (fs.existsSync(pCache)) return pCache;
+  return path.join(ASSETS, ...segs);
+};
 
 export const FORMATS = {
   "16:9": { W: 1920, H: 1080, fmt: "landscape" },
@@ -61,7 +70,7 @@ export const FONTS = {
 const FALLBACK = { serif: "Georgia, serif", mono: "ui-monospace, Menlo, monospace", sans: "system-ui, sans-serif" };
 const famStack = (f, kind = "sans") => `"${f}", ${FALLBACK[kind]}`;
 
-const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15 };
+const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15, anomaly: 1.0, telescope: 1.0, pivot: 1.0, telemetry: 1.0 };
 const DENSE = {
   landscape: DENSE_K,
   portrait: { ...DENSE_K, list: 1.25, steps: 1.25, features: 1.2, compare: 1.2, chart: 1.25, quote: 1.15, outro: 1.25 },
@@ -92,6 +101,14 @@ const MD_count = (MDx, t) => MDx.count(t);
 export const readJSON = (f, d) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch (e) { if (d !== undefined) return d; throw new Error(`Can't read ${f}: ${e.message}`); } };
 export const writeJSON = (f, v) => { const tmp = `${f}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(v, null, 2) + "\n"); fs.renameSync(tmp, f); };
 const r3 = (x) => Math.round(x * 1000) / 1000;
+const fmtSrtTime = (sec) => {
+  const s = Math.max(0, sec);
+  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(Math.floor(s % 60)).padStart(2, "0");
+  const ms = String(Math.round((s % 1) * 1000)).padStart(3, "0");
+  return `${hh}:${mm}:${ss},${ms}`;
+};
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const hash = (s) => crypto.createHash("sha1").update(s).digest("hex").slice(0, 8);
 
@@ -166,8 +183,19 @@ export function timing(v, st, MDx, bpm) {
   const kinds = (k) => ((MDx.kinds[k] || (st.kinds && st.kinds[k])) ? { ...(MDx.kinds[k] || {}), ...((st.kinds && st.kinds[k]) || {}) } : null);
   const warn = [];
   const sc = v.scenes || [];
-  const mins = sc.map((s) => { const K = kinds(s.kind); return K ? Math.max(1, (K.min || (() => 2))(s)) : 2; });
-  let durs = sc.map((s, i) => (typeof s.dur === "number" ? s.dur : r3(mins[i] + 0.2)));
+  const wpm = v.wpm || 135;
+  const mins = sc.map((s) => {
+    const K = kinds(s.kind);
+    const baseMin = K ? Math.max(1, (K.min || (() => 2))(s)) : 2;
+    const voMin = MDx.voSecs ? MDx.voSecs(s, wpm) : 0;
+    return r3(Math.max(baseMin, voMin));
+  });
+  let durs = sc.map((s, i) => {
+    if (typeof s.dur === "number") return s.dur;
+    const ts = MDx.parseTimestamp && s.timestamp ? MDx.parseTimestamp(s.timestamp) : null;
+    if (ts && ts.dur > 0) return ts.dur;
+    return r3(mins[i] + 0.2);
+  });
   const total0 = durs.reduce((a, b) => a + b, 0);
   if (v.length && total0 > 0) {
     const f = v.length / total0;
@@ -175,10 +203,16 @@ export function timing(v, st, MDx, bpm) {
   }
   if (bpm) {
     const hb = 30 / bpm;
-    durs = durs.map((d, i) => { const q = Math.max(1, Math.round(d / hb)); let qd = q * hb; if (qd < mins[i] * 0.9 && typeof sc[i].dur !== "number") qd = Math.ceil((mins[i] * 0.9) / hb) * hb; return r3(qd); });
+    durs = durs.map((d, i) => {
+      const explicit = typeof sc[i].dur === "number" || Boolean(MDx.parseTimestamp && sc[i].timestamp && MDx.parseTimestamp(sc[i].timestamp));
+      const q = Math.max(1, Math.round(d / hb));
+      let qd = q * hb;
+      if (qd < mins[i] * 0.9 && !explicit && !v.length) qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
+      return r3(qd);
+    });
   }
   sc.forEach((s, i) => {
-    if (durs[i] < mins[i] * 0.85) warn.push(`scene ${i + 1} (${s.kind}) gets ${durs[i].toFixed(1)} s but needs about ${mins[i].toFixed(1)} s to read — cut words, drop a scene, or make the video longer`);
+    if (durs[i] < mins[i] * 0.82) warn.push(`scene ${i + 1} (${s.kind}) gets ${durs[i].toFixed(1)} s but needs about ${mins[i].toFixed(1)} s to read/speak — cut words, drop a scene, or raise length`);
   });
   return { durs, mins, warn };
 }
@@ -220,7 +254,7 @@ export function compose(work, opts = {}) {
     const files = FONTS[fam];
     if (!files) { warn.push(`font "${fam}" isn't bundled — the system font stands in`); continue; }
     for (const [file, weight, style, stretch] of files) {
-      copy(path.join(ASSETS, "fonts", file), `assets/fonts/${file}`);
+      copy(assetFile("fonts", file), `assets/fonts/${file}`);
       faces.push(`@font-face{font-family:"${fam}";src:url("assets/fonts/${file}") format("woff2");font-weight:${weight};font-style:${style};${stretch ? `font-stretch:${stretch};` : ""}font-display:block}`);
     }
   }
@@ -253,12 +287,12 @@ export function compose(work, opts = {}) {
       const meta = readJSON(path.join(ASSETS, "devices/devices.json"), {})[name];
       if (!meta) return null;
       fs.mkdirSync(path.join(out, "assets/devices"), { recursive: true });
-      copy(path.join(ASSETS, "devices", meta.file), `assets/devices/${meta.file}`);
+      copy(assetFile("devices", meta.file), `assets/devices/${meta.file}`);
       return { ...meta, src: `assets/devices/${meta.file}` };
     },
     icon(name) {
-      let f = path.join(ASSETS, "icons", `${name}.svg`);
-      if (!fs.existsSync(f)) { warn.push(`no icon "${name}" (see assets/icons) — using sparkles`); f = path.join(ASSETS, "icons", "sparkles.svg"); }
+      let f = assetFile("icons", `${name}.svg`);
+      if (!fs.existsSync(f)) { warn.push(`no icon "${name}" (see assets/icons) — using sparkles`); f = assetFile("icons", "sparkles.svg"); }
       return fs.readFileSync(f, "utf8").replace(/<!--[\s\S]*?-->/g, "").replace(/\s*class="[^"]*"/, "").replace(/\s+/g, " ").trim();
     },
   };
@@ -317,9 +351,38 @@ export function compose(work, opts = {}) {
       }
       // the film's last line stays up at least 2 s after it lands (a closing line needs it)
       if (i === sc.length - 1) need = Math.max(need, ev.reduce((m, e) => Math.max(m, e.t + (MDx.moveLen(e.move, e.n, e.o) || 0)), 0) + 2.1);
-      if (process.env.MD_DEBUG) console.error(s.kind, "tight", tight.toFixed(2), "head", landed.toFixed(2), "need", need.toFixed(2), ev.map((e) => `${e.sel}@${e.t.toFixed(2)}+${(MDx.moveLen(e.move, e.n, e.o) || 0).toFixed(2)}`).join(" "));
-      durs[i] = r3(Math.max(Math.ceil(need / hb) * hb, Math.min(durs[i], need + 0.6)));
+      const voNeed = MDx.voSecs ? MDx.voSecs(s, v.wpm || 135) : 0;
+      need = Math.max(need, voNeed);
+      const hasTs = Boolean(MDx.parseTimestamp && s.timestamp && MDx.parseTimestamp(s.timestamp));
+      if (hasTs) return;
+      if (v.length) {
+        durs[i] = r3(Math.max(durs[i], Math.ceil((need * 0.85) / hb) * hb));
+      } else {
+        durs[i] = r3(Math.max(Math.ceil(need / hb) * hb, Math.min(durs[i], need + 0.6)));
+      }
     });
+    // If v.length was explicitly requested, re-normalize any drift so total duration matches v.length closely
+    if (v.length && durs.length > 0) {
+      const sumNow = durs.reduce((a, b) => a + b, 0);
+      if (Math.abs(sumNow - v.length) > hb * 1.2) {
+        const scaleF = v.length / sumNow;
+        sc.forEach((s, i) => {
+          if (typeof s.dur !== "number") durs[i] = r3(Math.max(hb, Math.round((durs[i] * scaleF) / hb) * hb));
+        });
+      }
+    }
+  }
+  // Auto-generate Matplotlib empirical plots for any scene specifying s.plot
+  if (sc.some((s) => s.plot || s.cutout)) {
+    sc.forEach((s, idx) => {
+      if (s.plot && !s.media) s.media = `assets/plot-s${idx + 1}.png`;
+      if (s.cutout && !s.media) s.media = `assets/cutout-s${idx + 1}.png`;
+    });
+    writeJSON(vfile, v0);
+    const plotPy = path.join(SKILL, "scripts/polymath_plots.py");
+    if (fs.existsSync(plotPy)) {
+      spawnSync("python3", [plotPy, work], { encoding: "utf8" });
+    }
   }
   const t0s = [];
   let acc = 0;
@@ -374,7 +437,33 @@ export function compose(work, opts = {}) {
     const base = (DENSE[fmt] || {})[s.kind] ?? 1;
     const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
     const wrapStyle = scale !== 1 ? ` style="--u:${r3(u * scale)}px"` : "";
-    htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
+    // Build kinetic word-by-word captions if captions === "kinetic" or subtitles === "kinetic"
+    let kcapHtml = "";
+    const capMode = s.captions || v.captions || (v.subtitles === "kinetic" ? "kinetic" : null);
+    const rawVo = String(s.vo || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "").trim();
+    if (capMode === "kinetic" && rawVo) {
+      const words = rawVo.split(/\s+/).filter(Boolean);
+      const pauseSec = MDx.parsePause ? MDx.parsePause(s) : 0;
+      const speakDur = Math.max(1.0, dur - pauseSec - 0.25);
+      const wDur = speakDur / Math.max(1, words.length);
+      const chunkSize = fmt === "portrait" ? 4 : 6;
+      const chunks = [];
+      for (let ci = 0; ci < words.length; ci += chunkSize) {
+        const slice = words.slice(ci, ci + chunkSize);
+        const cStart = 0.12 + ci * wDur;
+        const cEnd = Math.min(dur - 0.08, cStart + slice.length * wDur);
+        chunks.push(`<div class="md-kcap-chunk" data-ci="${ci}">${slice.map((w, wi) => `<span class="md-kcap-w" data-wi="${ci + wi}">${esc(w)}</span>`).join(" ")}</div>`);
+        events.push({ t: r3(cStart), sel: `.md-kcap-chunk[data-ci="${ci}"]`, move: "show", n: 1, o: {} });
+        events.push({ t: r3(cEnd), sel: `.md-kcap-chunk[data-ci="${ci}"]`, move: "hide", n: 1, o: {} });
+        slice.forEach((_, wi) => {
+          events.push({ t: r3(cStart + wi * wDur), sel: `.md-kcap-w[data-wi="${ci + wi}"]`, move: "kcapWord", n: 1, o: { d: r3(wDur) } });
+        });
+      }
+      kcapHtml = `<div class="md-kcap-wrap" data-layout-ignore>${chunks.join("")}</div>`;
+    }
+    const bgVidUrl = s.bgVideo ? ctxBase.asset(s.bgVideo) : null;
+    const bgVidHtml = bgVidUrl ? `<video class="md-bg-video" src="${esc(bgVidUrl)}" muted playsinline data-start="${vis0}" data-duration="${r3(vis1 - vis0)}" style="opacity:${s.bgOpacity ?? 0.38}"></video>` : "";
+    htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}${kcapHtml}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
     scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
   });
 
@@ -416,8 +505,52 @@ export function compose(work, opts = {}) {
     const abs = path.isAbsolute(music) ? music : path.resolve(work, music);
     if (!fs.existsSync(abs)) { warn.push(`missing music file: ${music} — using the composed soundtrack`); music = "auto"; } else music = abs;
   }
+  const pauses = [];
+  sc.forEach((s, i) => {
+    if (s.sfxFile && scenes[i] && sfxMode !== "off") {
+      const absSfx = path.isAbsolute(s.sfxFile) ? s.sfxFile : path.resolve(work, s.sfxFile);
+      if (fs.existsSync(absSfx)) kept.push({ name: path.basename(s.sfxFile), file: absSfx, at: r3(scenes[i].t0 + (s.sfxAt || 0.15)), gain: s.sfxGain || 0.9 });
+      else warn.push(`missing custom SFX file: ${s.sfxFile} — drop it into assets/ (using synthesized fallback for now)`);
+    }
+    const pz = MDx.parsePause ? MDx.parsePause(s) : 0;
+    if (pz > 0 && scenes[i]) {
+      const pat = Math.max(scenes[i].t0 + 0.4, scenes[i].t0 + scenes[i].dur - pz);
+      pauses.push({ at: r3(pat), dur: r3(pz) });
+      if (sfxMode !== "off") kept.push({ name: "thump", at: r3(pat), gain: 0.45 });
+    }
+  });
+  let voiceoverFile = sound.voiceover ? (path.isAbsolute(sound.voiceover) ? sound.voiceover : path.resolve(work, sound.voiceover)) : null;
+  if (voiceoverFile && !fs.existsSync(voiceoverFile)) {
+    warn.push(`missing voiceover file: ${sound.voiceover} — rendering soundtrack without VO track until uploaded`);
+    voiceoverFile = null;
+  }
+  // Generate timed .srt subtitle file (<work>/captions.srt & <out>/captions.srt) for Premiere Pro / DaVinci Resolve
+  const srtEntries = [];
+  let srtIdx = 1;
+  sc.forEach((s, i) => {
+    if (!scenes[i]) return;
+    const rawTxt = String(s.vo || s.text || s.title || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "").replace(/\*/g, "").replace(/\|/g, " ").trim();
+    if (!rawTxt) return;
+    const words = rawTxt.split(/\s+/).filter(Boolean);
+    const pz = MDx.parsePause ? MDx.parsePause(s) : 0;
+    const avail = Math.max(0.8, scenes[i].dur - pz - 0.15);
+    const chunkSz = 7;
+    const nChunks = Math.max(1, Math.ceil(words.length / chunkSz));
+    const cDur = avail / nChunks;
+    for (let c = 0; c < nChunks; c++) {
+      const subWords = words.slice(c * chunkSz, (c + 1) * chunkSz).join(" ");
+      if (!subWords) continue;
+      const st0 = scenes[i].t0 + c * cDur;
+      const st1 = Math.min(scenes[i].t0 + scenes[i].dur - 0.05, st0 + cDur - 0.04);
+      srtEntries.push(`${srtIdx++}\n${fmtSrtTime(st0)} --> ${fmtSrtTime(st1)}\n${subWords}\n`);
+    }
+  });
+  if (srtEntries.length) {
+    const srtContent = srtEntries.join("\n");
+    try { fs.writeFileSync(path.join(out, "captions.srt"), srtContent); fs.writeFileSync(path.join(work, "captions.srt"), srtContent); } catch {}
+  }
   const last = scenes[scenes.length - 1];
-  const soundPlan = { duration, style: st.id, preset: sound.preset || st.music || st.id, bpm: bpmOf, boundaries: scenes.slice(1).map((s) => s.t0), outroAt: last && ["outro", "logo"].includes(last.kind) ? last.t0 : r3(Math.max(0, duration - 2.5)), cues: kept.map(({ name, at, gain }) => ({ name, at, gain })), music, musicVolume: sound.musicVolume, musicStart: sound.musicStart };
+  const soundPlan = { duration, style: st.id, preset: sound.preset || st.music || st.id, bpm: bpmOf, boundaries: scenes.slice(1).map((s) => s.t0), outroAt: last && ["outro", "logo"].includes(last.kind) ? last.t0 : r3(Math.max(0, duration - 2.5)), cues: kept.map(({ name, file, at, gain }) => ({ name, file, at, gain })), pauses, voiceover: voiceoverFile, music, musicVolume: sound.musicVolume, musicStart: sound.musicStart };
   const audio = [];
   let soundReport = null;
   if (opts.audio !== false) {
@@ -432,7 +565,7 @@ export function compose(work, opts = {}) {
   }
 
   // emphasised words are drawn in the accent on the background: say so when that can't be read
-  if (pal.accent && pal.bg && contrast(pal.accent, pal.bg) < 2.6) warn.push(`the accent ${pal.accent} is too pale on the background ${pal.bg} (${contrast(pal.accent, pal.bg).toFixed(1)}:1) — *emphasis* won't read; use a deeper shade of the brand colour or another palette`);
+  if (st.id !== "vox" && pal.accent && pal.bg && contrast(pal.accent, pal.bg) < 2.6) warn.push(`the accent ${pal.accent} is too pale on the background ${pal.bg} (${contrast(pal.accent, pal.bg).toFixed(1)}:1) — *emphasis* won't read; use a deeper shade of the brand colour or another palette`);
   // tokens
   const vars = {
     "--u": `${u}px`, "--W": `${W}px`, "--H": `${H}px`,
@@ -465,7 +598,7 @@ export function compose(work, opts = {}) {
 <script src="assets/style.js"></script>
 </head>
 <body>
-<div id="root" class="md st-${st.id} ${fmt} pal-${esc((pal.name || "").split(" ")[0].toLowerCase())}" data-composition-id="main" data-start="0" data-width="${W}" data-height="${H}" data-duration="${duration}">
+<div id="root" class="md st-${st.id} ${fmt} pal-${esc((pal.name || "").split(" ")[0].toLowerCase())}${v.transparent ? " is-transparent" : ""}" data-composition-id="main" data-start="0" data-width="${W}" data-height="${H}" data-duration="${duration}">
 <div class="md-bg">${bgHtml}</div>
 ${htmlScenes.join("\n")}
 <div class="md-wipe" data-layout-ignore>${wipes}</div>

@@ -1,111 +1,75 @@
-# video.json
+# `video.json` Schema & Scene Reference
 
 ```jsonc
 {
-  "title": "Launchr",                 // shown on the storyboard; names the output file
-  "brief": "…their outline, verbatim…",
-  "purpose": "app launch",
-  "style": "keynote",                 // kinetic | keynote | aura | paper | terminal | data | story
-  "alternates": ["kinetic", "aura"],  // two other styles shown playing on the storyboard
-  "format": "16:9",                   // 16:9 | 9:16 | 1:1 | 4:5
-  "length": null,                     // seconds, or null = natural (reading time)
-  "font": 0,                          // index into the style's pairings (MD styles), or a brand font object (below)
-  "palette": 0,                       // index, or a brand palette object (below)
+  "title": "The Halide Paradox",        // shown on the storyboard; names the output MP4 & SRT
+  "brief": "…their outline or central anomaly hypothesis…",
+  "purpose": "investigative explainer",
+  "axis": "AXIS A · OPTICS × CINEMA",   // optional top-level HUD badge for polymath/vox styles
+  "source": "SMPTE / CIE Tables",       // optional default repository citation
+  "style": "vox",                       // polymath | vox | data | terminal | keynote | kinetic | aura | paper | story
+  "alternates": ["polymath", "data"],   // two alternate styles shown live on the storyboard
+  "format": "16:9",                     // 16:9 (YouTube Feature) | 9:16 (Short / Reel) | 1:1 | 4:5
+  "length": null,                       // target total seconds (e.g. 20, 30, 60), or null = natural (VO / reading time)
+  "wpm": 135,                           // spoken voiceover pacing in Words Per Minute (default 135)
+  "captions": "off",                    // "kinetic" (word-by-word highlight) | "bar" (lower subtitle bar) | "off" (clean video + .srt file)
+  "subtitles": false,                   // alias for captions ("kinetic" or true/false)
+  "transparent": false,                 // set true (or pass --alpha to render) for ProRes 4444 transparent NLE overlays
+  "font": 0,                            // index into the style's font pairings
+  "palette": 0,                         // index into the style's palettes
   "why": { "style": "…", "format": "…", "length": "…" },
-  "brand": { "name": "Launchr", "url": "launchr.app", "color": "#ff5a1f", "logo": "assets/logo-1.svg" },
-  "sound": { "sfx": "on", "music": "auto", "preset": null, "bpm": null, "musicVolume": 0.8, "musicStart": 0 },
-  "drift": null, "grain": null,       // override the style's slow camera drift / film grain (0 = off)
+  "brand": { "name": "POLYMATHTV", "url": "", "color": null, "logo": null },
+  "sound": {
+    "sfx": "on",
+    "music": "auto",                    // "auto" (synthesized -16 LUFS) | "none" | "assets/custom-music.mp3"
+    "voiceover": null,                  // optional "assets/voiceover.mp3" (auto-ducks music bed under speech)
+    "preset": null,
+    "bpm": null,
+    "musicVolume": 0.8
+  },
+  "drift": null, "grain": null,         // override camera drift / film grain
   "scenes": [ … ]
 }
 ```
 
-Brand objects (shown as "Your brand" on the storyboard):
+## Per-Scene Common Fields
 
-```jsonc
-"font": { "display": "Bricolage Grotesque", "text": "Inter", "mono": "JetBrains Mono",
-          "vars": { "--dw": 800, "--dwdth": "92%", "--dls": "-0.03em", "--dlh": "0.92", "--tcase": "none" } },
-"palette": { "bg": "#F8F3EA", "ink": "#0B1957", "accent": "#CF604C", "accentInk": "#FFFFFF", "muted": "#5B6380", "surface": "#EFE7DA" }
-```
+Every scene object supports:
 
-Fonts must be bundled ones: Inter, Inter Tight, Geist, Geist Mono, JetBrains Mono, Archivo (width 62–125%),
-Bricolage Grotesque (width 75–100%), Instrument Sans, Instrument Serif, Fraunces, DM Serif Display, DM Sans,
-Space Grotesk, Unbounded, Big Shoulders, Bebas Neue, Anton, Cormorant, Manrope, Syne, Doto. `vars`: `--dw`
-display weight, `--dwdth` width, `--dls` tracking, `--dlh` line height, `--tcase` text-transform. At
-display sizes keep tracking ≥ −0.035em and check `frames` for letters touching. A style's preset font
-object (`MD styles --json`) is a good starting point.
+- `kind`: Scene archetype (see table below)
+- `dur`: Explicit duration in seconds (overrides auto reading/VO timing)
+- `timestamp`: Storyboard time window, e.g. `"0:00 - 0:08"` or `"0:08 - 0:22"`
+- `vo`: Spoken voiceover narration (~135 WPM) with inline `[AUDIO PAUSE: 1.5s]` support (drives scene duration, pause ducking, kinetic captions, and `.srt` export even when you record your own voiceover separately)
+- `pause`: Numeric audio pause in seconds added to the end of the scene
+- `bgVideo`: Path to a raw video clip or movie scene (`"assets/movie-clip-01.mp4"`) rendered as a background layer (`bgOpacity` defaults to `0.38`; describe what clip is needed in `bgNote`)
+- `cutout`: Path to a raw `.jpg`/`.png` image (`"assets/photo.jpg"` or `"auto"`, or `{ "src": "assets/photo.jpg", "color": false, "label": "EXHIBIT A" }`) — automatically processed into a Vox archival halftone cutout with a white die-cut sticker border (describe what image is needed in `assetNote`)
+- `sfxFile`: Path to a custom sound effect or voice effect (`"assets/projector.wav"` or `"assets/whoosh.mp3"`), mixed at `sfxAt` seconds into the scene (describe what sound is needed in `sfxNote`)
+- `plot`: Python Matplotlib specification (`{ "type": "timeseries" | "phase" | "sensitometry" | "spectrum" | "barcode" | "splane", ... }`) — auto-renders a high-DPI figure into `assets/plot-sN.png`
+- `movement` / `figure`, `axis`, `source`: HUD telemetry and citation metadata
 
-Every scene: `kind`, its fields below, and optionally `dur` (seconds — overrides reading time),
-`transition` (into this scene: `cut fade blur push zoom wipe iris` + the style's own), `tone`
-(`base | invert | accent` where the style uses tones), `plan` and `why` (shown on the storyboard),
-`off: true` (kept in the file, left out of the video). `ask` holds the person's storyboard note to you —
-never shown in the video. Text fields take `*emphasis*` and `|` line breaks.
-Media paths are relative to the project folder.
+## All Scene Kinds (20 Built-In Kinds)
 
-| kind | fields | use it for |
-|---|---|---|
-| `hook` | `text`, `kicker?`, `sub?` | the opening line |
-| `statement` | `text`, `kicker?`, `sub?` | one line that matters |
-| `words` | `items[]` (2–5 short) | a fast beat, one word per frame |
-| `stat` | `value` ("1,240", "$4.2M", "98%", "10x"), `label`, `kicker?` | one real number, counts up |
-| `list` | `title?`, `items[]` (3–4) | a short list |
-| `steps` | `title?`, `items[]` (3) | how it works, numbered |
-| `screen` | `media`, `device` (`iphone macbook display ipad` real hardware · `browser window plain` drawn; default from the image's shape), `title?`, `sub?`, `kicker?`, `url?`, `callouts[]?` (≤3), `side?` (`left`/`right`), `move?` (`still`) | a screenshot or screen recording with its line |
-| `screens` | `media[]` (2–4), `device?` (default `iphone`), `title?` | a row of screens |
-| `features` | `title?`, `items[]` of `{icon, title, text?}` (2–4) | what it does |
-| `compare` | `title?`, `before: {label, items[]}`, `after: {label, items[]}` | old way vs new way |
-| `quote` | `text`, `name`, `role?`, `media?` (avatar) | a real testimonial |
-| `chart` | `title?`, `bars[]` of `{label, value, display?, highlight?}`, `unit?` | a few numbers compared |
-| `logo` | `media?` (logo file), `text?` (wordmark), `sub?` | a sting / the mark |
-| `outro` | `text`, `cta?`, `url?`, `media?` (logo), `kicker?` | the ending |
-| `custom` | `html`, `events[]` | anything else (below) |
-
-Some styles add their own kinds — `MD styles` lists them (e.g. Data's `line`, `donut`).
-
-### Story's `story` scene (people)
-
-```jsonc
-"cast": [{ "name": "Lena", "hair": "bun", "skin": 1, "hairColor": 1, "top": "var(--accent)" }],   // top level, optional
-{ "kind": "story", "set": "office", "text": "Lena ships her app on *Friday*.",
-  "cast": [{ "who": "Lena", "do": "laptop", "enter": "left" }, "Sam: wave"],
-  "say": "Two weeks? I have two days.", "media": "assets/shot.png" }
-```
-
-`do`: `stand wave talk think laptop phone cheer slump point shrug` · `enter`: `left`/`right` (walks in
-first) · `set`: `home office street shop park plain` · `say`: a speech bubble from the first person (or
-the one with `"say"`; `think` makes it a thought) · `media`: the product on a card beside them (16:9).
-Up to 3 people. Anyone not in `cast` gets a look from their name. `hair`: `short bun long curly bob
-beard cap bald`; `skin` 0–4; `hairColor` 0–6; `top`/`bottom`: a colour or `var(--accent|--cool|--pop|--leaf)`.
-Keep `text` to one short line and `say` to a few words: the people carry the scene.
-
-## Icons (for `features`)
-
-arrow-right arrow-up-right bar-chart-3 battery-charging bell bot brain calendar camera check circle-check
-clock cloud code cpu credit-card database download eye file-text flame folder gift globe heart image
-infinity layers layout-grid leaf lightbulb link lock mail map-pin message-circle mic moon music palette
-pen-tool phone play plus puzzle refresh-cw repeat rocket scissors search send settings shield
-shopping-cart sliders-horizontal smartphone sparkles star sun target timer trending-up trophy upload
-users video wallet wand-2 wifi x zap  (Lucide, ISC)
-
-## custom scenes
-
-Your own markup inside the scene, styled with the style's tokens, animated by the kit's moves:
-
-```json
-{ "kind": "custom", "dur": 4,
-  "html": "<div class='k'><div class='box'><h2 class='title' data-fit data-maxh='40'>Three <span class='w em'><span class='wi'>taps</span></span>.</h2><div class='cta'><span>Try it</span></div></div></div>",
-  "events": [
-    { "t": 0.1, "sel": ".title", "move": "fadeUp" },
-    { "t": 0.8, "sel": ".cta", "move": "pop", "sfx": "pluck" }
-  ] }
-```
-
-Tokens: `var(--bg) --ink --accent --accent-ink --muted --surface --f-display --f-text --f-mono`, sizes
-in `calc(var(--u) * N)` (1u = 1% of the short side). `data-fit` shrinks a title to its box
-(`data-fit="fill"` grows it to fill; `data-maxh` = max height in u).
-
-Moves (`t` = seconds from the scene's start; `o` = options): `fadeIn fadeUp maskUp slam blurIn charRise
-typewriter scramble trackIn pop rise scaleIn slideIn wipeIn mark grow growX draw count strike float drift
-pan tilt show hide` + the style's own. Text moves that work per character need the text split into
-`.c` spans (`maskUp`/`slam`/`blurIn` work per word: `.w > .wi`). `sfx` is one of the designed sounds: `whoosh`, `swish`, `thump`, `impact`, `bell`, `blip`, `key`, `riser`
-(pitched to the soundtrack's key and mixed in; see SKILL.md → Sound).
-`assets/sfx/sounds.json`.
+| Kind | Fields | Best Used For |
+| :--- | :--- | :--- |
+| `map` | `kicker?`, `title?`, `sub?`, `origin?` (`{name, coord, x, y}`), `dest?` (`{name, coord, x, y}`), `distance?`, `metrics?`, `callouts?` | **Geographic Map & Route Flyover**: animated route trajectory across a vector world/regional graticule with pulsing coordinate nodes and telemetry cards |
+| `collage` | `kicker?`, `title?`, `sub?`, `media?` (1-3 `.jpg`/`.png`/`.mp4` paths, or auto-generated via `cutout`), `callouts?`, `annotation?` (`"circle" \| "arrow"`), `color?` (`bool`) | **Vox / Howtown Cutout Collage**: layered die-cut photo/video cutouts, ransom-tape callouts, highlighter sweeps, and hand-drawn SVG chalk circles/arrows |
+| `math` | `kicker?`, `title?`, `equation?`, `transform?`, `sigma?`, `wd?`, `wExt?`, `callouts?` | **3Blue1Brown Mathematical Engine**: semantic color-coded differential equation $\rightarrow$ Laplace transform, live time-domain waveforms (`#F0AC5F`, `#FFFF00`, `#58C4DD`), 14-coil spring-mass oscillator, and 2D $s$-plane poles |
+| `anomaly` | `kicker?`, `myth`, `text` (or `title`), `value?`, `label?`, `source?` | **Premise Inversion**: states the common myth, strikes it through, and reveals the empirical contradiction + metric |
+| `telescope` | `kicker?`, `title?`, `scales` (or `items`: 3 `"Scale \| Title \| Detail"` strings) | **Telescoping Scale Jump**: 3-stage micro -> meso -> macro zoom with concentric vector rings |
+| `pivot` | `kicker?`, `title?`, `threadA` (`{label, time?, title?, items[]}`), `threadB` (`{label, time?, title?, items[]}`) | **McPhee Structural Pivot**: braids two parallel timelines in `--accent` and `--accent2` around a central `PIVOT` lock |
+| `telemetry` | `kicker?`, `title?`, `sub?`, `media?` (or `plot?`), `diagram?` (`"optics" \| "phase" \| "spectrum" \| "network"`), `metrics?`, `callouts?` | **Signature Telemetry Overlay**: frames a Matplotlib plot, 3D `splane` surface, video clip, or SVG schematic with readouts & reticles |
+| `hook` | `text`, `kicker?`, `sub?` | Opening inciting anomaly or scroll-stopping hook |
+| `statement` | `text`, `kicker?`, `sub?` | Core thesis statement or philosophical resolution |
+| `stat` | `value`, `label`, `kicker?`, `delta?`, `trend?`, `note?` | Single high-impact empirical number that counts up |
+| `line` | `title?`, `kicker?`, `values[]`, `labels[]?`, `unit?`, `prefix?`, `note?` | Animated time-series trajectory with moving head dot |
+| `chart` | `title?`, `kicker?`, `bars[]`, `unit?`, `note?` | Comparative bar distribution |
+| `rank` | `title?`, `kicker?`, `items[]`, `unit?`, `prefix?` | Horizontal comparative ranking bars |
+| `donut` | `title?`, `kicker?`, `value` (`"74%"`), `label?`, `note?` | Proportional share ring chart |
+| `compare` | `title?`, `before: {label, items[]}`, `after: {label, items[]}` | Old way vs new way |
+| `steps` | `title?`, `items[]` (3-4 numbered steps) | Causal chain or mechanical sequence |
+| `list` | `title?`, `items[]` (3-4 findings) | Key evidence summary |
+| `words` | `items[]` (2-5 short words/phrases) | Fast kinetic lexicon beat |
+| `screen` | `media`, `device?`, `title?`, `sub?`, `kicker?`, `callouts[]?` | Artifact, screenshot, or video specimen inside a frame |
+| `screens` | `media[]` (2-4), `device?`, `title?` | Side-by-side frame or specimen comparison |
+| `quote` | `text`, `name`, `role?`, `media?` | Primary archival quote or citation |
+| `logo` / `outro` / `custom` | Standard closing or custom HTML/GSAP scenes | Stings, outros, or bespoke markup |

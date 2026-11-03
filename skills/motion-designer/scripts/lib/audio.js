@@ -362,6 +362,8 @@ function voicing(root, scale, deg, size, prev) {
 }
 export const _voicing = voicing;
 export const PRESETS = {
+  polymath: { bpm: 90, root: 57, scale: MIN, prog: [0, 5, 3, 4], ext: 5, parts: ["kickSoft", "brush", "epArp", "pad", "bassSwell", "vinyl"], swing: 0.04, verb: 0.42, duck: 0.88 },
+  vox: { bpm: 98, root: 60, scale: MIN, prog: [0, 5, 3, 4], ext: 4, parts: ["kickSoft", "brush", "shaker8", "pluck8", "epHold", "bassLong", "vinyl"], swing: 0.12, verb: 0.26, duck: 0.88 },
   kinetic: { bpm: 118, root: 57, scale: MIN, prog: [0, 5, 2, 6], ext: 5, parts: ["kick4", "snare", "hatOff", "bassHouse", "epStab", "pad"], swing: 0, verb: 0.2, duck: 0.6 },
   keynote: { bpm: 100, root: 60, scale: MAJ, prog: [0, 5, 3, 4], ext: 4, parts: ["kickHalf", "shaker16", "epPulse", "epHold", "pad", "bassLong"], swing: 0, verb: 0.3, duck: 0.85 },
   aura: { bpm: 78, root: 63, scale: MAJ, prog: [0, 3, 5, 4], ext: 5, parts: ["pad", "epArp", "bassSwell"], swing: 0, verb: 0.45, duck: 1 },
@@ -537,11 +539,50 @@ export function renderSoundtrack(plan, outFile, { seed = 7 } = {}) {
       for (let i = 0; i < end && i + off < m.n; i++) { const g = Math.min(1, i / (0.25 * SR)) * (i > end - fo ? (end - i) / fo : 1) * (plan.musicVolume ?? 0.8); mix.L[i] += m.L[i + off] * g; mix.R[i] += m.R[i + off] * g; }
     }
   }
+  // Polymathic Investigative Director: duck music bed during [AUDIO PAUSE: Xs] windows so score/foley breathes
+  if (Array.isArray(plan.pauses) && plan.pauses.length) {
+    for (const pz of plan.pauses) {
+      const i0 = Math.max(0, Math.round((pz.at || 0) * SR));
+      const i1 = Math.min(mix.n, Math.round(((pz.at || 0) + (pz.dur || 1)) * SR));
+      const fade = Math.round(0.18 * SR);
+      for (let i = i0; i < i1; i++) {
+        const dIn = i - i0 < fade ? (i - i0) / fade : 1;
+        const dOut = i1 - i < fade ? (i1 - i) / fade : 1;
+        const g = 1 - 0.58 * Math.min(dIn, dOut);
+        mix.L[i] *= g; mix.R[i] *= g;
+      }
+    }
+  }
   // effects: pitched to the key, in the middle register, under the music, never piling up
   const base = 60 + (((P.root % 12) + 12) % 12) - (P.root % 12 > 5 ? 12 : 0);
   const scaleNotes = P.scale.map((x) => base + x);
   let blipN = 0;
+  // Optional user-recorded voiceover file (plan.voiceover): mix in and duck music bed under active speech
+  if (plan.voiceover && fs.existsSync(plan.voiceover)) {
+    const voBus = readAudio(plan.voiceover, plan.duration + 1);
+    if (voBus) {
+      // Sidechain-duck music where VO energy is present
+      const win = Math.round(0.08 * SR);
+      for (let i = 0; i < mix.n && i < voBus.n; i += win) {
+        let pk = 0;
+        for (let j = i; j < Math.min(voBus.n, i + win); j++) pk = Math.max(pk, Math.abs(voBus.L[j]), Math.abs(voBus.R[j]));
+        if (pk > 0.025) {
+          for (let j = i; j < Math.min(mix.n, i + win); j++) { mix.L[j] *= 0.36; mix.R[j] *= 0.36; }
+        }
+      }
+      mix.mixFrom(voBus, 1.05);
+      report.voiceover = path.basename(plan.voiceover);
+    }
+  }
   for (const c of plan.cues || []) {
+    if (c.file && fs.existsSync(c.file)) {
+      const customVo = readAudio(c.file, 8);
+      if (customVo) {
+        mix.add(customVo, Math.max(0, c.at), clamp(c.gain ?? 0.85, 0.2, 1.5), 0);
+        report.sfx++;
+        continue;
+      }
+    }
     const kind = KIND[c.name] || "blip";
     let v;
     if (kind === "whoosh") v = fxWhoosh(r, { dur: 0.6, from: 150, to: 1300, level: 0.9 });

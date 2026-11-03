@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<title>Motion Designer · Storyboard</title>
+<title>Storyboard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff5a1f'/%3E%3Cpath d='M11 9l12 7-12 7z' fill='white'/%3E%3C/svg%3E">
 <style>
   :root {
@@ -148,13 +148,8 @@
   .saving.on { opacity: 1; }
   .done { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; background: rgba(217, 61, 6, .96); color: #fff; text-align: center; padding: 24px; }
   .done.on { display: grid; }
-  .done-box { max-width: 640px; width: 100%; }
   .done h2 { font-size: clamp(32px, 6vw, 56px); margin: 0 0 12px; letter-spacing: -.03em; }
-  .done p { font-size: 18px; margin: 0 0 18px; opacity: .92; line-height: 1.5; }
-  .done textarea { width: 100%; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.22); color: #fff; padding: 14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; margin-bottom: 14px; resize: vertical; }
-  .done-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-  .done-btn { height: 46px; padding: 0 22px; border-radius: 999px; border: 0; background: #fff; color: var(--ink); font-size: 15px; font-weight: 700; }
-  .done-btn.sec { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+  .done p { font-size: 18px; margin: 0; opacity: .92; }
 
   @media (max-width: 760px) {
     .wrap { padding-top: 28px; }
@@ -209,19 +204,8 @@
   <textarea id="direction" rows="1" placeholder="Anything else for the whole video? (optional)"></textarea>
   <button class="approve" id="approve">Approve and render</button>
 </div></div>
-<div class="done" id="done">
-  <div class="done-box">
-    <h2 id="done-title">Approved.</h2>
-    <p id="done-sub">Reply "Approve" in chat to render the final MP4 video, or copy your storyboard edits below and paste them into chat.</p>
-    <textarea id="done-summary" rows="4" readonly aria-label="Storyboard changes summary"></textarea>
-    <div class="done-actions">
-      <button class="done-btn" id="copy-summary">Copy for Gemini chat</button>
-      <button class="done-btn sec" id="back-edit">Keep editing</button>
-    </div>
-  </div>
-</div>
+<div class="done" id="done"><div><h2>Approved.</h2><p>I'm rendering it now. It'll open on its own when it's done.</p></div></div>
 
-<!--__MD_STANDALONE_BUNDLE__-->
 <script>
 (() => {
   "use strict";
@@ -229,283 +213,17 @@
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const fmtT = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   const FORMATS = [["16:9", "Landscape"], ["9:16", "Vertical"], ["1:1", "Square"], ["4:5", "Portrait"]];
-  const FORMAT_DIMS = { "16:9": { W: 1920, H: 1080, fmt: "landscape" }, "9:16": { W: 1080, H: 1920, fmt: "portrait" }, "1:1": { W: 1080, H: 1080, fmt: "square" }, "4:5": { W: 1080, H: 1350, fmt: "tall" } };
   const LENGTHS = [null, 10, 15, 20, 30, 45, 60];
-  const LABEL = { hook: "Hook", statement: "Statement", words: "Word beat", stat: "Number", list: "List", steps: "Steps", screen: "Screen", screens: "Screens", features: "Features", compare: "Before / after", quote: "Quote", chart: "Chart", logo: "Logo", outro: "Ending", custom: "Custom", story: "Story" };
-  const FIELD = { kicker: "Small line above", text: "On screen", sub: "Line below", title: "Title", value: "Number", label: "What it means", items: "Items — one per line", cta: "Button", url: "Link", name: "Name", role: "Role", note: "Annotation", delta: "Change", unit: "Unit", prefix: "Prefix", values: "Values — one per line", labels: "Labels — one per line", say: "Speech bubble", ask: "Note for Gemini" };
+  const LABEL = { hook: "Hook", statement: "Statement", words: "Word beat", stat: "Number", list: "List", steps: "Steps", screen: "Screen", screens: "Screens", features: "Features", compare: "Before / after", quote: "Quote", chart: "Chart", logo: "Logo", outro: "Ending", custom: "Custom" };
+  const FIELD = { kicker: "Small line above", text: "On screen", sub: "Line below", title: "Title", value: "Number", label: "What it means", items: "Items — one per line", cta: "Button", url: "Link", name: "Name", role: "Role", note: "Annotation", delta: "Change", unit: "Unit", prefix: "Prefix", values: "Values — one per line", labels: "Labels — one per line", ask: "Note for the agent" };
   let S = null, rev = 0, showAll = false;
-
-  const SA = window.__MD_STANDALONE || null;
-  let origVideo = SA ? JSON.parse(JSON.stringify(SA.video)) : null;
-
-  // ---------- Standalone in-browser composer (for Gemini Canvas) ----------
-  function initStandaloneEngine() {
-    if (!SA || SA._ready) return;
-    const fn = new Function("window", "globalThis", SA.runtime.kitJs + "\nconst MD = window.MD;\n" + Object.values(SA.styles).map((x) => x.js).join("\n"));
-    const ctx = { console };
-    ctx.globalThis = ctx;
-    fn(ctx, ctx);
-    SA.MD = ctx.MD;
-    for (const [name, st] of Object.entries(SA.MD.styles)) st.id = name;
-    SA._ready = true;
-  }
-
-  function lum(hex) {
-    const m = String(hex).replace("#", "").match(/^([\da-f]{2})([\da-f]{2})([\da-f]{2})/i);
-    if (!m) return 0.5;
-    const c = m.slice(1).map((x) => { const v = parseInt(x, 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
-    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-  }
-  function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
-  function readableOn(bg) { return contrast(bg, "#ffffff") >= contrast(bg, "#0b0b0b") ? "#ffffff" : "#0b0b0b"; }
-  const r3 = (x) => Math.round(x * 1000) / 1000;
-
-  function composeInBrowser(vInput, initialTime = 0) {
-    initStandaloneEngine();
-    const MDx = SA.MD;
-    const v0 = vInput || SA.video;
-    (v0.scenes || []).forEach((s, i) => { if (!s.id) s.id = `s${i + 1}`; });
-    const v = { ...v0, scenes: (v0.scenes || []).filter((s) => !s.off) };
-    const st = MDx.styles[v.style] || MDx.styles[Object.keys(MDx.styles)[0]];
-    MDx._st = st;
-    const F = FORMAT_DIMS[v.format || "16:9"] || FORMAT_DIMS["16:9"];
-    const { W, H, fmt } = F;
-    const u = Math.min(W, H) / 100;
-    const warn = [];
-
-    const fonts = st.fonts || [];
-    let font = typeof v.font === "number" ? fonts[v.font] : typeof v.font === "string" ? fonts.find((f) => f.name.toLowerCase() === v.font.toLowerCase()) : null;
-    if (v.font && typeof v.font === "object") font = { ...fonts[0], ...v.font, name: "Custom" };
-    font = font || fonts[0];
-    const pals = st.palettes || [];
-    let pal = typeof v.palette === "number" ? pals[v.palette] : typeof v.palette === "string" ? pals.find((p) => p.name.toLowerCase() === v.palette.toLowerCase()) : null;
-    if (v.palette && typeof v.palette === "object") pal = { ...pals[0], ...v.palette, name: "Custom" };
-    pal = { ...(pal || pals[0]) };
-    const brand = v.brand || {};
-    if (brand.color && !(v.palette && typeof v.palette === "object" && v.palette.accent)) {
-      pal.accent = brand.color;
-      pal.accentInk = readableOn(brand.color);
-      pal.name = (pal.name || "") + " + brand";
-    }
-
-    const ctxBase = {
-      fmt, W, H, u, st, video: v,
-      T: st.T || {}, O: st.O || {}, S: v.sound && v.sound.sfx === "off" ? {} : st.S || {},
-      listIcon: st.listIcon,
-      asset(src) {
-        const m = SA.media && SA.media[src];
-        if (!m || !m.dataUri) { warn.push(`missing file: ${src}`); return null; }
-        if (m.svgText && /currentColor/.test(m.svgText)) {
-          const colored = m.svgText.replace(/currentColor/g, pal.ink || "#000");
-          return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(colored)));
-        }
-        return m.dataUri;
-      },
-      ratio() { return null; },
-      deviceMeta(name) { return (SA.devices && SA.devices[name]) || null; },
-      icon(name) { return (SA.icons && (SA.icons[name] || SA.icons.sparkles)) || ""; },
-    };
-
-    const bpmOf = (SA.presetBpms && SA.presetBpms[(v.sound && v.sound.preset) || st.music || st.id]) || 110;
-    const sc = v.scenes || [];
-    const kinds = (k) => ((MDx.kinds[k] || (st.kinds && st.kinds[k])) ? { ...(MDx.kinds[k] || {}), ...((st.kinds && st.kinds[k]) || {}) } : null);
-    const mins = sc.map((s) => { const K = kinds(s.kind); return K ? Math.max(1, (K.min || (() => 2))(s)) : 2; });
-    let durs = sc.map((s, i) => (typeof s.dur === "number" ? s.dur : r3(mins[i] + 0.2)));
-    const total0 = durs.reduce((a, b) => a + b, 0);
-    if (v.length && total0 > 0) {
-      const f = v.length / total0;
-      durs = durs.map((d) => r3(d * f));
-    }
-    const hb = bpmOf ? 30 / bpmOf : 0.25;
-    durs = durs.map((d, i) => {
-      const q = Math.max(1, Math.round(d / hb));
-      let qd = q * hb;
-      if (qd < mins[i] * 0.9 && typeof sc[i].dur !== "number") qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
-      return r3(qd);
-    });
-    sc.forEach((s, i) => {
-      if (durs[i] < mins[i] * 0.85) warn.push(`scene ${i + 1} (${s.kind}) gets ${durs[i].toFixed(1)} s but needs about ${mins[i].toFixed(1)} s to read`);
-    });
-
-    const t0s = [];
-    let acc = 0;
-    durs.forEach((d) => { t0s.push(r3(acc)); acc += d; });
-    const duration = r3(acc);
-    const trName = (s, i) => (i === 0 ? "cut" : s.transition || (st.transitionFor && st.transitionFor(s, i, sc)) || st.transition || "fade");
-    const trOv = (name) => { const T = (st.transitions && st.transitions[name]) || MDx.transitions[name]; return T ? T.ov : 0; };
-
-    const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15 };
-    const DENSE = {
-      landscape: DENSE_K,
-      portrait: { ...DENSE_K, list: 1.25, steps: 1.25, features: 1.2, compare: 1.2, chart: 1.25, quote: 1.15, outro: 1.25 },
-      square: { ...DENSE_K, features: 1.1, compare: 1.15, list: 1.2, steps: 1.2, chart: 1.15 },
-      tall: { ...DENSE_K, features: 1.15, compare: 1.2, list: 1.25, steps: 1.25, chart: 1.2 },
-    };
-
-    const scenes = [];
-    const htmlScenes = [];
-    sc.forEach((s, i) => {
-      const id = s.id ? String(s.id).replace(/[^\w-]/g, "") : `s${i + 1}`;
-      s.id = id;
-      const K = kinds(s.kind);
-      const dur = durs[i];
-      const tin = trName(s, i), ov = trOv(tin);
-      const next = sc[i + 1];
-      const ovNext = next ? trOv(trName(next, i + 1)) : 0;
-      const t0 = t0s[i];
-      const vis0 = r3(Math.max(0, t0 - ov / 2)), vis1 = r3(next ? t0 + dur + ovNext / 2 : duration);
-      if (!K) return;
-      const c = { ...ctxBase, sceneId: id, i, n: sc.length, dur };
-      let html = K.markup(s, c, dur);
-      const fillMap = { screen: { maxh: fmt === "landscape" ? 44 : 22, max: fmt === "landscape" ? 15 : 11 }, ...(st.fill || {}) };
-      if (fillMap[s.kind]) {
-        const f = fillMap[s.kind];
-        html = html.replace(/data-fit data-maxh="[\d.]+"/g, `data-fit="fill" data-maxh="${f.maxh || 60}" data-maxfs="${f.max || 40}"`);
-      }
-      let events = (K.plan ? K.plan(s, c, dur) : []).filter((e) => e && e.move && e.t < dur - 0.05);
-      const lens = events.map((e) => (MDx.moveLen(e.move, e.n, e.o) || 0));
-      const settled = events.reduce((m, e, j) => (lens[j] > 0 ? Math.max(m, e.t + lens[j]) : m), 0);
-      const hero = r3(Math.min(dur - Math.max(0.12, ovNext / 2 + 0.1), K.hero ? K.hero(s, c, dur) : Math.max(settled + 0.25, Math.min(dur * 0.6, 1.2))));
-      const tone = s.tone || (st.tone ? st.tone(s, i, c) : "base");
-      const cls = st.sceneClass ? st.sceneClass(s, i, c) : "";
-      const us = st.unitScale && st.unitScale[fmt];
-      const base = (DENSE[fmt] || {})[s.kind] ?? 1;
-      const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
-      const wrapStyle = scale !== 1 ? ` style="--u:${r3(u * scale)}px"` : "";
-      htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
-      scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
-    });
-
-    if (pal.accent && pal.bg && contrast(pal.accent, pal.bg) < 2.6) warn.push(`the accent ${pal.accent} is too pale on the background ${pal.bg} — *emphasis* won't read well`);
-    const FALLBACK = { serif: "Georgia, serif", mono: "ui-monospace, Menlo, monospace", sans: "system-ui, sans-serif" };
-    const famStack = (f, kind = "sans") => `"${f}", ${FALLBACK[kind]}`;
-    const vars = {
-      "--u": `${u}px`, "--W": `${W}px`, "--H": `${H}px`,
-      "--bg": pal.bg, "--ink": pal.ink, "--accent": pal.accent, "--accent-ink": pal.accentInk || readableOn(pal.accent),
-      "--muted": pal.muted, "--surface": pal.surface, "--line": pal.line || pal.muted,
-      "--bg0": pal.bg, "--ink0": pal.ink, "--accent0": pal.accent, "--accent-ink0": pal.accentInk || readableOn(pal.accent), "--muted0": pal.muted, "--surface0": pal.surface,
-      "--accent2": pal.accent2 || pal.accent, "--accent3": pal.accent3 || pal.accent2 || pal.accent,
-      "--f-display": famStack(font.display, font.displayKind || "sans"), "--f-text": famStack(font.text), "--f-mono": famStack(font.mono || "JetBrains Mono", "mono"),
-      "--f-num": famStack(font.num || font.display, font.displayKind || "sans"),
-      ...(font.vars || {}), ...(pal.vars || {}),
-    };
-    const varCss = Object.entries(vars).filter(([, x]) => x != null).map(([a, b]) => `${a}:${b}`).join(";");
-    const wipes = scenes.map((s, i) => (s.tin === "wipe" ? `<i id="md-wipe-${i}"></i>` : "")).join("");
-    const bgHtml = st.background && st.background.markup ? st.background.markup({ ...ctxBase, pal, font }) : "";
-    const P = { sb: true, initialTime, style: st.id, fmt, W, H, u, duration, drift: v.drift ?? st.drift ?? 0, grain: (v.grain ?? st.grain ?? 0) > 0, scenes: scenes.map(({ id, t0, dur, vis0, vis1, tin, ov, events }) => ({ id, t0, dur, vis0, vis1, tin, ov, events })) };
-
-    const stBundle = SA.styles[st.id] || { css: "", js: "" };
-    const openScript = "<scr" + "ipt>";
-    const closeScript = "</scr" + "ipt>";
-    const docHtml = `<!doctype html>
-<html lang="${esc(v.lang || "en")}">
-<head>
-<meta charset="utf-8">
-<style>${SA.fontFacesCss || ""}</style>
-<style>${SA.runtime.kitCss}</style>
-<style>${stBundle.css}</style>
-<style>#root{${varCss};--grain:${v.grain ?? st.grain ?? 0}}</style>
-</head>
-<body>
-<div id="root" class="md st-${st.id} ${fmt} pal-${esc((pal.name || "").split(" ")[0].toLowerCase())}" data-composition-id="main" data-start="0" data-width="${W}" data-height="${H}" data-duration="${duration}">
-<div class="md-bg">${bgHtml}</div>
-${htmlScenes.join("\n")}
-<div class="md-wipe" data-layout-ignore>${wipes}</div>
-${(v.grain ?? st.grain ?? 0) > 0 ? '<div class="md-grain"></div>' : ""}
-</div>
-${openScript}${SA.runtime.gsap}${closeScript}
-${openScript}${SA.runtime.kitJs}${closeScript}
-${openScript}${SA.runtime.typeJs}${closeScript}
-${openScript}${stBundle.js}${closeScript}
-${openScript}
-MD.build(${JSON.stringify(P)}, function (tl) {
-  window.__timelines = window.__timelines || {};
-  window.__timelines["main"] = tl;
-});
-${closeScript}
-</body>
-</html>`;
-
-    const report = {
-      style: st.id, styleName: st.name, format: v.format || "16:9", W, H, duration, font: font.name, palette: pal.name,
-      scenes: scenes.map((s) => ({ id: s.id, kind: s.kind, t0: s.t0, dur: s.dur, hero: s.hero, tin: s.tin, tone: s.tone })),
-      warnings: [...new Set(warn)],
-      mixFile: SA.mixDataUri ? "embedded" : null,
-      bpm: bpmOf,
-    };
-    return { docHtml, report };
-  }
-
-  function applyPatchLocal(v, p) {
-    initStandaloneEngine();
-    const MD = SA.MD;
-    const st = MD.styles[v.style] || {};
-    const fieldsOf = (st, kinds, kind) => ((st.kinds && st.kinds[kind] && st.kinds[kind].fields) || (kinds[kind] && kinds[kind].fields) || []);
-    for (const k of ["font", "palette"]) {
-      if (!(k in p)) continue;
-      if (v[k] && typeof v[k] === "object") v[`brand_${k}`] = v[k];
-      if (p[k] === "brand") { if (v[`brand_${k}`]) p[k] = v[`brand_${k}`]; else delete p[k]; }
-    }
-    for (const k of ["style", "format", "length", "font", "palette", "direction"]) if (k in p) v[k] = p[k];
-    if (p.brandColor !== undefined) v.brand = { ...(v.brand || {}), color: p.brandColor || null };
-    if (p.sfx !== undefined) v.sound = { ...(v.sound || {}), sfx: p.sfx };
-    if (Array.isArray(p.scenes)) {
-      for (const ps of p.scenes) {
-        const s = (v.scenes || []).find((x) => String(x.id) === String(ps.id));
-        if (!s) continue;
-        if (typeof ps.ask === "string") s.ask = ps.ask;
-        for (const k of fieldsOf(st, MD.kinds, s.kind)) {
-          if (!(k in ps) || k === "ask") continue;
-          const val = ps[k];
-          if (k === "items" && s.kind === "features" && Array.isArray(val)) s.items = val.map((t, i) => ({ ...((s.items || [])[i] || {}), title: String(t) }));
-          else if (Array.isArray(val)) { const old = s[k]; s[k] = val.map((x) => (Array.isArray(old) && typeof old[0] === "number" && !isNaN(+x) ? +x : String(x))); }
-          else if (typeof val === "string") s[k] = val;
-        }
-        if (typeof ps.remove === "boolean") s.off = ps.remove;
-      }
-    }
-  }
-
-  function buildLocalView(v, report) {
-    initStandaloneEngine();
-    const MD = SA.MD;
-    const st = MD.styles[v.style] || {};
-    const kinds = MD.kinds;
-    const fieldsOf = (st, kinds, kind) => ((st.kinds && st.kinds[kind] && st.kinds[kind].fields) || (kinds[kind] && kinds[kind].fields) || []);
-    const EDITABLE = (val) => typeof val === "string" || typeof val === "number" || (Array.isArray(val) && val.every((x) => typeof x === "string" || typeof x === "number"));
-    return {
-      ...SA.initialState,
-      title: v.title, brief: v.brief || "", purpose: v.purpose || "", direction: v.direction || "",
-      style: v.style, format: v.format || "16:9", length: v.length || null,
-      font: typeof v.font === "object" ? "brand" : v.font ?? 0, palette: typeof v.palette === "object" ? "brand" : v.palette ?? 0,
-      brandFont: typeof v.font === "object" ? v.font : v.brand_font || null, brandPalette: typeof v.palette === "object" ? v.palette : v.brand_palette || null,
-      brandColor: (v.brand && v.brand.color) || "", sfx: (v.sound && v.sound.sfx) || "on",
-      why: v.why || {}, alternates: (v.choices || v.alternates || []).filter((x) => MD.styles[x] && x !== v.style),
-      report,
-      W: FORMAT_DIMS[v.format || "16:9"].W, H: FORMAT_DIMS[v.format || "16:9"].H,
-      scenes: (v.scenes || []).map((s, i) => ({
-        id: s.id, kind: s.kind, label: (st.kinds && st.kinds[s.kind] && st.kinds[s.kind].label) || null,
-        fields: fieldsOf(st, kinds, s.kind).filter((f) => f === "items" ? Array.isArray(s.items) || s.items == null : EDITABLE(s[f]) || (s[f] == null && ["text", "title"].includes(f))),
-        values: Object.fromEntries(fieldsOf(st, kinds, s.kind).filter((f) => f !== "items" && EDITABLE(s[f]) && !["media", "html"].includes(f)).map((f) => [f, s[f]])),
-        items: Array.isArray(s.items) ? s.items.map((x) => (typeof x === "string" ? x : x.title || x.label || "")) : undefined,
-        media: s.media ? [].concat(s.media) : [], plan: s.plan || "", why: s.why || "", ask: s.ask || "",
-        at: report.scenes.find((rs) => String(rs.id) === String(s.id)) || null,
-      })),
-    };
-  }
 
   // ---------- fonts for the chips ----------
   let fontsDone = false;
   function loadFonts() {
     if (fontsDone) return; fontsDone = true;
-    const st = document.createElement("style");
-    if (SA && SA.fontFacesCss) {
-      st.textContent = SA.fontFacesCss;
-    } else if (S && S.fontFaces) {
-      const pfx = "/" + "fonts/";
-      st.textContent = S.fontFaces.map((f) => `@font-face{font-family:"${f.fam}";src:url("${pfx}${f.file}") format("woff2");font-weight:${f.weight};font-style:${f.style};${f.stretch ? `font-stretch:${f.stretch};` : ""}}`).join("\n");
-    }
-    document.head.appendChild(st);
+    const css = S.fontFaces.map((f) => `@font-face{font-family:"${f.fam}";src:url("/fonts/${f.file}") format("woff2");font-weight:${f.weight};font-style:${f.style};${f.stretch ? `font-stretch:${f.stretch};` : ""}}`).join("\n");
+    const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   }
 
   // ---------- frames: scale a W×H composition into any box ----------
@@ -518,21 +236,10 @@ ${closeScript}
     box.style.height = H * k + "px";
   }
   const ro = new ResizeObserver((es) => es.forEach((e) => sizeFrame(e.target)));
-  function mount(box, src, styleIdOverride = null, timeOverride = 0) {
+  function mount(box, src) {
     let f = box.querySelector("iframe");
     if (!f) { f = document.createElement("iframe"); f.setAttribute("scrolling", "no"); f.setAttribute("tabindex", "-1"); f.title = "Scene preview"; box.prepend(f); }
-    if (SA) {
-      const key = `${styleIdOverride || SA.video.style}:${timeOverride.toFixed(2)}:${rev}`;
-      if (f.dataset.src !== key) {
-        f.dataset.src = key;
-        const vForFrame = styleIdOverride && styleIdOverride !== SA.video.style
-          ? { ...SA.video, style: styleIdOverride, font: typeof SA.video.font === "object" ? SA.video.font : 0, palette: typeof SA.video.palette === "object" ? SA.video.palette : 0 }
-          : SA.video;
-        f.srcdoc = composeInBrowser(vForFrame, timeOverride).docHtml;
-      }
-    } else if (f.dataset.src !== src) {
-      f.dataset.src = src; f.src = src;
-    }
+    if (f.dataset.src !== src) { f.dataset.src = src; f.src = src; }
     box.dataset.w = S.W; box.dataset.h = S.H;
     sizeFrame(box); ro.observe(box); frames.add(box);
   }
@@ -544,9 +251,7 @@ ${closeScript}
   const P = () => { try { return main.contentWindow && main.contentWindow.MDP; } catch (e) { return null; } };
   function seek(x) {
     t = Math.max(0, Math.min(dur() - 0.001, x));
-    const m = P();
-    if (m) m.seek(t);
-    else if (main.contentWindow) { try { main.contentWindow.postMessage({ md: "seek", t }, "*"); } catch (e) {} }
+    const m = P(); if (m) m.seek(t);
     head.style.left = (t / dur()) * 100 + "%";
     $("#time").textContent = `${fmtT(t)} / ${fmtT(dur())}`;
     scrub.setAttribute("aria-valuenow", t.toFixed(1)); scrub.setAttribute("aria-valuemax", dur().toFixed(1));
@@ -577,39 +282,25 @@ ${closeScript}
   window.addEventListener("keydown", (e) => { if (e.key === " " && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); playing ? pause() : play(); } });
   window.addEventListener("message", (e) => { if (e.data && e.data.md === "ready" && e.source === main.contentWindow) seek(t); });
 
-  // ---------- sound ----------
+  // ---------- sound: the same cues the render will mix ----------
   const audio = (() => {
     let ctx = null, on = true; const bufs = new Map(); let live = [];
-    const decodeDataUri = async (dataUri) => {
-      const b64 = dataUri.split(",")[1] || "";
-      const bin = atob(b64);
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      return await ctx.decodeAudioData(bytes.buffer);
-    };
-    const get = async (url) => {
-      if (bufs.has(url)) return bufs.get(url);
-      const p = url.startsWith("data:")
-        ? decodeDataUri(url).catch(() => null)
-        : window.fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).catch(() => null);
-      bufs.set(url, p);
-      return p;
-    };
+    const get = async (url) => { if (bufs.has(url)) return bufs.get(url); const p = fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).catch(() => null); bufs.set(url, p); return p; };
     async function start(at) {
       if (!on || !S) return;
       ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
       if (ctx.state === "suspended") await ctx.resume();
       stop();
       const base = ctx.currentTime + 0.03;
-      const mixUrl = SA && SA.mixDataUri ? SA.mixDataUri : (S.report.mixFile ? `/${"build"}/${S.report.mixFile}?r=${rev}` : null);
-      const list = mixUrl ? [{ url: mixUrl, start: 0, gain: 1, music: true }] : [];
+      // the storyboard plays the same mixed soundtrack the render uses
+      const list = S.report.mixFile ? [{ url: `/build/${S.report.mixFile}?r=${rev}`, start: 0, gain: 1, music: true }] : [];
       for (const c of list) {
         get(c.url).then((b) => {
           if (!b || !playing) return;
           const off = at - c.start; if (off > b.duration) return;
           const src = ctx.createBufferSource(); src.buffer = b;
           const g = ctx.createGain(); g.gain.value = c.gain; src.connect(g).connect(ctx.destination);
-          const now = ctx.currentTime, when = base + Math.max(0, c.start - at);
+          const now = ctx.currentTime, when = base + Math.max(0, c.start - at) - (now - base > 0 ? 0 : 0);
           if (c.start >= at) src.start(Math.max(now, when)); else src.start(now, off);
           if (c.music) src.stop(now + Math.max(0, dur() - at));
           live.push(src);
@@ -632,13 +323,9 @@ ${closeScript}
     const b = $("#brief"); if (S.brief) { b.hidden = false; b.innerHTML = `<b>You asked for</b>${esc(S.brief)}`; } else b.hidden = true;
     // player
     screen.dataset.w = S.W; screen.dataset.h = S.H;
-    const ms = "/" + "build/index.html";
+    const ms = `/build/index.html`;
     const want = src(ms, t);
-    if (main.dataset.rev !== String(rev)) {
-      main.dataset.rev = rev;
-      if (SA) main.srcdoc = composeInBrowser(SA.video, t).docHtml;
-      else main.src = want;
-    }
+    if (main.dataset.rev !== String(rev)) { main.dataset.rev = rev; main.src = want; }
     sizePlayer();
     scrub.querySelectorAll(".seg").forEach((x) => x.remove());
     S.report.scenes.forEach((s, i) => {
@@ -658,8 +345,8 @@ ${closeScript}
     const hero0 = S.report.scenes[0] ? S.report.scenes[0].hero : 1;
     document.querySelectorAll("[data-thumb]").forEach((box) => {
       const id = box.dataset.thumb;
-      if (id === S.style) mount(box, src(ms, hero0), id, hero0);
-      else if (S.alternates.includes(id)) mount(box, src(`/${"alts"}/${id}/index.html`, hero0), id, hero0);
+      if (id === S.style) mount(box, src(ms, hero0));
+      else if (S.alternates.includes(id)) mount(box, src(`/alts/${id}/index.html`, hero0));
       else { box.style.height = (box.clientWidth || 200) * S.H / S.W + "px"; box.style.background = `linear-gradient(135deg, ${x2(id).bg} 0 60%, ${x2(id).accent} 60%)`; box.innerHTML = `<span style="position:absolute;left:12px;bottom:10px;font:700 22px/1 '${esc(x2(id).font)}';color:${x2(id).ink}">Aa</span>`; }
     });
     $("#formats").innerHTML = FORMATS.map(([f, n]) => `<button class="chip" data-format="${f}" aria-pressed="${S.format === f}">${n} <small>${f}</small></button>`).join("");
@@ -677,6 +364,7 @@ ${closeScript}
       `<label class="chip brandpick" aria-pressed="${!!S.brandColor}"><input type="color" id="brand" value="${S.brandColor || "#ff5a1f"}" aria-label="Your brand colour"> ${S.brandColor ? "Your colour" : "Use my colour"}</label>${S.brandColor ? '<button class="chip" data-nobrand="1">Clear</button>' : ""}`;
     $("#sfx").innerHTML = [["on", "On"], ["subtle", "Subtle"], ["off", "Off"]].map(([k, n]) => `<button class="chip" data-sfx="${k}" aria-pressed="${S.sfx === k}">${n}</button>`).join("");
     $("#warns").innerHTML = (S.report.warnings || []).map((w) => `<div>⚠ ${esc(w)}</div>`).join("");
+    // scenes
     renderScenes(first);
   }
   function x2(id) { const s = S.styles.find((x) => x.id === id); const p = s.palettes[0]; return { bg: p.bg, ink: p.ink, accent: p.accent, font: s.fonts[0].display }; }
@@ -692,14 +380,14 @@ ${closeScript}
     const box = $("#scenes");
     const at = new Map(S.report.scenes.map((s) => [String(s.id), s]));
     const focus = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.key;
-    const ms = "/" + "build/index.html";
     if (!first && box.children.length === S.scenes.length && [...box.children].every((c, i) => c.dataset.id === String(S.scenes[i].id))) {
+      // keep what the person is typing in; refresh times + previews only
       S.scenes.forEach((s, i) => {
         const c = box.children[i], a = at.get(String(s.id));
         c.classList.toggle("off", !a);
         c.querySelector(".tm").textContent = a ? `${a.t0.toFixed(1)}–${(a.t0 + a.dur).toFixed(1)} s` : "removed";
         c.querySelector(".tc").textContent = a ? `${fmtT(a.t0)}` : "—";
-        if (a) mount(c.querySelector(".thumb"), src(ms, a.hero), S.style, a.hero);
+        if (a) mount(c.querySelector(".thumb"), src("/build/index.html", a.hero));
       });
       return;
     }
@@ -717,7 +405,7 @@ ${closeScript}
           <div class="fields">${fields.map((f) => field(s, f)).join("")}${s.media && s.media.length ? `<div class="f"><label>Uses</label><div class="hint">${s.media.map(esc).join(", ")}</div></div>` : ""}<div class="f note"><label for="n-${s.id}">${FIELD.ask}</label><textarea id="n-${s.id}" data-key="ask" rows="2" placeholder="e.g. make this one faster, put my logo here, use the second screenshot">${esc(s.ask)}</textarea></div></div>
         </div>`;
       box.appendChild(c);
-      if (a) mount(c.querySelector(".thumb"), src(ms, a.hero), S.style, a.hero);
+      if (a) mount(c.querySelector(".thumb"), src("/build/index.html", a.hero));
       else c.querySelector(".thumb").style.height = "120px";
     });
     if (focus) { const el = box.querySelector(`[data-key="${focus}"]`); if (el) el.focus(); }
@@ -741,7 +429,7 @@ ${closeScript}
   async function patch(p, now) {
     Object.assign(pending, p, p.scenes && pending.scenes ? { scenes: [...pending.scenes, ...p.scenes] } : {});
     clearTimeout(timer);
-    timer = setTimeout(flush, now ? 0 : (SA ? 280 : 650));
+    timer = setTimeout(flush, now ? 0 : 650);
   }
   async function flush() {
     if (inflight) { timer = setTimeout(flush, 200); return; }
@@ -750,17 +438,9 @@ ${closeScript}
     inflight = true; saving.classList.add("on");
     const visual = Object.keys(p).some((k) => k !== "scenes") || (p.scenes || []).some((s) => Object.keys(s).some((k) => k !== "id" && k !== "ask"));
     try {
-      let next;
-      if (SA) {
-        applyPatchLocal(SA.video, p);
-        const { report } = composeInBrowser(SA.video, t);
-        next = buildLocalView(SA.video, report);
-      } else {
-        const apiUrl = "/" + "api/patch";
-        const r = await window.fetch(apiUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(p) });
-        next = await r.json();
-        if (next.error) throw new Error(next.error);
-      }
+      const r = await fetch("/api/patch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(p) });
+      const next = await r.json();
+      if (next.error) throw new Error(next.error);
       const was = playing; if (visual) { pause(); rev++; }
       S = next; render(Object.keys(p).some((k) => k === "order" || k === "style" || k === "format"));
       if (was && visual) setTimeout(() => play(), 400);
@@ -780,7 +460,7 @@ ${closeScript}
     if (b.dataset.scene) { const a = S.report.scenes.find((x) => String(x.id) === b.dataset.scene); if (a) { play(a.t0); $("#player").scrollIntoView({ behavior: "smooth", block: "center" }); } return; }
   });
   $("#more").onclick = () => { showAll = !showAll; render(); };
-
+  // point at a thumbnail and it plays its scene (style cards play the opening)
   const hov = new Map();
   function thumbRange(box) {
     if (box.dataset.scene) { const a = S.report.scenes.find((x) => String(x.id) === box.dataset.scene); return a ? [a.t0, a.t0 + a.dur, a.hero] : null; }
@@ -790,23 +470,9 @@ ${closeScript}
     const box = e.target.closest(".thumb"); if (!box || hov.has(box)) return;
     const f = box.querySelector("iframe"), r = thumbRange(box); if (!f || !r) return;
     const n0 = performance.now();
-    const tick = () => {
-      const seekT = r[0] + (((performance.now() - n0) / 1000) % (r[1] - r[0]));
-      try {
-        if (f.contentWindow && f.contentWindow.MDP) f.contentWindow.MDP.seek(seekT);
-        else if (f.contentWindow) f.contentWindow.postMessage({ md: "seek", t: seekT }, "*");
-      } catch (x) {}
-      hov.set(box, requestAnimationFrame(tick));
-    };
+    const tick = () => { let m; try { m = f.contentWindow.MDP; } catch (x) {} if (m) m.seek(r[0] + (((performance.now() - n0) / 1000) % (r[1] - r[0]))); hov.set(box, requestAnimationFrame(tick)); };
     hov.set(box, requestAnimationFrame(tick));
-    const leave = (ev) => {
-      if (box.contains(ev.relatedTarget)) return;
-      cancelAnimationFrame(hov.get(box)); hov.delete(box); box.removeEventListener("pointerout", leave);
-      try {
-        if (f.contentWindow && f.contentWindow.MDP) f.contentWindow.MDP.seek(r[2]);
-        else if (f.contentWindow) f.contentWindow.postMessage({ md: "seek", t: r[2] }, "*");
-      } catch (x) {}
-    };
+    const leave = (ev) => { if (box.contains(ev.relatedTarget)) return; cancelAnimationFrame(hov.get(box)); hov.delete(box); box.removeEventListener("pointerout", leave); try { f.contentWindow.MDP.seek(r[2]); } catch (x) {} };
     box.addEventListener("pointerout", leave);
   });
   document.addEventListener("input", (e) => {
@@ -817,81 +483,17 @@ ${closeScript}
     const val = k === "items" || el.dataset.list ? el.value.split("\n").map((x) => x.trim()).filter(Boolean) : el.value;
     patch({ scenes: [{ id: card.dataset.id, [k]: val }] });
   });
-
   const dir = $("#direction");
   dir.addEventListener("input", () => { dir.style.height = "auto"; dir.style.height = Math.min(120, dir.scrollHeight) + "px"; });
-
-  function buildApprovalSummary() {
-    if (!SA || !origVideo) return "Approve and render the video.";
-    const v = SA.video;
-    const changes = [];
-    for (const k of ["style", "format", "length", "font", "palette"]) {
-      if (JSON.stringify(origVideo[k]) !== JSON.stringify(v[k])) changes.push(`${k}=${JSON.stringify(v[k])}`);
-    }
-    if (JSON.stringify((origVideo.brand || {}).color) !== JSON.stringify((v.brand || {}).color)) {
-      changes.push(`brand.color=${JSON.stringify((v.brand || {}).color)}`);
-    }
-    if (JSON.stringify((origVideo.sound || {}).sfx) !== JSON.stringify((v.sound || {}).sfx)) {
-      changes.push(`sound.sfx=${JSON.stringify((v.sound || {}).sfx)}`);
-    }
-    (v.scenes || []).forEach((s, idx) => {
-      const o = (origVideo.scenes || [])[idx] || {};
-      for (const k of Object.keys(s)) {
-        if (!["ask", "off", "id"].includes(k) && JSON.stringify(o[k]) !== JSON.stringify(s[k])) {
-          changes.push(`scenes.${idx}.${k}=${JSON.stringify(s[k])}`);
-        }
-      }
-      if (s.off && !o.off) changes.push(`scenes.${idx}.off=true`);
-      if ((s.ask || "").trim()) changes.push(`Note on scene ${idx + 1}: ${s.ask.trim()}`);
-    });
-    if ((dir.value || "").trim()) changes.push(`Overall note: ${dir.value.trim()}`);
-    if (!changes.length) return "Approve and render the video as planned.";
-    return "Approve and render with these storyboard changes:\n" + changes.join("\n");
-  }
-
   $("#approve").onclick = async () => {
     clearTimeout(timer); await flush();
     pause();
-    if (SA) {
-      $("#done-summary").value = buildApprovalSummary();
-      $("#done").classList.add("on");
-      return;
-    }
     $("#approve").disabled = true;
-    const apiUrl = "/" + "api/approve";
-    await window.fetch(apiUrl, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ direction: dir.value }) }).catch(() => {});
-    $("#done-summary").hidden = true;
-    $("#copy-summary").hidden = true;
-    $("#done-sub").textContent = "I'm rendering it now. It'll open on its own when it's done.";
+    await fetch("/api/approve", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ direction: dir.value }) }).catch(() => {});
     $("#done").classList.add("on");
   };
 
-  $("#copy-summary").onclick = () => {
-    const ta = $("#done-summary");
-    ta.select();
-    try { document.execCommand("copy"); } catch (e) {}
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(ta.value).catch(() => {});
-    }
-    $("#copy-summary").textContent = "Copied! Paste in chat";
-    setTimeout(() => ($("#copy-summary").textContent = "Copy for Gemini chat"), 2500);
-  };
-
-  $("#back-edit").onclick = () => {
-    $("#done").classList.remove("on");
-    $("#approve").disabled = false;
-  };
-
-  if (SA) {
-    const { report } = composeInBrowser(SA.video, 0);
-    S = buildLocalView(SA.video, report);
-    dir.value = S.direction || "";
-    t = S.report.scenes[0] ? S.report.scenes[0].hero : 0;
-    render(true);
-  } else {
-    const stateUrl = "/" + "api/state";
-    window.fetch(stateUrl).then((r) => r.json()).then((s) => { S = s; dir.value = S.direction || ""; t = S.report.scenes[0] ? S.report.scenes[0].hero : 0; render(true); });
-  }
+  fetch("/api/state").then((r) => r.json()).then((s) => { S = s; dir.value = S.direction || ""; t = S.report.scenes[0] ? S.report.scenes[0].hero : 0; render(true); });
 })();
 </script>
 </body>
