@@ -650,7 +650,7 @@
       if (register) register(tl);
       else window.__timelines["main"] = tl;
       if (window.__hfForceTimelineRebind) window.__hfForceTimelineRebind();
-      if (/[?&]sb=1/.test(location.search)) storyboardMode(tl, P);
+      if (/[?&]sb=1/.test(location.search) || P.sb || window.__MD_SB) storyboardMode(tl, P);
     };
     // wait for the fonts and every image, so fitting and scrolling measure the real thing
     const imgs = Array.from(document.images).map((im) => (im.decode ? im.decode().catch(() => {}) : null));
@@ -733,7 +733,9 @@
       }
     };
     window.MDP = { seek, duration: P.duration, ready: true };
-    seek(+(new URLSearchParams(location.search).get("t") || 0));
+    const t0 = P.initialTime != null ? +P.initialTime : +(new URLSearchParams(location.search).get("t") || 0);
+    seek(t0);
+    window.addEventListener("message", (e) => { if (e.data && e.data.md === "seek" && typeof e.data.t === "number") seek(e.data.t); });
     window.parent && window.parent.postMessage({ md: "ready" }, "*");
   }
 })(typeof window !== "undefined" ? window : globalThis);
