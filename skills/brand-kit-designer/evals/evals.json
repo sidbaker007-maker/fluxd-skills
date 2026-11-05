@@ -1,0 +1,41 @@
+{
+  "skill_name": "brand-kit-designer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a complete brand kit and logo system for 'Kiln & Crumb', an artisanal neighbourhood sourdough bakery and specialty coffee roaster. It should feel warm, architectural, and modern—definitely not rustic clip-art with wheat stalks, rolling pins, or steaming coffee mugs.",
+      "expected_output": "An 8-module interactive brand-board.html, audited SVG logo files (primary lockup, standalone mark, monochrome ink, inverted light, favicon), site.webmanifest, brand-tokens.json, and a contrast-verified warm artisanal color and typography system.",
+      "files": [],
+      "expectations": [
+        "Avoids banned bakery and coffee cliches (no wheat stalks, rolling pins, chef hats, or steaming mugs)",
+        "Runs brand_audit.py and achieves a passing score (>= 90/100) on SVG geometry and WCAG color contrast",
+        "Uses undertone-tinted canvas and ink colors rather than raw #FFFFFF and #000000",
+        "Generates the 8-module brand-board.html and production SVG/token bundle via generate_brand_board.py"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design a logo and brand identity kit for 'Kitewire', a developer platform for testing and deploying autonomous AI agents. Make sure it doesn't look like typical AI slop (no sparkles, brains, neural nets, or purple-blue neon gradients).",
+      "expected_output": "A high-craft technical brand identity system with geometric SVG marks tested down to 16px, a non-cliche palette (such as carbon ink, warm putty, and signal vermilion or updraft yellow), technical typography pairing, and exported asset kit.",
+      "files": [],
+      "expectations": [
+        "Explicitly avoids AI cliches (sparkles, brains, circuits, robot heads) and purple/blue neon gradients",
+        "Includes 64px, 32px, and 16px small-size pixel ladder verification",
+        "Defines a 6-role color palette with verified WCAG 2.1 contrast ratios and surface polarity rules",
+        "Exports logo-primary.svg, logo-mark.svg, favicon.svg, brand-tokens.json, and brand-board.html"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We're launching 'Northvault', a digital business banking and automated tax-pot app for independent designers and freelancers. Build us 3 distinct logo concepts at a checkpoint sheet first, plus recommend a bold, non-boring color and font system (no bank blue, coins, shields, or piggy banks).",
+      "expected_output": "A 3-concept checkpoint HTML sheet comparing three distinct SVG mark archetypes across light, dark, and signature stages with 64/32/16px scale tests and a contrast-verified palette.",
+      "files": [],
+      "expectations": [
+        "Avoids fintech cliches (no bank blue, coins, piggy banks, calculators, or shields)",
+        "Presents 3 distinct SVG mark concepts with honest misread/risk notes and a clear recommendation",
+        "Verifies SVG anchor economy and minimum gap floor using brand_audit.py",
+        "Generates concept-checkpoint.html or brand-board.html with live WCAG contrast scores"
+      ]
+    }
+  ]
+}

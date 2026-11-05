@@ -11,3 +11,8 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v03-2026.11.03-motion-designer-v1.2-cli-rtx` (2026-11-03) — Upgraded motion-designer v1.2 for local Linux CLI & NVIDIA RTX 3050 Ti NVENC
 - Added `doctor.js` RTX 3050 hardware detection (`h264_nvenc`), headless Chromium capture, and local CLI pipeline.
 
+## `v04-2026.11.05-core-skills-v1.0` (2026-11-05) — Added content-director v1.0, brand-kit-designer v1.0, and skill-creator v1.0
+- Added initial `content-director` v1.0 (4 Core Pillars: Geopolitics, Socio-Economics, M.Sc. Physics, Cinema Craft).
+- Added `brand-kit-designer` v1.0 (SVG logo craft auditor `brand_audit.py`, WCAG contrast math, 8-module brand board generator).
+- Added `skill-creator` v1.0 (evaluation harness, benchmark aggregator, and description optimizer).
+
