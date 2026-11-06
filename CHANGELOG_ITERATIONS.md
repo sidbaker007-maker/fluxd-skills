@@ -16,3 +16,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 - Added `brand-kit-designer` v1.0 (SVG logo craft auditor `brand_audit.py`, WCAG contrast math, 8-module brand board generator).
 - Added `skill-creator` v1.0 (evaluation harness, benchmark aggregator, and description optimizer).
 
+## `v05-2026.11.06-learn-style-v1.0-cli-rtx` (2026-11-06) — Added learn-style v1.0 reverse-engineering pipeline with CUDA faster-whisper
+- Added `learn-style` v1.0 (`setup_check.py`, `analyze_reference.py`, `compile_my_style.py`) for extracting shot contact sheets, 12fps hook/transition strips, optical flow zooms, and word timings.
+
