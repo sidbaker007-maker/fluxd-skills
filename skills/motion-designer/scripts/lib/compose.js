@@ -70,7 +70,7 @@ export const FONTS = {
 const FALLBACK = { serif: "Georgia, serif", mono: "ui-monospace, Menlo, monospace", sans: "system-ui, sans-serif" };
 const famStack = (f, kind = "sans") => `"${f}", ${FALLBACK[kind]}`;
 
-const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15, anomaly: 1.0, telescope: 1.0, pivot: 1.0, telemetry: 1.0 };
+const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15, anomaly: 1.0, telescope: 1.0, pivot: 1.0, telemetry: 1.0, rehook: 1.0, unlock: 1.0, fuse: 1.0, props: 1.0, cta: 1.0, diorama: 1.0 };
 const DENSE = {
   landscape: DENSE_K,
   portrait: { ...DENSE_K, list: 1.25, steps: 1.25, features: 1.2, compare: 1.2, chart: 1.25, quote: 1.15, outro: 1.25 },
@@ -101,14 +101,6 @@ const MD_count = (MDx, t) => MDx.count(t);
 export const readJSON = (f, d) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch (e) { if (d !== undefined) return d; throw new Error(`Can't read ${f}: ${e.message}`); } };
 export const writeJSON = (f, v) => { const tmp = `${f}.${process.pid}.tmp`; fs.writeFileSync(tmp, JSON.stringify(v, null, 2) + "\n"); fs.renameSync(tmp, f); };
 const r3 = (x) => Math.round(x * 1000) / 1000;
-const fmtSrtTime = (sec) => {
-  const s = Math.max(0, sec);
-  const hh = String(Math.floor(s / 3600)).padStart(2, "0");
-  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-  const ss = String(Math.floor(s % 60)).padStart(2, "0");
-  const ms = String(Math.round((s % 1) * 1000)).padStart(3, "0");
-  return `${hh}:${mm}:${ss},${ms}`;
-};
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const hash = (s) => crypto.createHash("sha1").update(s).digest("hex").slice(0, 8);
 
@@ -437,33 +429,9 @@ export function compose(work, opts = {}) {
     const base = (DENSE[fmt] || {})[s.kind] ?? 1;
     const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
     const wrapStyle = scale !== 1 ? ` style="--u:${r3(u * scale)}px"` : "";
-    // Build kinetic word-by-word captions if captions === "kinetic" or subtitles === "kinetic"
-    let kcapHtml = "";
-    const capMode = s.captions || v.captions || (v.subtitles === "kinetic" ? "kinetic" : null);
-    const rawVo = String(s.vo || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "").trim();
-    if (capMode === "kinetic" && rawVo) {
-      const words = rawVo.split(/\s+/).filter(Boolean);
-      const pauseSec = MDx.parsePause ? MDx.parsePause(s) : 0;
-      const speakDur = Math.max(1.0, dur - pauseSec - 0.25);
-      const wDur = speakDur / Math.max(1, words.length);
-      const chunkSize = fmt === "portrait" ? 4 : 6;
-      const chunks = [];
-      for (let ci = 0; ci < words.length; ci += chunkSize) {
-        const slice = words.slice(ci, ci + chunkSize);
-        const cStart = 0.12 + ci * wDur;
-        const cEnd = Math.min(dur - 0.08, cStart + slice.length * wDur);
-        chunks.push(`<div class="md-kcap-chunk" data-ci="${ci}">${slice.map((w, wi) => `<span class="md-kcap-w" data-wi="${ci + wi}">${esc(w)}</span>`).join(" ")}</div>`);
-        events.push({ t: r3(cStart), sel: `.md-kcap-chunk[data-ci="${ci}"]`, move: "show", n: 1, o: {} });
-        events.push({ t: r3(cEnd), sel: `.md-kcap-chunk[data-ci="${ci}"]`, move: "hide", n: 1, o: {} });
-        slice.forEach((_, wi) => {
-          events.push({ t: r3(cStart + wi * wDur), sel: `.md-kcap-w[data-wi="${ci + wi}"]`, move: "kcapWord", n: 1, o: { d: r3(wDur) } });
-        });
-      }
-      kcapHtml = `<div class="md-kcap-wrap" data-layout-ignore>${chunks.join("")}</div>`;
-    }
     const bgVidUrl = s.bgVideo ? ctxBase.asset(s.bgVideo) : null;
     const bgVidHtml = bgVidUrl ? `<video class="md-bg-video" src="${esc(bgVidUrl)}" muted playsinline data-start="${vis0}" data-duration="${r3(vis1 - vis0)}" style="opacity:${s.bgOpacity ?? 0.38}"></video>` : "";
-    htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}${kcapHtml}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
+    htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
     scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
   });
 
@@ -473,7 +441,7 @@ export function compose(work, opts = {}) {
   const cues = [];
   const pick = (name, k) => (Array.isArray(name) ? name[k % name.length] : name);
   let k = 0;
-  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "words"]);
+  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "words", "rehook", "unlock", "fuse", "props", "cta", "diorama"]);
   const MOVING = new Set(["push", "zoom", "wipe", "iris"]);
   scenes.forEach((s, i) => {
     if (sfxMode === "off") return;
@@ -507,11 +475,6 @@ export function compose(work, opts = {}) {
   }
   const pauses = [];
   sc.forEach((s, i) => {
-    if (s.sfxFile && scenes[i] && sfxMode !== "off") {
-      const absSfx = path.isAbsolute(s.sfxFile) ? s.sfxFile : path.resolve(work, s.sfxFile);
-      if (fs.existsSync(absSfx)) kept.push({ name: path.basename(s.sfxFile), file: absSfx, at: r3(scenes[i].t0 + (s.sfxAt || 0.15)), gain: s.sfxGain || 0.9 });
-      else warn.push(`missing custom SFX file: ${s.sfxFile} — drop it into assets/ (using synthesized fallback for now)`);
-    }
     const pz = MDx.parsePause ? MDx.parsePause(s) : 0;
     if (pz > 0 && scenes[i]) {
       const pat = Math.max(scenes[i].t0 + 0.4, scenes[i].t0 + scenes[i].dur - pz);
@@ -519,38 +482,8 @@ export function compose(work, opts = {}) {
       if (sfxMode !== "off") kept.push({ name: "thump", at: r3(pat), gain: 0.45 });
     }
   });
-  let voiceoverFile = sound.voiceover ? (path.isAbsolute(sound.voiceover) ? sound.voiceover : path.resolve(work, sound.voiceover)) : null;
-  if (voiceoverFile && !fs.existsSync(voiceoverFile)) {
-    warn.push(`missing voiceover file: ${sound.voiceover} — rendering soundtrack without VO track until uploaded`);
-    voiceoverFile = null;
-  }
-  // Generate timed .srt subtitle file (<work>/captions.srt & <out>/captions.srt) for Premiere Pro / DaVinci Resolve
-  const srtEntries = [];
-  let srtIdx = 1;
-  sc.forEach((s, i) => {
-    if (!scenes[i]) return;
-    const rawTxt = String(s.vo || s.text || s.title || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "").replace(/\*/g, "").replace(/\|/g, " ").trim();
-    if (!rawTxt) return;
-    const words = rawTxt.split(/\s+/).filter(Boolean);
-    const pz = MDx.parsePause ? MDx.parsePause(s) : 0;
-    const avail = Math.max(0.8, scenes[i].dur - pz - 0.15);
-    const chunkSz = 7;
-    const nChunks = Math.max(1, Math.ceil(words.length / chunkSz));
-    const cDur = avail / nChunks;
-    for (let c = 0; c < nChunks; c++) {
-      const subWords = words.slice(c * chunkSz, (c + 1) * chunkSz).join(" ");
-      if (!subWords) continue;
-      const st0 = scenes[i].t0 + c * cDur;
-      const st1 = Math.min(scenes[i].t0 + scenes[i].dur - 0.05, st0 + cDur - 0.04);
-      srtEntries.push(`${srtIdx++}\n${fmtSrtTime(st0)} --> ${fmtSrtTime(st1)}\n${subWords}\n`);
-    }
-  });
-  if (srtEntries.length) {
-    const srtContent = srtEntries.join("\n");
-    try { fs.writeFileSync(path.join(out, "captions.srt"), srtContent); fs.writeFileSync(path.join(work, "captions.srt"), srtContent); } catch {}
-  }
   const last = scenes[scenes.length - 1];
-  const soundPlan = { duration, style: st.id, preset: sound.preset || st.music || st.id, bpm: bpmOf, boundaries: scenes.slice(1).map((s) => s.t0), outroAt: last && ["outro", "logo"].includes(last.kind) ? last.t0 : r3(Math.max(0, duration - 2.5)), cues: kept.map(({ name, file, at, gain }) => ({ name, file, at, gain })), pauses, voiceover: voiceoverFile, music, musicVolume: sound.musicVolume, musicStart: sound.musicStart };
+  const soundPlan = { duration, style: st.id, preset: sound.preset || st.music || st.id, bpm: bpmOf, boundaries: scenes.slice(1).map((s) => s.t0), outroAt: last && ["outro", "logo"].includes(last.kind) ? last.t0 : r3(Math.max(0, duration - 2.5)), cues: kept.map(({ name, at, gain }) => ({ name, at, gain })), pauses, music, musicVolume: sound.musicVolume, musicStart: sound.musicStart };
   const audio = [];
   let soundReport = null;
   if (opts.audio !== false) {

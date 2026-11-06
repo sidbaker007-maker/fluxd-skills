@@ -18,13 +18,17 @@
   // a word is emphasised if any of it is inside *…*; punctuation stays glued to its word ("*minutes*.")
   function tokens(line) {
     const out = [];
-    let em = false;
+    let em = false, pill = false;
     for (const raw of String(line).split(/\s+/)) {
       if (!raw) continue;
-      let on = em;
-      for (const ch of raw) if (ch === "*") { em = !em; if (em) on = true; }
-      const w = raw.replace(/\*/g, "");
-      if (w) out.push({ w, em: on });
+      let on = em, onPill = pill;
+      for (const ch of raw) {
+        if (ch === "*") { em = !em; if (em) on = true; }
+        if (ch === "[") { pill = true; onPill = true; }
+        if (ch === "]") { pill = false; }
+      }
+      const w = raw.replace(/[\*\[\]]/g, "");
+      if (w) out.push({ w, em: on, pill: onPill });
     }
     return out;
   }
@@ -45,9 +49,24 @@
           const inner = o.split === "chars"
             ? [...t.w].map((ch) => `<span class="c" style="--ci:${ci++}">${esc(ch)}</span>`).join("")
             : esc(t.w);
-          return `<span class="w${t.em ? " em" : ""}" style="--wi:${wi++}"><span class="wi">${inner}</span>${t.em ? '<i class="mk"></i>' : ""}</span>`;
+          return `<span class="w${t.em ? " em" : ""}${t.pill ? " pill" : ""}" style="--wi:${wi++}"><span class="wi">${inner}</span>${t.em ? '<i class="mk"></i>' : ""}</span>`;
         });
         return `<span class="ln">${ws.join(" ")}</span>`;
+      })
+      .join("");
+  };
+  // Vox Guide (@justdodani): Ransom-note collage lettering where every word sits on its own torn newspaper scrap
+  MD.ransomTx = function (str) {
+    let wi = 0;
+    return lines(str)
+      .map((l) => {
+        const ws = String(l).trim().split(/\s+/).filter(Boolean).map((raw) => {
+          const clean = raw.replace(/[\*\[\]]/g, "");
+          const isRed = /^\*.*\*$/.test(raw) || /^\[.*\]$/.test(raw);
+          const scIdx = isRed ? 3 : (wi % 5);
+          return `<span class="vx-scrap sc-${scIdx}" data-wi="${wi++}">${esc(clean)}</span>`;
+        });
+        return `<div class="vx-ransom-row">${ws.join("")}</div>`;
       })
       .join("");
   };
@@ -145,15 +164,6 @@
   MD.moves = {
     show: { len: () => 0, run: (tl, els, at) => tl.set(els, { opacity: 1 }, at) },
     hide: { len: () => 0, run: (tl, els, at) => tl.set(els, { opacity: 0 }, at) },
-    kcapWord: {
-      len: () => 0,
-      run: (tl, els, at, o) => {
-        const d = D(o, "d", 0.35);
-        tl.set(els, { backgroundColor: "var(--accent)", color: "var(--accent-ink)", scale: 1.08 }, at);
-        tl.to(els, { scale: 1.0, duration: Math.min(0.15, d * 0.5), ease: "power2.out" }, at);
-        tl.set(els, { backgroundColor: "transparent", color: "#F8FAFC", scale: 1 }, at + d);
-      },
-    },
     fadeIn: {
       len: (n, o) => D(o, "d", 0.6) + D(o, "st", 0.08) * (n - 1),
       run: (tl, els, at, o) => tl.fromTo(els, { opacity: 0 }, { opacity: 1, duration: D(o, "d", 0.6), stagger: D(o, "st", 0.08), ease: "power2.out" }, at),
@@ -426,6 +436,197 @@
         const runDur = s ? Math.max(2.0, s.dur - 0.6) : D(o, "d", 3.2);
         tl.fromTo(state, { p: 0.02 }, { p: 1, duration: runDur, ease: "none", onUpdate: draw, onStart: draw, onReverseComplete: draw }, at);
       }),
+    },
+    // 7-frame (0.23s @ 30fps) Overshoot Pop from Reference Reel Telemetry (1.42x -> 1.15x -> 1.00x)
+    overshootPop: {
+      len: (n, o) => D(o, "d", 0.46) + D(o, "st", 0.08) * (n - 1),
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 0.46), st = D(o, "st", 0.08);
+        gsap.set(els, { opacity: 0, scale: 1.42, y: 8 });
+        tl.to(els, {
+          keyframes: [
+            { opacity: 1, scale: 1.42, y: 6, duration: d * 0.18, ease: "power2.out" },
+            { scale: 0.94, y: -2, duration: d * 0.44, ease: "expo.out" },
+            { scale: 1.0, y: 0, duration: d * 0.38, ease: "power3.out" },
+          ],
+          stagger: st,
+        }, at);
+      },
+    },
+    unlockRow: {
+      len: () => 0.55,
+      run: (tl, els, at) => {
+        els.forEach((row) => {
+          const body = row.querySelector(".ul-body");
+          const st = row.querySelector(".ul-st");
+          if (body) tl.fromTo(body, { filter: "blur(5.5px)", opacity: 0.55 }, { filter: "blur(0px)", opacity: 1, duration: 0.42, ease: "power3.out" }, at);
+          if (st) {
+            tl.to(st, {
+              keyframes: [
+                { scale: 1.45, duration: 0.14, ease: "power2.out", onStart: () => { st.textContent = "✓"; row.classList.remove("is-locked"); row.classList.add("is-unlocked"); } },
+                { scale: 1.0, duration: 0.28, ease: "back.out(2.5)" },
+              ],
+            }, at + 0.06);
+          }
+        });
+      },
+    },
+    wavePulse: {
+      len: () => 1.8,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((wrap) => {
+          const bars = Array.from(wrap.querySelectorAll(".pr-b"));
+          if (!bars.length) return;
+          const runDur = s ? Math.max(1.8, s.dur - 0.5) : 2.4;
+          const st = { p: 0 };
+          const draw = () => {
+            bars.forEach((b, i) => {
+              const h = 25 + 72 * Math.abs(Math.sin(st.p * 9.5 + i * 0.65));
+              b.style.height = `${h.toFixed(1)}%`;
+            });
+          };
+          draw();
+          tl.fromTo(st, { p: 0 }, { p: 1, duration: runDur, ease: "none", onUpdate: draw, onStart: draw }, at);
+        });
+      },
+    },
+    cardFan: {
+      len: (n) => 0.75 + 0.06 * Math.max(0, n - 1),
+      run: (tl, els, at) => {
+        const arr = Array.from(els);
+        const mid = (arr.length - 1) / 2;
+        arr.forEach((card, i) => {
+          const off = i - mid;
+          const rot = off * 9.5;
+          const tx = off * 36;
+          const ty = Math.abs(off) * 7;
+          tl.fromTo(card, { opacity: 0, y: 45, rotation: 0, x: 0, scale: 0.82 }, { opacity: 1, y: ty, x: tx, rotation: rot, scale: 1, duration: 0.68, ease: "back.out(1.8)" }, at + i * 0.07);
+        });
+      },
+    },
+    rehookCurve: {
+      len: () => 2.2,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((card) => {
+          const mode = card.dataset.mode || "drop";
+          const eyes = Array.from(card.querySelectorAll(".rh-eye"));
+          const dropLine = card.querySelector(".rh-curve-lo");
+          const hiLine = card.querySelector(".rh-curve-hi");
+          const loopPath = card.querySelector(".rh-red-loop");
+          const springPath = card.querySelector(".rh-spring-coil");
+          if (hiLine && hiLine.getTotalLength) {
+            const L = hiLine.getTotalLength() || 500;
+            hiLine.style.strokeDasharray = `${L} ${L}`;
+            tl.fromTo(hiLine, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 0.9, ease: "power2.out" }, at);
+          }
+          if (dropLine && dropLine.getTotalLength) {
+            const L2 = dropLine.getTotalLength() || 500;
+            dropLine.style.strokeDasharray = `${L2} ${L2}`;
+            tl.fromTo(dropLine, { strokeDashoffset: L2 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut" }, at + 0.45);
+          }
+          if (loopPath && loopPath.getTotalLength) {
+            const L3 = loopPath.getTotalLength() || 400;
+            loopPath.style.strokeDasharray = `${L3} ${L3}`;
+            tl.fromTo(loopPath, { strokeDashoffset: L3 }, { strokeDashoffset: 0, duration: 0.65, ease: "power3.out" }, at + 1.15);
+          }
+          if (eyes.length) {
+            tl.fromTo(eyes, { scale: 0, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.35, stagger: 0.06, ease: "back.out(2.4)" }, at + 0.15);
+            if (mode === "drop") {
+              const falling = eyes.slice(3);
+              if (falling.length) {
+                tl.to(falling, { y: "+=92", x: "+=28", rotation: 42, duration: 0.85, stagger: 0.08, ease: "bounce.out" }, at + 0.75);
+              }
+            } else if (mode === "spring" && springPath) {
+              tl.fromTo(springPath, { scaleY: 0.45, transformOrigin: "50% 100%" }, { scaleY: 1.08, duration: 0.65, ease: "elastic.out(1.2, 0.4)" }, at + 0.55);
+            }
+          }
+        });
+      },
+    },
+    fuseTick: {
+      len: () => 2.0,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((stage) => {
+          const spark = stage.querySelector(".fs-spark");
+          const txt = stage.querySelector(".fs-timer-txt");
+          const bomb = stage.querySelector(".fs-bomb-grp");
+          const runDur = s ? Math.max(1.8, s.dur - 0.4) : 2.2;
+          const st = { v: 2.0 };
+          const draw = () => {
+            if (txt) txt.textContent = `${st.v.toFixed(1)}s`;
+          };
+          draw();
+          tl.fromTo(st, { v: 2.0 }, { v: 1.1, duration: runDur, ease: "none", onUpdate: draw, onStart: draw }, at);
+          if (spark) {
+            tl.fromTo(spark, { rotation: 0, scale: 0.9, transformOrigin: "50% 50%" }, { rotation: 360, scale: 1.25, duration: runDur, ease: "none" }, at);
+          }
+          if (bomb && stage.dataset.mode === "zoom") {
+            tl.fromTo(bomb, { scale: 0.92, transformOrigin: "50% 50%" }, { scale: 1.26, duration: runDur * 0.75, ease: "expo.inOut" }, at + 0.15);
+          }
+        });
+      },
+    },
+    // Vox Guide (@justdodani) Ransom-Note Word-by-Word Drop (50px drop + fade in, 0.10s stagger, pure ease-out, zero bounce)
+    ransomDrop: {
+      len: (n, o) => D(o, "d", 0.58) + D(o, "st", 0.10) * Math.max(0, n - 1),
+      run: (tl, els, at, o) => {
+        const scraps = units(els, ".vx-scrap");
+        const d = D(o, "d", 0.58), st = D(o, "st", 0.10);
+        tl.fromTo(scraps, { y: -52, opacity: 0 }, { y: 0, opacity: 1, duration: d, stagger: st, ease: "power3.out" }, at);
+      },
+    },
+    // Vox Guide (@justdodani) 7-Layer Back-to-Front Diorama Stack + Continuous Movers + Glacier Turn + 4% Camera Push
+    dioramaRun: {
+      len: () => 2.2,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((stage) => {
+          const runDur = s ? Math.max(2.6, s.dur) : 4.0;
+          const cam = stage.querySelector(".dio-cam");
+          // 1. Slow 4.5% camera push across the whole shot
+          if (cam) {
+            tl.fromTo(cam, { scale: 1.0 }, { scale: 1.045, duration: runDur, ease: "none" }, at);
+          }
+          // 2. Stack layers back-to-front with pure ease-out (40-80px slide, 0.55-0.75s, power3.out, no bounce)
+          const stackOrder = [
+            { sel: ".dio-l-sky", y: -45, t: 0.00, d: 0.55 },
+            { sel: ".dio-l-clouds", y: -55, t: 0.12, d: 0.62 },
+            { sel: ".dio-l-mountains", y: 65, t: 0.24, d: 0.68 },
+            { sel: ".dio-l-glacier", y: 55, t: 0.36, d: 0.68 },
+            { sel: ".dio-l-road", y: 75, t: 0.48, d: 0.68 },
+            { sel: ".dio-h-base", y: 55, t: 0.60, d: 0.55 },
+            { sel: ".dio-h-floors", y: 55, t: 0.72, d: 0.55 },
+            { sel: ".dio-h-roof", y: 48, t: 0.84, d: 0.55 },
+            { sel: ".dio-l-movers", y: 40, t: 0.78, d: 0.55 },
+          ];
+          stackOrder.forEach((stItem) => {
+            const node = stage.querySelector(stItem.sel);
+            if (node) {
+              tl.fromTo(node, { y: stItem.y, opacity: 0 }, { y: 0, opacity: 1, duration: stItem.d, ease: "power3.out" }, at + stItem.t);
+            }
+          });
+          // 3. Something is ALWAYS moving (clouds drift, birds cross, yellow bus drives road, steam train crosses bottom)
+          const clouds = stage.querySelector(".dio-mover-clouds");
+          const birds = stage.querySelector(".dio-mover-birds");
+          const bus = stage.querySelector(".dio-mover-bus");
+          const train = stage.querySelector(".dio-mover-train");
+          if (clouds) tl.fromTo(clouds, { x: -18 }, { x: 54, duration: runDur, ease: "none" }, at);
+          if (birds) tl.fromTo(birds, { x: 35, y: 6 }, { x: -95, y: -14, duration: runDur, ease: "none" }, at);
+          if (bus) tl.fromTo(bus, { x: -35, y: 4 }, { x: 165, y: -4, duration: runDur, ease: "none" }, at);
+          if (train) tl.fromTo(train, { x: -25 }, { x: 115, duration: runDur, ease: "none" }, at);
+
+          // 4. The Story Turn: slide the glacier / turn-piece away to reveal bare rock & draw timeline bar
+          if (stage.dataset.turn === "1") {
+            const gl = stage.querySelector(".dio-glacier-body");
+            const tlFill = stage.querySelector(".dio-tl-fill");
+            if (gl) {
+              tl.to(gl, { x: 185, y: -62, scale: 0.36, opacity: 0.18, duration: Math.min(1.65, runDur * 0.48), ease: "power2.inOut" }, at + 0.95);
+            }
+            if (tlFill) {
+              tl.fromTo(tlFill, { scaleX: 0.08 }, { scaleX: 1.0, duration: Math.min(1.5, runDur * 0.45), ease: "power2.out" }, at + 0.95);
+            }
+          }
+        });
+      },
     },
     // continuous moves (len 0: they don't delay the hero frame)
     float: {
@@ -970,41 +1171,384 @@
         return e;
       },
     },
-    // Geographic Map & Route Flyover Kind (Vox / Johnny Harris / Remotion Maps style)
-    map: {
-      label: "Geographic Map & Route Flyover",
-      fields: ["kicker", "title", "sub", "origin", "dest", "routes", "metrics", "callouts"],
-      min: (s) => Math.max(3.8, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.6),
+    // Retention HUD Kind 1: Retention Curve, Eyeball Drop, Spring Rehook & Payoff Cut (from Reel 2)
+    rehook: {
+      label: "Retention Curve & Rehook Machine",
+      fields: ["kicker", "title", "sub", "value", "label", "mythA", "mythB", "badge", "mode"],
+      min: (s) => Math.max(3.2, (s.title ? readSecs(s.title) * 0.55 : 0) + 1.8),
       markup: (s, c) => {
-        const orig = s.origin || { name: "ORIGIN HUB", coord: "22.3°N, 87.3°E", x: 640, y: 215 };
-        const dest = s.dest || { name: "TARGET NODE", coord: "37.7°N, 122.4°W", x: 185, y: 165 };
-        const ox = orig.x ?? 640, oy = orig.y ?? 215;
-        const dx = dest.x ?? 185, dy = dest.y ?? 165;
-        const mx = (ox + dx) / 2, my = Math.min(oy, dy) - 85;
-        const mets = (s.metrics || [
-          { label: "ORIGIN", value: orig.coord || "22.3°N, 87.3°E" },
-          { label: "DESTINATION", value: dest.coord || "37.7°N, 122.4°W" },
-          { label: "VECTOR SPAN", value: s.distance || "12,480 KM" },
-        ]).map((m) => `<div class="mp-m"><span class="mp-ml">${esc(m.label)}</span><strong class="mp-mv">${esc(m.value)}</strong></div>`).join("");
-        const calls = (s.callouts || []).map((x, i) => `<div class="mp-call" data-i="${i}"><span class="mp-cno">0${i + 1}</span><span>${MD.tx(x)}</span></div>`).join("");
-        return `<div class="k k-map"><div class="mp-layout"><div class="mp-copy">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="34">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="mp-mets">${mets}</div>${calls ? `<div class="mp-calls">${calls}</div>` : ""}</div><div class="mp-stage"><div class="mp-cam"><svg class="mp-svg" viewBox="0 0 860 440"><defs><radialGradient id="mpGlow" cx="50%" cy="50%" r="55%"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></radialGradient></defs><rect class="mp-ocean" width="860" height="440" rx="10"/><g class="mp-grid"><line x1="0" y1="110" x2="860" y2="110"/><line x1="0" y1="220" x2="860" y2="220"/><line x1="0" y1="330" x2="860" y2="330"/><line x1="215" y1="0" x2="215" y2="440"/><line x1="430" y1="0" x2="430" y2="440"/><line x1="645" y1="0" x2="645" y2="440"/></g><g class="mp-land"><path d="M95,95 L235,80 L285,155 L240,235 L180,225 L120,165 Z"/><path d="M235,250 L295,265 L315,365 L265,405 L230,335 Z"/><path d="M395,85 L495,75 L525,155 L465,180 L405,155 Z"/><path d="M415,190 L515,195 L535,315 L475,375 L425,295 Z"/><path d="M520,80 L745,75 L785,185 L715,255 L615,245 L555,175 Z"/><path d="M675,295 L775,290 L790,365 L705,380 Z"/></g><circle cx="${mx}" cy="${(oy + dy) / 2}" r="190" fill="url(#mpGlow)"/><path class="mp-route-bg" d="M${ox},${oy} Q${mx},${my} ${dx},${dy}"/><path class="mp-route" d="M${ox},${oy} Q${mx},${my} ${dx},${dy}"/><g class="mp-pin p-orig"><circle class="mp-ring" cx="${ox}" cy="${oy}" r="22"/><circle class="mp-dot" cx="${ox}" cy="${oy}" r="7"/><rect class="mp-tag" x="${ox - 68}" y="${oy + 14}" width="136" height="24" rx="4"/><text x="${ox}" y="${oy + 30}" text-anchor="middle" class="mp-txt">${esc(orig.name)}</text></g><g class="mp-pin p-dest"><circle class="mp-ring" cx="${dx}" cy="${dy}" r="26"/><circle class="mp-dot" cx="${dx}" cy="${dy}" r="8"/><rect class="mp-tag" x="${dx - 68}" y="${dy + 14}" width="136" height="24" rx="4"/><text x="${dx}" y="${dy + 30}" text-anchor="middle" class="mp-txt">${esc(dest.name)}</text></g></svg></div></div></div></div>`;
+        const mode = s.mode || "drop";
+        const val = s.value || (mode === "drop" ? "12%" : "88%");
+        const lbl = s.label || (mode === "drop" ? "STILL WATCHING" : "RETENTION LOCKED");
+        const p = MD.parseNumber(val);
+        const fromVal = mode === "drop" ? 100 : 12;
+        const numHtml = p
+          ? `<span class="pre">${esc(p.pre)}</span><span class="val" data-from="${fromVal}" data-to="${p.to}" data-dec="${p.dec}" data-sep="0">${MD.formatNumber(p.to, p.dec, false)}</span><span class="suf">${esc(p.suf)}</span>`
+          : esc(val);
+        const hiCurve = mode === "drop"
+          ? "M 55,58 L 195,66"
+          : (mode === "spring" ? "M 55,58 L 285,84 L 365,64 L 545,70" : "M 55,58 L 430,82");
+        const loCurve = mode === "drop"
+          ? "M 195,66 C 215,155 265,215 535,222"
+          : (mode === "payoff" ? "M 430,82 C 455,145 495,195 555,215" : "M 285,84 C 340,165 420,210 545,218");
+        const eyesCoords = mode === "drop"
+          ? [[78,48],[112,51],[146,54],[182,58],[208,95],[228,138],[255,175]]
+          : [[82,48],[132,52],[184,56],[236,62],[288,68],[346,58],[402,62]];
+        const eyesSvg = eyesCoords.map(([cx, cy], idx) => `
+          <g class="rh-eye" data-i="${idx}">
+            <circle cx="${cx}" cy="${cy}" r="14" fill="#F6F3EC" stroke="#0B0D0B" stroke-width="2.5"/>
+            <circle cx="${cx + 3}" cy="${cy + 1}" r="6.5" fill="var(--accent)"/>
+            <circle cx="${cx + 4}" cy="${cy + 1}" r="3" fill="#0B0D0B"/>
+          </g>`).join("");
+        const redLoop = mode === "drop"
+          ? `<ellipse class="rh-red-loop" cx="215" cy="138" rx="48" ry="86" fill="none" stroke="#FF3B1F" stroke-width="3.2" transform="rotate(-8 215 138)"/>`
+          : "";
+        const springSvg = mode === "spring"
+          ? `<g class="rh-spring-coil"><rect x="296" y="132" width="58" height="20" rx="4" fill="var(--accent)"/><text x="325" y="146" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#0B0D0B">REHOOK</text><path d="M312,152 L338,160 L312,168 L338,176 L312,184 L338,192 L312,200 L338,208" fill="none" stroke="#F6F3EC" stroke-width="3.2"/></g>`
+          : "";
+        const scissorSvg = mode === "payoff"
+          ? `<g class="rh-payoff-cut"><line x1="430" y1="32" x2="430" y2="230" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="6 5"/><rect x="392" y="26" width="76" height="24" rx="5" fill="var(--accent)"/><text x="430" y="42" text-anchor="middle" font-family="monospace" font-size="12" font-weight="bold" fill="#0B0D0B">PAYOFF ✂</text></g>`
+          : "";
+        const mA = s.mythA ? `<div class="rh-myth"><span class="tx">${esc(s.mythA)}<i class="strike"></i></span><span class="rh-myth-x">✕</span></div>` : "";
+        const mB = s.mythB ? `<div class="rh-myth"><span class="tx">${esc(s.mythB)}<i class="strike"></i></span><span class="rh-myth-x">✕</span></div>` : "";
+        const badge = s.badge ? `<div class="rh-badge-pop">${esc(s.badge)}</div>` : "";
+        return `<div class="k k-rehook"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="rh-card" data-mode="${esc(mode)}"><div class="rh-hdr"><strong>Retention</strong><span>${esc(s.sub || "TELEMETRY // 0:00 - 0:50")}</span></div><svg class="rh-svg" viewBox="0 0 580 250"><line x1="45" y1="58" x2="550" y2="58" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/><line x1="45" y1="140" x2="550" y2="140" stroke="rgba(255,255,255,0.08)"/><line x1="45" y1="222" x2="550" y2="222" stroke="rgba(255,255,255,0.14)"/><text x="12" y="62" fill="#8A9186" font-family="monospace" font-size="12">100%</text><text x="18" y="144" fill="#8A9186" font-family="monospace" font-size="12">50%</text><text x="28" y="226" fill="#8A9186" font-family="monospace" font-size="12">0</text><text x="48" y="244" fill="#8A9186" font-family="monospace" font-size="12">0:00</text><text x="520" y="244" fill="#8A9186" font-family="monospace" font-size="12">0:50</text><path class="rh-curve-lo" d="${loCurve}" fill="none" stroke="${mode === "spring" ? "rgba(255,255,255,0.22)" : "#FF3B1F"}" stroke-width="4" stroke-dasharray="${mode === "spring" ? "6 5" : "none"}"/><path class="rh-curve-hi" d="${hiCurve}" fill="none" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>${eyesSvg}${redLoop}${springSvg}${scissorSvg}</svg><div class="rh-big-stat"><div class="rh-big-val${mode === "drop" ? " is-drop" : ""}">${numHtml}</div><div class="rh-big-lbl">${esc(lbl)}</div></div></div><div class="rh-foot">${mA}${mB}${badge}</div></div></div>`;
       },
-      plan: (s, c, dur) => {
+      plan: (s, c) => {
         const e = [];
-        let t = 0.08;
-        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
-        if (s.title) {
-          const te = titleEvent(c, s, 0.14, s.title, ".title");
-          e.push(te, ...emphEvents(s, c, s.title, ".title", after(te) - 0.25));
-          t = after(te) - 0.2;
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        e.push(ev(0.18, ".rh-card", "rehookCurve", 1, {}, "riser-air", "start"));
+        e.push(ev(0.35, ".rh-big-val .val", "count", 1, { d: 1.25 }, "glass", "end"));
+        if (s.mythA || s.mythB) {
+          e.push(ev(0.55, ".rh-myth", "fadeUp", 2, { st: 0.14, y: 14 }));
+          e.push(ev(0.95, ".rh-myth", "strike", 2, { d: 0.35 }, "scratch", "start"));
         }
-        if (s.sub) e.push(ev(Math.max(0.45, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
-        e.push(ev(0.18, ".mp-stage", T(c, "card", "rise"), 1, {}, "whoosh", "start"));
-        e.push(ev(0.35, ".p-orig", "pop", 1, {}, "blip", "start"));
-        e.push(ev(0.55, ".mp-route", "draw", 1, { d: Math.min(2.2, dur * 0.48) }, "riser-air", "start"));
-        e.push(ev(0.55 + Math.min(2.0, dur * 0.44), ".p-dest", "pop", 1, {}, "bell", "start"));
-        e.push(ev(Math.max(0.5, t), ".mp-m", "fadeUp", 3, { st: 0.09, y: 12 }));
-        (s.callouts || []).forEach((_, i) => e.push(ev(t + 0.35 + i * 0.28, `.mp-call[data-i="${i}"]`, "pop", 1, {}, "tap", "start")));
+        if (s.badge) e.push(ev(1.35, ".rh-badge-pop", "overshootPop", 1, { d: 0.46 }, "punch", "start"));
+        return e;
+      },
+    },
+    // Retention HUD Kind 2: Progressive Blurred-to-Unlocked Checklist & Open-Loop Roadmap (from Reel 1 & Reel 2)
+    unlock: {
+      label: "Progressive Locked-to-Unlocked Checklist",
+      fields: ["kicker", "title", "sub", "items", "unlocked", "unlockIndex", "stamp", "stage", "cta"],
+      min: (s) => Math.max(3.2, (s.title ? readSecs(s.title) * 0.5 : 0) + (s.items || []).length * 0.28 + 1.2),
+      markup: (s, c) => {
+        const unlockedCount = s.unlocked != null ? +s.unlocked : 2;
+        const rows = (s.items || [
+          "01 | RANG | Full-screen colour flash (1.2s)",
+          "02 | ZOOM | Viewfinder scale push/pull (+22%)",
+          "03 | CUT | 3-angle perspective cut (FAR/CLOSE)",
+          "04 | AWAAZ | 1 visual event = 1 sound transient",
+          "05 | NAYI CHEEZ | 1 spoken keyword = 1 vector prop",
+        ]).map((raw, idx) => {
+          const parts = String(raw).split("|").map((x) => x.trim());
+          const no = parts[0] && /^\d+$/.test(parts[0]) ? parts[0] : String(idx + 1).padStart(2, "0");
+          const rt = parts.length >= 2 ? parts[1] : parts[0];
+          const rs = parts.length >= 3 ? parts[2] : "";
+          const isUn = (idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1);
+          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isUn ? "✓" : "🔒"}</span></div>`;
+        }).join("");
+        const stampHtml = s.stamp ? `<div class="ul-stamp${/alert|nahi|galti/i.test(s.stamp) ? " is-alert" : ""}">${esc(s.stamp)}</div>` : "";
+        const stages = ["HOOK", "DELAY", "REHOOK", "PAYOFF"];
+        const curStage = (s.stage || "REHOOK").toUpperCase();
+        const stripHtml = `<div class="ul-strip">${stages.map((st) => `<div class="ul-seg${st === curStage ? " on" : ""}">${st === curStage ? '<span class="ul-here">YOU ARE HERE</span>' : ""}${st}</div>`).join("")}</div>`;
+        const saveHtml = s.cta ? `<div class="ul-save-pill">🔖 ${esc(s.cta)}</div>` : "";
+        return `<div class="k k-unlock"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="22">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ul-stage"><div class="ul-card"><div class="ul-hdr"><span class="ul-hdr-t">${esc(s.sub || "RETENTION PROTOCOL")}</span><span class="ul-hdr-s">${esc(`${unlockedCount}/${(s.items || []).length || 5} UNLOCKED`)}</span></div><div class="ul-rows">${rows}</div>${stampHtml}</div></div>${stripHtml}${saveHtml}</div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        const n = (s.items || []).length || 5;
+        e.push(ev(0.22, ".ul-row", "fadeUp", n, { st: 0.09, y: 16 }, "tick", "start"));
+        if (s.unlockIndex) {
+          e.push(ev(0.95, `.ul-row[data-idx="${s.unlockIndex}"]`, "unlockRow", 1, {}, "confirm", "start"));
+        }
+        if (s.stamp) e.push(ev(1.25, ".ul-stamp", "overshootPop", 1, { d: 0.45 }, "punch", "start"));
+        e.push(ev(0.55, ".ul-strip", "fadeUp", 1, { y: 12 }));
+        if (s.cta) e.push(ev(1.4, ".ul-save-pill", "overshootPop", 1, { d: 0.42 }, "select", "start"));
+        return e;
+      },
+    },
+    // Retention HUD Kind 3: 2-Second Bomb Fuse, Viewfinder Zoom & Multi-Angle Cut (from Reel 1)
+    fuse: {
+      label: "2-Second Bomb Fuse & Visual Lever",
+      fields: ["kicker", "title", "sub", "tag", "mode", "callouts"],
+      min: (s) => Math.max(3.0, (s.title ? readSecs(s.title) * 0.5 : 0) + 1.8),
+      markup: (s, c) => {
+        const mode = s.mode || "zoom";
+        const tagParts = String(s.tag || "02 ZOOM").split(/\s+/);
+        const tagNo = tagParts[0] || "01";
+        const tagTxt = tagParts.slice(1).join(" ") || "LEVER";
+        const swatches = mode === "rang"
+          ? `<g class="fs-swatches"><rect x="175" y="62" width="32" height="54" rx="5" fill="#CCFF00" stroke="#0B0D0B" stroke-width="2" transform="rotate(-24 191 89)"/><rect x="218" y="44" width="32" height="54" rx="5" fill="#FF3B1F" stroke="#0B0D0B" stroke-width="2" transform="rotate(-12 234 71)"/><rect x="264" y="38" width="32" height="54" rx="5" fill="#F6F3EC" stroke="#0B0D0B" stroke-width="2"/><rect x="310" y="44" width="32" height="54" rx="5" fill="#38BDF8" stroke="#0B0D0B" stroke-width="2" transform="rotate(12 326 71)"/><rect x="352" y="62" width="32" height="54" rx="5" fill="#F59E0B" stroke="#0B0D0B" stroke-width="2" transform="rotate(24 368 89)"/></g>`
+          : "";
+        const viewfinder = mode === "zoom"
+          ? `<g class="fs-vf" stroke="#F6F3EC" stroke-width="3" fill="none"><path d="M120,45 L90,45 L90,75"/><path d="M430,45 L460,45 L460,75"/><path d="M120,235 L90,235 L90,205"/><path d="M430,235 L460,235 L460,205"/><circle cx="112" cy="62" r="4" fill="#FF3B1F" stroke="none"/><text x="122" y="66" fill="#F6F3EC" stroke="none" font-family="monospace" font-size="12" font-weight="bold">REC</text><text x="415" y="66" fill="var(--accent)" stroke="none" font-family="monospace" font-size="13" font-weight="bold">1.35x</text></g>`
+          : "";
+        const clapper = mode === "cut"
+          ? `<g class="fs-clap"><rect x="365" y="155" width="115" height="72" rx="6" fill="#141714" stroke="#F6F3EC" stroke-width="2"/><path d="M365,155 L480,138 L476,122 L362,139 Z" fill="var(--accent)" stroke="#0B0D0B" stroke-width="2"/><text x="380" y="182" fill="#8A9186" font-family="monospace" font-size="10">SCENE / SHOT</text><text x="380" y="206" fill="var(--accent)" font-family="monospace" font-size="20" font-weight="bold">07 · 2/3</text></g>`
+          : "";
+        const calls = (s.callouts || []).map((x, i) => `<div class="fs-call" data-i="${i}">${esc(x)}</div>`).join("");
+        return `<div class="k k-fuse"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="fs-tag"><span class="fs-tag-no">${esc(tagNo)}</span><span>${esc(tagTxt)}</span></div><div class="fs-stage" data-mode="${esc(mode)}"><svg class="fs-svg" viewBox="0 0 550 270">${viewfinder}<g class="fs-bomb-grp">${swatches}<ellipse cx="275" cy="232" rx="68" ry="12" fill="rgba(0,0,0,0.45)"/><circle cx="275" cy="158" r="66" fill="#1C201C" stroke="#F6F3EC" stroke-width="3"/><circle cx="252" cy="136" r="14" fill="rgba(255,255,255,0.08)"/><rect x="262" y="82" width="26" height="16" rx="4" fill="#2A302A" stroke="#F6F3EC" stroke-width="2"/><path d="M275,82 Q315,48 368,42" fill="none" stroke="#C8A97E" stroke-width="4" stroke-linecap="round"/><g class="fs-spark" transform="translate(368,42)"><line x1="-14" y1="0" x2="14" y2="0" stroke="var(--accent)" stroke-width="3"/><line x1="0" y1="-14" x2="0" y2="14" stroke="var(--accent)" stroke-width="3"/><line x1="-10" y1="-10" x2="10" y2="10" stroke="#FF3B1F" stroke-width="2.5"/><line x1="-10" y1="10" x2="10" y2="-10" stroke="#FF3B1F" stroke-width="2.5"/></g><text class="fs-timer-txt" x="275" y="168" text-anchor="middle" fill="#F6F3EC" font-family="monospace" font-size="30" font-weight="bold">1.8s</text></g>${clapper}</svg></div>${calls ? `<div class="fs-calls">${calls}</div>` : ""}</div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        e.push(ev(0.18, ".fs-tag", "overshootPop", 1, { d: 0.42 }, "select", "start"));
+        e.push(ev(0.22, ".fs-stage", "fuseTick", 1, {}, "whoosh-short", "start"));
+        const nc = (s.callouts || []).length;
+        if (nc) e.push(ev(0.65, ".fs-call", "overshootPop", nc, { st: 0.14, d: 0.42 }, "tick", "start"));
+        return e;
+      },
+    },
+    // Retention HUD Kind 4: 1 Word = 1 Prop & 1 Event = 1 Sound Audio-Visual Sync (from Reel 1)
+    props: {
+      label: "Word-to-Prop & Audio-Visual Sync",
+      fields: ["kicker", "title", "sub", "words", "rule"],
+      min: (s) => Math.max(3.2, (s.title ? readSecs(s.title) * 0.5 : 0) + 2.0),
+      markup: (s, c) => {
+        const items = (s.words || [
+          "Chokepoint | alert-triangle",
+          "Equation | cpu",
+          "24fps Lens | eye",
+          "Telemetry | activity",
+        ]).slice(0, 4).map((raw, i) => {
+          const parts = String(raw).split("|").map((x) => x.trim());
+          const word = parts[0] || `Word ${i + 1}`;
+          const icName = parts[1] || ["zap", "bell", "layers", "sparkles"][i % 4];
+          return `<div class="pr-slot" data-i="${i}"><div class="pr-icon-box">${c.icon ? c.icon(icName) : "★"}</div><i class="pr-stem"></i><div class="pr-word-chip">${esc(word)}</div></div>`;
+        }).join("");
+        const bars = Array.from({ length: 28 }, (_, i) => `<i class="pr-b" data-b="${i}"></i>`).join("");
+        const rule = s.rule || "1 KEYWORD = 1 PROP · 1 EVENT = 1 SOUND";
+        return `<div class="k k-props"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="pr-stage"><div class="pr-grid">${items}</div><div class="pr-wave-bar"><div class="pr-wave-lbl"><span>AUDIO // SFX SYNC</span><span>POP · WHOOSH · DING</span></div><div class="pr-bars">${bars}</div></div><div class="pr-rule-pill">${esc(rule)}</div></div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        const n = Math.min(4, (s.words || [1, 2, 3, 4]).length);
+        e.push(ev(0.28, ".pr-slot", "overshootPop", n, { st: 0.18, d: 0.45 }, "tick", "start"));
+        e.push(ev(0.25, ".pr-wave-bar", "wavePulse", 1, {}, "riser-air", "start"));
+        e.push(ev(1.05, ".pr-rule-pill", "overshootPop", 1, { d: 0.44 }, "confirm", "start"));
+        return e;
+      },
+    },
+    // Retention HUD Kind 5: Interactive Comment-Trigger & Fanned 20-Card Deck (from Reel 1 & Reel 2)
+    cta: {
+      label: "Interactive Comment CTA & Card Deck",
+      fields: ["kicker", "title", "keyword", "deckLabel", "sentText"],
+      min: (s) => Math.max(3.0, (s.title ? readSecs(s.title) * 0.5 : 0) + 1.8),
+      markup: (s, c) => {
+        const kw = s.keyword || "FLUX";
+        const deckLbl = s.deckLabel || "20 IDEAS";
+        const sent = s.sentText || "blueprint bhej diya ✓";
+        const cards = ["11", "14", "17", "20"].map((no, i, arr) => `<div class="ct-card${i === arr.length - 1 ? " is-top" : ""}" data-i="${i}"><span class="ct-cno">${no}</span><div class="ct-clines"><i></i><i></i><i></i></div><span class="ct-clbl">${i === arr.length - 1 ? esc(deckLbl) : "PROTOCOL"}</span></div>`).join("");
+        return `<div class="k k-cta"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="26">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ct-comment-box"><div class="ct-hdr"><span>Comments</span><span class="ct-hearts">❤️ +37</span></div><div class="ct-input"><div class="ct-kw-wrap"><i class="ct-dot"></i><span class="ct-kw">${MD.tx(kw, { split: "chars" })}</span></div><span class="ct-post">Post</span></div></div><div class="ct-deck">${cards}</div><div class="ct-sent">✳ ${esc(sent)}</div></div></div>`;
+      },
+      plan: (s, c) => {
+        const e = [];
+        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        e.push(ev(0.2, ".ct-comment-box", "fadeUp", 1, { y: 18, d: 0.45 }));
+        e.push(ev(0.38, ".ct-kw", "typewriter", MD.count(s.keyword || "FLUX", "chars"), { rate: 0.065 }, "tick", "start"));
+        e.push(ev(0.65, ".ct-card", "cardFan", 4, {}, "card-fan", "start"));
+        e.push(ev(1.25, ".ct-sent", "overshootPop", 1, { d: 0.45 }, "confirm", "start"));
+        return e;
+      },
+    },
+    // Vox Guide (@justdodani) 7-Layer Back-to-Front Magazine Cut-Out Diorama & Ransom-Note Explainer
+    diorama: {
+      label: "Vox 1960s Magazine Cut-Out Diorama",
+      fields: ["title", "sub", "year", "fact", "timelineStart", "timelineEnd", "turn", "pieces"],
+      min: (s) => Math.max(3.6, (s.title ? readSecs(s.title) * 0.55 : 0) + 2.2),
+      markup: (s, c) => {
+        const isTurn = Boolean(s.turn);
+        const yr = s.year || (isTurn ? "2016" : "1882");
+        const fact = s.fact || (isTurn ? "Rhône Glacier retreated 1.8 km" : "Furka Pass, Switzerland · 2,429 m");
+        const tlA = s.timelineStart || "1882: BUILT AT GLACIER";
+        const tlB = s.timelineEnd || (isTurn ? "2016: CLOSED (BARE VALLEY)" : "1964: GOLDFINGER FILMED");
+        const pcs = s.pieces || {};
+        const heroCustom = pcs.hero && c.asset ? c.asset(pcs.hero) : null;
+        return `<div class="k k-diorama">
+          <div class="dio-stage" data-turn="${isTurn ? "1" : "0"}">
+            <svg width="0" height="0" style="position:absolute">
+              <defs>
+                <filter id="dio-torn-edge" x="-5%" y="-5%" width="110%" height="110%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="11" result="n"/>
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="4.5" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <pattern id="dio-dots" width="8" height="8" patternUnits="userSpaceOnUse">
+                  <circle cx="3" cy="3" r="1.15" fill="rgba(24,20,16,0.12)"/>
+                </pattern>
+              </defs>
+            </svg>
+            <div class="dio-cam">
+              <svg class="dio-svg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+                <!-- LAYER 1 (BACK): Torn Sky Band (21:9 blue magazine gradient with torn white paper border) -->
+                <g class="dio-l-sky" filter="url(#dio-torn-edge)">
+                  <polygon points="18,18 982,14 986,295 14,302" fill="#FFFFFF"/>
+                  <polygon points="26,26 974,22 978,286 22,292" fill="#3B82C4"/>
+                  <polygon points="26,26 974,22 978,286 22,292" fill="url(#dio-dots)"/>
+                </g>
+
+                <!-- LAYER 2 (BACK-MID): Separate Cut-Out Clouds & Birds (Always Moving) -->
+                <g class="dio-l-clouds">
+                  <g class="dio-mover-clouds">
+                    <!-- Cloud 1 -->
+                    <g transform="translate(85, 68)">
+                      <path d="M0,42 C-12,42 -18,26 -6,18 C2,4 24,2 36,12 C48,0 74,4 82,20 C96,22 96,42 80,44 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round"/>
+                      <path d="M0,42 C-12,42 -18,26 -6,18 C2,4 24,2 36,12 C48,0 74,4 82,20 C96,22 96,42 80,44 Z" fill="#E6DFD3"/>
+                    </g>
+                    <!-- Cloud 2 -->
+                    <g transform="translate(680, 52)">
+                      <path d="M0,38 C-10,38 -14,22 -4,15 C4,3 22,2 34,11 C46,1 68,5 74,18 C88,20 88,38 72,40 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round"/>
+                      <path d="M0,38 C-10,38 -14,22 -4,15 C4,3 22,2 34,11 C46,1 68,5 74,18 C88,20 88,38 72,40 Z" fill="#E6DFD3"/>
+                    </g>
+                    <!-- Cloud 3 -->
+                    <g transform="translate(830, 145) scale(0.85)">
+                      <path d="M0,38 C-10,38 -14,22 -4,15 C4,3 22,2 34,11 C46,1 68,5 74,18 C88,20 88,38 72,40 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round"/>
+                      <path d="M0,38 C-10,38 -14,22 -4,15 C4,3 22,2 34,11 C46,1 68,5 74,18 C88,20 88,38 72,40 Z" fill="#DDD5C7"/>
+                    </g>
+                  </g>
+                  <!-- Cut-Out Birds -->
+                  <g class="dio-mover-birds">
+                    <g transform="translate(565, 118)">
+                      <path d="M0,16 Q14,-6 28,12 Q42,-6 56,16 Q40,22 28,18 Q16,22 0,16 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round"/>
+                      <path d="M2,16 Q14,-3 28,13 Q42,-3 54,16 Q40,20 28,17 Q16,20 2,16 Z" fill="#4A372B"/>
+                    </g>
+                    <g transform="translate(635, 152) scale(0.82)">
+                      <path d="M0,16 Q14,-6 28,12 Q42,-6 56,16 Q40,22 28,18 Q16,22 0,16 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round"/>
+                      <path d="M2,16 Q14,-3 28,13 Q42,-3 54,16 Q40,20 28,17 Q16,20 2,16 Z" fill="#3D2E24"/>
+                    </g>
+                  </g>
+                </g>
+
+                <!-- LAYER 3 (MIDDLE): Jagged Alpine Mountain Ridge Cut-Out + Bare Valley Floor -->
+                <g class="dio-l-mountains">
+                  <polygon points="10,435 10,215 95,125 185,205 285,118 395,215 485,155 595,235 715,112 835,210 925,135 990,225 990,435" fill="#FFFFFF"/>
+                  <polygon points="18,428 18,222 95,136 185,214 285,128 395,224 485,165 595,242 715,122 835,218 925,146 982,232 982,428" fill="#5B5852"/>
+                  <!-- Snow & Halftone Ridges -->
+                  <polygon points="95,136 142,178 118,195 75,162" fill="#EAE3D5"/>
+                  <polygon points="285,128 345,182 310,205 245,165" fill="#EAE3D5"/>
+                  <polygon points="715,122 785,180 745,212 675,168" fill="#EAE3D5"/>
+                  <!-- Bare Valley Cleft (revealed when glacier slides back) -->
+                  <polygon points="445,218 595,242 715,175 795,385 430,395" fill="#7D7265"/>
+                </g>
+
+                <!-- LAYER 3.5 (THE STORY TURN PIECE): The Rhône Glacier Cut-Out (Slides away on cue!) -->
+                <g class="dio-l-glacier">
+                  <g class="dio-glacier-body">
+                    <polygon points="435,210 585,192 738,162 845,355 685,392 442,382" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"/>
+                    <polygon points="442,216 585,198 732,170 835,348 682,384 448,374" fill="#B8D4DE"/>
+                    <path d="M485,245 L665,225 L765,335 L525,355 Z" fill="#DDF0F5"/>
+                    <path d="M510,265 L695,285 M545,310 L745,325" stroke="#6FA3B8" stroke-width="4" stroke-dasharray="12 6"/>
+                  </g>
+                </g>
+
+                <!-- LAYER 4 (FRONT GROUND): Winding Furka Pass Hairpin Road & Grass Slope Cut-Out -->
+                <g class="dio-l-road">
+                  <!-- Green/Ochre Alpine Slope -->
+                  <polygon points="10,685 10,385 385,355 895,365 990,425 990,685" fill="#FFFFFF"/>
+                  <polygon points="18,678 18,392 385,362 890,372 982,432 982,678" fill="#7B7E4C"/>
+                  <!-- Winding Hairpin Road with Torn White Paper Border -->
+                  <path d="M 18,485 C 240,475 760,425 835,485 C 895,535 725,615 345,595 L 18,585 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="10" stroke-linejoin="round"/>
+                  <path d="M 18,492 C 240,482 750,432 825,488 C 882,532 715,606 345,588 L 18,578 Z" fill="#8C857B"/>
+                  <path d="M 45,535 C 260,525 715,475 785,515 C 825,542 680,575 345,562" fill="none" stroke="#EAE2D3" stroke-width="3.5" stroke-dasharray="14 10"/>
+                </g>
+
+                <!-- LAYER 5 (HERO SUBJECT): Hotel Belvédère Stacked in 3 Parts (Base -> Floors -> Mansard Roof) -->
+                <g class="dio-l-hero">
+                  ${heroCustom ? `<image href="${esc(heroCustom)}" x="145" y="175" width="270" height="310" preserveAspectRatio="xMidYBottom meet"/>` : `
+                  <!-- Part 5A: Stone Foundation & Red Sunblind Terrace Base -->
+                  <g class="dio-h-base">
+                    <rect x="172" y="348" width="216" height="122" rx="4" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="10"/>
+                    <rect x="178" y="354" width="204" height="110" fill="#8C8479" stroke="#2B2623" stroke-width="2.5"/>
+                    <rect x="184" y="362" width="192" height="24" fill="#C93B2B"/>
+                    <text x="280" y="350" text-anchor="middle" font-family="serif" font-weight="bold" font-size="18" fill="#C93B2B">HOTEL</text>
+                    <rect x="196" y="394" width="28" height="38" fill="#2B2623"/><rect x="238" y="394" width="28" height="38" fill="#2B2623"/><rect x="282" y="394" width="28" height="38" fill="#2B2623"/><rect x="324" y="394" width="28" height="38" fill="#2B2623"/>
+                  </g>
+                  <!-- Part 5B: Cream Upper Façade Floors -->
+                  <g class="dio-h-floors">
+                    <rect x="182" y="252" width="196" height="102" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9"/>
+                    <rect x="188" y="258" width="184" height="92" fill="#DFD5C5" stroke="#2B2623" stroke-width="2.5"/>
+                    <rect x="204" y="272" width="22" height="30" fill="#3A3530"/><rect x="242" y="272" width="22" height="30" fill="#3A3530"/><rect x="280" y="272" width="22" height="30" fill="#3A3530"/><rect x="318" y="272" width="22" height="30" fill="#3A3530"/>
+                    <rect x="204" y="312" width="22" height="30" fill="#3A3530"/><rect x="242" y="312" width="22" height="30" fill="#3A3530"/><rect x="280" y="312" width="22" height="30" fill="#3A3530"/><rect x="318" y="312" width="22" height="30" fill="#3A3530"/>
+                  </g>
+                  <!-- Part 5C: Iconic Mansard Slate Roof & Dormers -->
+                  <g class="dio-h-roof">
+                    <polygon points="174,258 206,192 354,192 386,258" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="9" stroke-linejoin="round"/>
+                    <polygon points="180,256 210,198 350,198 380,256" fill="#4A4642" stroke="#2B2623" stroke-width="2.5"/>
+                    <rect x="218" y="212" width="24" height="32" fill="#DFD5C5" stroke="#2B2623" stroke-width="2"/>
+                    <rect x="268" y="208" width="26" height="36" fill="#DFD5C5" stroke="#2B2623" stroke-width="2"/>
+                    <rect x="318" y="212" width="24" height="32" fill="#DFD5C5" stroke="#2B2623" stroke-width="2"/>
+                  </g>`}
+                </g>
+
+                <!-- LAYER 6 (CONTINUOUS FOREGROUND LIFE): 1960s Yellow Swiss Post Bus + Steam Train -->
+                <g class="dio-l-movers">
+                  <!-- Yellow 1960s Post Bus on the Pass Road -->
+                  <g transform="translate(365, 452)"><g class="dio-mover-bus">
+                    <rect x="-4" y="-4" width="128" height="52" rx="8" fill="#FFFFFF"/>
+                    <rect x="0" y="0" width="120" height="44" rx="6" fill="#E5A93B" stroke="#231F1C" stroke-width="2.5"/>
+                    <rect x="6" y="6" width="108" height="16" rx="3" fill="#EFE8D8"/>
+                    <rect x="12" y="8" width="18" height="12" fill="#3A4A52"/><rect x="36" y="8" width="18" height="12" fill="#3A4A52"/><rect x="60" y="8" width="18" height="12" fill="#3A4A52"/><rect x="84" y="8" width="24" height="12" fill="#3A4A52"/>
+                    <circle cx="26" cy="44" r="10" fill="#231F1C" stroke="#FFFFFF" stroke-width="3"/>
+                    <circle cx="94" cy="44" r="10" fill="#231F1C" stroke="#FFFFFF" stroke-width="3"/>
+                  </g></g>
+                  <!-- Furka Cogwheel Steam Train at Bottom Left -->
+                  <g transform="translate(75, 528)"><g class="dio-mover-train">
+                    <!-- Cut-out smoke puffs -->
+                    <circle cx="145" cy="-22" r="14" fill="#FFFFFF"/><circle cx="145" cy="-22" r="11" fill="#E5DEC9"/>
+                    <circle cx="122" cy="-34" r="18" fill="#FFFFFF"/><circle cx="122" cy="-34" r="14" fill="#E5DEC9"/>
+                    <!-- Passenger Coach + Locomotive -->
+                    <rect x="-6" y="-6" width="176" height="62" rx="6" fill="#FFFFFF"/>
+                    <rect x="0" y="4" width="88" height="44" fill="#9E3328" stroke="#231F1C" stroke-width="2.5"/>
+                    <rect x="10" y="12" width="16" height="14" fill="#EAE2D3"/><rect x="36" y="12" width="16" height="14" fill="#EAE2D3"/><rect x="62" y="12" width="16" height="14" fill="#EAE2D3"/>
+                    <rect x="92" y="12" width="68" height="36" fill="#2A2826" stroke="#231F1C" stroke-width="2.5"/>
+                    <rect x="94" y="-2" width="28" height="46" fill="#2A2826"/>
+                    <rect x="138" y="-12" width="12" height="26" fill="#2A2826"/>
+                    <circle cx="22" cy="50" r="9" fill="#231F1C"/><circle cx="66" cy="50" r="9" fill="#231F1C"/><circle cx="114" cy="50" r="9" fill="#231F1C"/><circle cx="146" cy="50" r="9" fill="#231F1C"/>
+                  </g></g>
+                </g>
+              </svg>
+            </div>
+
+            <!-- LAYER 7 (TOP RANSOM-NOTE NEWSPAPER SCRAP TITLES — Word by Word) -->
+            <div class="dio-titles">
+              ${s.title ? MD.ransomTx(s.title) : ""}
+              ${s.sub ? `<div class="dio-sub-row">${MD.ransomTx(s.sub)}</div>` : ""}
+            </div>
+
+            <!-- LAYER 8 (FACTS OVERLAY: Map Pin Clipping + Animated Year Timeline Bar) -->
+            <div class="dio-facts">
+              <div class="dio-clip-card">
+                <i class="dio-pin-dot"></i>
+                <span class="dio-clip-yr">${esc(yr)}</span>
+                <span class="dio-clip-tx">${esc(fact)}</span>
+              </div>
+              <div class="dio-tl-bar">
+                <div class="dio-tl-labels">
+                  <span>${esc(tlA)}</span>
+                  <span class="dio-tl-end">${esc(tlB)}</span>
+                </div>
+                <div class="dio-tl-track"><div class="dio-tl-fill"></div></div>
+              </div>
+            </div>
+            <div class="dio-paper-tex" data-layout-ignore></div>
+          </div>
+        </div>`;
+      },
+      plan: (s) => {
+        const e = [];
+        e.push(ev(0.0, ".dio-stage", "dioramaRun", 1, {}, "card-place", "start"));
+        if (s.title) {
+          e.push(ev(0.35, ".dio-titles", "ransomDrop", MD.count(s.title) + (s.sub ? MD.count(s.sub) : 0), { d: 0.55, st: 0.095 }, "tap", "start"));
+        }
+        e.push(ev(0.85, ".dio-clip-card", "fadeUp", 1, { y: 35, d: 0.55 }, "card-slide", "start"));
+        e.push(ev(1.05, ".dio-tl-bar", "fadeUp", 1, { y: 35, d: 0.55 }, "scratch", "start"));
         return e;
       },
     },

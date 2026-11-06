@@ -362,6 +362,7 @@ function voicing(root, scale, deg, size, prev) {
 }
 export const _voicing = voicing;
 export const PRESETS = {
+  pulse: { bpm: 120, root: 57, scale: MIN, prog: [0, 5, 3, 6], ext: 4, parts: ["kickSoft", "hat16", "shaker8", "pluck8", "bass8", "pad"], swing: 0.04, verb: 0.24, duck: 0.72 },
   polymath: { bpm: 90, root: 57, scale: MIN, prog: [0, 5, 3, 4], ext: 5, parts: ["kickSoft", "brush", "epArp", "pad", "bassSwell", "vinyl"], swing: 0.04, verb: 0.42, duck: 0.88 },
   vox: { bpm: 98, root: 60, scale: MIN, prog: [0, 5, 3, 4], ext: 4, parts: ["kickSoft", "brush", "shaker8", "pluck8", "epHold", "bassLong", "vinyl"], swing: 0.12, verb: 0.26, duck: 0.88 },
   kinetic: { bpm: 118, root: 57, scale: MIN, prog: [0, 5, 2, 6], ext: 5, parts: ["kick4", "snare", "hatOff", "bassHouse", "epStab", "pad"], swing: 0, verb: 0.2, duck: 0.6 },
@@ -557,32 +558,7 @@ export function renderSoundtrack(plan, outFile, { seed = 7 } = {}) {
   const base = 60 + (((P.root % 12) + 12) % 12) - (P.root % 12 > 5 ? 12 : 0);
   const scaleNotes = P.scale.map((x) => base + x);
   let blipN = 0;
-  // Optional user-recorded voiceover file (plan.voiceover): mix in and duck music bed under active speech
-  if (plan.voiceover && fs.existsSync(plan.voiceover)) {
-    const voBus = readAudio(plan.voiceover, plan.duration + 1);
-    if (voBus) {
-      // Sidechain-duck music where VO energy is present
-      const win = Math.round(0.08 * SR);
-      for (let i = 0; i < mix.n && i < voBus.n; i += win) {
-        let pk = 0;
-        for (let j = i; j < Math.min(voBus.n, i + win); j++) pk = Math.max(pk, Math.abs(voBus.L[j]), Math.abs(voBus.R[j]));
-        if (pk > 0.025) {
-          for (let j = i; j < Math.min(mix.n, i + win); j++) { mix.L[j] *= 0.36; mix.R[j] *= 0.36; }
-        }
-      }
-      mix.mixFrom(voBus, 1.05);
-      report.voiceover = path.basename(plan.voiceover);
-    }
-  }
   for (const c of plan.cues || []) {
-    if (c.file && fs.existsSync(c.file)) {
-      const customVo = readAudio(c.file, 8);
-      if (customVo) {
-        mix.add(customVo, Math.max(0, c.at), clamp(c.gain ?? 0.85, 0.2, 1.5), 0);
-        report.sfx++;
-        continue;
-      }
-    }
     const kind = KIND[c.name] || "blip";
     let v;
     if (kind === "whoosh") v = fxWhoosh(r, { dur: 0.6, from: 150, to: 1300, level: 0.9 });

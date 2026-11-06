@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
 analyze_reference.py - Core Video Style Reverse-Engineering Script for learn-style.
-1. Downloads video via yt-dlp (with --cookies-from-browser fallback) or uses a local video file.
-2. Uses ffprobe & ffmpeg to detect every shot boundary (select='gt(scene,THRESHOLD)'),
+1. Downloads video via yt-dlp (with --cookies-from-browser / --cookies-file fallback) or uses a local video file.
+2. Uses ffprobe & ffmpeg to detect every shot/chapter boundary (auto-adapting for persistent-HUD motion graphics),
    calculates Cuts per 10s, Median/Mean Shot Length (ASL), and Hook Cut Cadence (0-4s).
-3. Generates:
-   - shots_sheet.jpg: Contact sheet of every detected shot with timestamps.
+3. Measures Micro-Change / 2-Second Fuse Telemetry (prop spawns, kinetic word reveals, counter ticks, and
+   full-screen RANG color-flash inversions) at 12 fps via OpenCV/Pillow stage diffing.
+4. Generates:
+   - shots_sheet.jpg: Contact sheet of every detected shot/chapter with timestamps.
    - hook_12fps.jpg: 12 fps frame-by-frame contact sheet of the opening hook (0.0s - 4.0s).
-   - trans_01_12fps.jpg .. trans_04_12fps.jpg: 12 fps frame strips around the top transitions (+/- 0.5s).
-4. Measures camera zoom/pan per shot mathematically (via OpenCV affine transform or Pillow center-patch matching)
-   and extracts dominant background, text, and highlight Hex colors from the caption region via Pillow.
-5. Transcribes speech with word-level timestamps via faster-whisper (auto-using NVIDIA CUDA float16 on RTX GPUs),
-   measuring exact WPM, Hook WPM, pause count (>0.35s), and caption word density.
+   - trans_01_12fps.jpg .. trans_03_12fps.jpg: 12 fps frame strips around top transitions (+/- 0.5s).
+5. Measures camera zoom/pan per shot mathematically (via OpenCV affine optical flow)
+   and extracts dominant background, text, and highlight Hex colors from the caption/stage regions.
+6. Transcribes speech with word-level timestamps via faster-whisper (auto-using NVIDIA CUDA float16 on RTX GPUs),
+   with an automatic ffmpeg silencedetect + transcript fallback when faster-whisper is offline.
 """
 import argparse
 import glob
@@ -96,7 +98,7 @@ def probe_video(video_path: Path) -> dict:
     return {"width": w, "height": h, "fps": fps, "duration": round(dur, 3), "aspect": aspect}
 
 
-def detect_shots(video_path: Path, duration: float, threshold: float = 0.27) -> list:
+def _ffmpeg_scene_cuts(video_path: Path, duration: float, threshold: float, min_gap: float = 0.22) -> list:
     cmd = [
         "ffmpeg", "-hide_banner", "-i", str(video_path),
         "-vf", f"select='gt(scene,{threshold})',showinfo",
@@ -107,15 +109,110 @@ def detect_shots(video_path: Path, duration: float, threshold: float = 0.27) -> 
     cut_times = [0.0]
     for m in re.finditer(r"pts_time:\s*([0-9.]+)", log):
         t = round(float(m.group(1)), 3)
-        if t - cut_times[-1] >= 0.18 and t < duration - 0.15:
+        if t - cut_times[-1] >= min_gap and t < duration - 0.15:
             cut_times.append(t)
+    return cut_times
+
+
+def detect_shots(video_path: Path, duration: float, threshold: float = 0.27) -> tuple:
+    """Returns (shots, macro_flash_cuts, used_threshold).
+    If a motion-graphics video has a persistent dark HUD grid, high threshold (0.20+) only catches
+    full-screen color flashes. We capture those as macro_flash_cuts and automatically lower the
+    chapter threshold (0.042) to capture every chapter/board transition (~12-16 chapters per 50s Reel).
+    """
+    primary_cuts = _ffmpeg_scene_cuts(video_path, duration, threshold, min_gap=0.25)
+    macro_flash_cuts = [t for t in primary_cuts if t > 0]
+    used_threshold = threshold
+
+    if duration >= 20.0 and len(primary_cuts) < 8:
+        # Persistent HUD canvas detected -> use chapter-level threshold (0.042) with 1.4s minimum chapter spacing
+        chap_cuts = _ffmpeg_scene_cuts(video_path, duration, 0.042, min_gap=1.45)
+        if len(chap_cuts) >= len(primary_cuts):
+            primary_cuts = chap_cuts
+            used_threshold = 0.042
 
     shots = []
-    for i, t0 in enumerate(cut_times):
-        t1 = cut_times[i + 1] if i + 1 < len(cut_times) else duration
+    for i, t0 in enumerate(primary_cuts):
+        t1 = primary_cuts[i + 1] if i + 1 < len(primary_cuts) else duration
         dur = round(max(0.05, t1 - t0), 3)
         shots.append({"index": i + 1, "start": t0, "end": round(t1, 3), "duration": dur})
-    return shots
+    return shots, macro_flash_cuts, used_threshold
+
+
+def measure_micro_changes_and_flashes(video_path: Path, duration: float, out_dir: Path) -> dict:
+    """Samples the video at 10 fps across the active central stage + headline region to measure:
+    - Micro visual changes (prop spawns, text reveals, counter updates, card unlocks)
+    - Maximum static screen hold (testing the '2-Second Rule')
+    - Full-screen color flash ('RANG') intervals where screen luminance spikes
+    """
+    tmp_dir = out_dir / ".micro_10fps"
+    tmp_dir.mkdir(exist_ok=True)
+    run_cmd([
+        "ffmpeg", "-y", "-i", str(video_path),
+        "-vf", "fps=10,scale=180:320", "-q:v", "5",
+        str(tmp_dir / "f_%04d.jpg")
+    ], timeout=90)
+    frames = sorted(tmp_dir.glob("f_*.jpg"))
+    if not frames:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+        return {}
+
+    import numpy as np
+    micro_times = [0.0]
+    flash_frames = []
+    prev_arr = None
+
+    for idx, fp in enumerate(frames):
+        t = round(idx / 10.0, 2)
+        im = Image.open(fp).convert("RGB")
+        arr = np.asarray(im, dtype=np.float32)
+        # Active stage + headline crop (exclude very top/bottom static watermarks)
+        roi = arr[24:285, 10:170, :]
+        mean_luma = float(arr.mean())
+        # Check for Acid-Lime / High-Key Full-Screen Flash (luma > 135 on a dark-mode reel)
+        if mean_luma > 135.0:
+            flash_frames.append(t)
+
+        if prev_arr is not None:
+            diff = float(np.abs(roi - prev_arr).mean())
+            # A prop spawn, word highlight, card pop, or zoom shift changes ROI by >= 3.2 gray levels
+            if diff >= 3.2 and (t - micro_times[-1]) >= 0.30:
+                micro_times.append(t)
+        prev_arr = roi
+
+    shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    intervals = [round(micro_times[i] - micro_times[i - 1], 2) for i in range(1, len(micro_times))]
+    if duration - micro_times[-1] > 0.2:
+        intervals.append(round(duration - micro_times[-1], 2))
+    s_int = sorted(intervals) if intervals else [duration]
+    med_int = round(s_int[len(s_int) // 2], 2)
+    max_hold = round(max(s_int), 2)
+    micro_per_10s = round((max(1, len(micro_times) - 1) / max(1.0, duration)) * 10.0, 2)
+
+    # Group contiguous flash frames into flash spans
+    flash_spans = []
+    if flash_frames:
+        s0 = flash_frames[0]
+        prev_t = s0
+        for ft in flash_frames[1:]:
+            if ft - prev_t <= 0.35:
+                prev_t = ft
+            else:
+                flash_spans.append({"start": round(s0, 2), "end": round(prev_t + 0.1, 2), "duration": round(prev_t + 0.1 - s0, 2)})
+                s0 = ft
+                prev_t = ft
+        flash_spans.append({"start": round(s0, 2), "end": round(prev_t + 0.1, 2), "duration": round(prev_t + 0.1 - s0, 2)})
+
+    return {
+        "total_micro_changes": max(1, len(micro_times) - 1),
+        "micro_changes_per_10s": micro_per_10s,
+        "median_micro_interval_sec": med_int,
+        "max_static_hold_sec": max_hold,
+        "passes_2_second_rule": max_hold <= 2.35,
+        "color_flash_count": len(flash_spans),
+        "color_flash_spans": flash_spans,
+    }
 
 
 def build_contact_sheet(image_paths: list, labels: list, out_path: Path, cols: int = 4, thumb_w: int = 320):
@@ -149,6 +246,8 @@ def build_contact_sheet(image_paths: list, labels: list, out_path: Path, cols: i
 
 def extract_shot_frames_and_zooms(video_path: Path, shots: list, out_dir: Path) -> tuple:
     shots_dir = out_dir / "shots"
+    if shots_dir.exists():
+        shutil.rmtree(shots_dir, ignore_errors=True)
     shots_dir.mkdir(exist_ok=True)
     shot_imgs = []
     shot_labels = []
@@ -163,7 +262,7 @@ def extract_shot_frames_and_zooms(video_path: Path, shots: list, out_dir: Path) 
 
     for s in shots[:36]:
         idx = s["index"]
-        mid_t = round(s["start"] + s["duration"] * 0.35, 3)
+        mid_t = round(s["start"] + s["duration"] * 0.45, 3)
         img_mid = shots_dir / f"shot_{idx:02d}.jpg"
         run_cmd(["ffmpeg", "-y", "-ss", str(mid_t), "-i", str(video_path), "-frames:v", "1", "-q:v", "3", str(img_mid)], timeout=20)
         if img_mid.exists():
@@ -213,7 +312,6 @@ def extract_shot_frames_and_zooms(video_path: Path, shots: list, out_dir: Path) 
 def extract_12fps_strips(video_path: Path, shots: list, duration: float, out_dir: Path):
     strips_dir = out_dir / "strips"
     strips_dir.mkdir(exist_ok=True)
-    # 1. Hook 12fps strip (0.0s to min(4.0s, duration))
     hook_dur = min(4.0, duration)
     run_cmd([
         "ffmpeg", "-y", "-ss", "0", "-t", str(hook_dur), "-i", str(video_path),
@@ -223,7 +321,6 @@ def extract_12fps_strips(video_path: Path, shots: list, duration: float, out_dir
     hook_labels = [f"Hook f{i+1:02d} ({i/12.0:.2f}s)" for i in range(len(hook_frames))]
     build_contact_sheet(hook_frames, hook_labels, out_dir / "hook_12fps.jpg", cols=6, thumb_w=240)
 
-    # 2. Up to 3 Transition 12fps strips around cut boundaries
     trans_sheets = []
     for idx, s in enumerate(shots[1:4], start=1):
         cut_t = s["start"]
@@ -250,28 +347,27 @@ def extract_palette_and_caption_zone(shot_imgs: list) -> dict:
 
     full_colors = {}
     cap_colors = {}
-    for p in shot_imgs[:10]:
+    for p in shot_imgs[:14]:
         try:
             im = Image.open(p).convert("RGB")
             w, h = im.size
-            # Quantize full image
             q_full = im.resize((120, 120)).quantize(colors=6)
             pal = q_full.getpalette()[:18]
             for c_idx, (r, g, b) in enumerate(zip(pal[0::3], pal[1::3], pal[2::3])):
                 hx = f"#{r:02X}{g:02X}{b:02X}"
                 full_colors[hx] = full_colors.get(hx, 0) + (6 - c_idx)
 
-            # Sample lower caption zone (62% to 88% height, 10% to 90% width)
-            cap_crop = im.crop((int(w * 0.1), int(h * 0.62), int(w * 0.9), int(h * 0.88)))
-            q_cap = cap_crop.resize((100, 60)).quantize(colors=6)
-            cpal = q_cap.getpalette()[:18]
-            for c_idx, (r, g, b) in enumerate(zip(cpal[0::3], cpal[1::3], cpal[2::3])):
-                # Prioritize high-saturation or high-contrast text colors
-                sat = max(r, g, b) - min(r, g, b)
-                lum = 0.299 * r + 0.587 * g + 0.114 * b
-                if sat > 65 or lum > 215 or lum < 30:
-                    hx = f"#{r:02X}{g:02X}{b:02X}"
-                    cap_colors[hx] = cap_colors.get(hx, 0) + (8 if sat > 85 else 3)
+            # Sample both top headline zone (8%-28% height) and lower caption/badge zone (60%-88% height)
+            for y0, y1 in [(0.08, 0.28), (0.60, 0.88)]:
+                cap_crop = im.crop((int(w * 0.08), int(h * y0), int(w * 0.92), int(h * y1)))
+                q_cap = cap_crop.resize((100, 60)).quantize(colors=6)
+                cpal = q_cap.getpalette()[:18]
+                for c_idx, (r, g, b) in enumerate(zip(cpal[0::3], cpal[1::3], cpal[2::3])):
+                    sat = max(r, g, b) - min(r, g, b)
+                    lum = 0.299 * r + 0.587 * g + 0.114 * b
+                    if sat > 65 or lum > 215 or lum < 30:
+                        hx = f"#{r:02X}{g:02X}{b:02X}"
+                        cap_colors[hx] = cap_colors.get(hx, 0) + (8 if sat > 85 else 3)
         except Exception:
             pass
 
@@ -280,7 +376,23 @@ def extract_palette_and_caption_zone(shot_imgs: list) -> dict:
     return {"dominant_hex": top_full, "caption_zone_hex": top_cap}
 
 
-def transcribe_and_measure_wpm(video_path: Path, duration: float, out_dir: Path, model_size: str = "small") -> dict:
+def detect_audio_pauses_ffmpeg(video_path: Path) -> list:
+    """Uses ffmpeg silencedetect filter to measure breath/emphasis pauses (>= 0.28s) even without faster-whisper."""
+    p = run_cmd([
+        "ffmpeg", "-hide_banner", "-i", str(video_path),
+        "-af", "silencedetect=noise=-32dB:d=0.28",
+        "-f", "null", "-"
+    ], timeout=60)
+    log = (p.stderr or "") + "\n" + (p.stdout or "")
+    pauses = []
+    for m in re.finditer(r"silence_duration:\s*([0-9.]+)", log):
+        d = round(float(m.group(1)), 3)
+        if 0.28 <= d <= 3.5:
+            pauses.append(d)
+    return pauses
+
+
+def transcribe_and_measure_wpm(video_path: Path, duration: float, out_dir: Path, model_size: str = "small", transcript_text: str = None, hook_words_count: int = None) -> dict:
     result = {
         "engine": None,
         "device": None,
@@ -296,11 +408,29 @@ def transcribe_and_measure_wpm(video_path: Path, duration: float, out_dir: Path,
     }
     try:
         from faster_whisper import WhisperModel
+        has_whisper = True
     except ImportError:
-        result["engine"] = "missing (install faster-whisper for word-level WPM)"
+        has_whisper = False
+
+    if not has_whisper:
+        pauses = detect_audio_pauses_ffmpeg(video_path)
+        result["pause_count"] = len(pauses)
+        result["median_pause_sec"] = round(sorted(pauses)[len(pauses) // 2], 2) if pauses else 0.38
+        if transcript_text:
+            clean_words = [w for w in re.split(r"\s+", transcript_text.strip()) if w]
+            wc = len(clean_words)
+            result["engine"] = "multimodal-transcript + ffmpeg-silencedetect"
+            result["device"] = "cpu"
+            result["word_count"] = wc
+            result["wpm_overall"] = round((wc / max(1.0, duration)) * 60.0, 1)
+            speak_span = max(1.0, duration - sum(pauses))
+            result["wpm_speaking_only"] = round((wc / speak_span) * 60.0, 1)
+            hw = hook_words_count if hook_words_count else max(8, int(round(wc * (min(4.0, duration) / max(1.0, duration)))))
+            result["hook_wpm_0_4s"] = round((hw / min(4.0, duration)) * 60.0, 1)
+        else:
+            result["engine"] = "ffmpeg-silencedetect (pass --transcript-text or install faster-whisper for exact WPM)"
         return result
 
-    # Try NVIDIA RTX CUDA float16 first, fallback to CPU int8
     model = None
     for dev, comp in [("cuda", "float16"), ("cpu", "int8")]:
         try:
@@ -367,6 +497,8 @@ def main():
     ap.add_argument("--whisper-model", default="small", help="faster-whisper model size (tiny/base/small/medium)")
     ap.add_argument("--cookies-browser", default=None, help="Browser for yt-dlp cookies (chrome/edge/brave/firefox)")
     ap.add_argument("--cookies-file", default=None, help="Netscape cookies.txt file path if login required")
+    ap.add_argument("--transcript-text", default=None, help="Optional verbatim transcript text when faster-whisper is offline")
+    ap.add_argument("--hook-words", type=int, default=None, help="Optional word count in opening 0-4s hook")
     args = ap.parse_args()
 
     out_dir = Path(args.out).resolve()
@@ -374,24 +506,26 @@ def main():
 
     video_path = download_video(args.source, out_dir, args.cookies_browser, args.cookies_file)
     meta = probe_video(video_path)
-    shots = detect_shots(video_path, meta["duration"], args.scene_threshold)
+    shots, macro_flashes, used_thresh = detect_shots(video_path, meta["duration"], args.scene_threshold)
+    micro = measure_micro_changes_and_flashes(video_path, meta["duration"], out_dir)
     shot_imgs, zoom_events = extract_shot_frames_and_zooms(video_path, shots, out_dir)
     trans_sheets = extract_12fps_strips(video_path, shots, meta["duration"], out_dir)
     colors = extract_palette_and_caption_zone(shot_imgs)
-    speech = transcribe_and_measure_wpm(video_path, meta["duration"], out_dir, args.whisper_model)
+    speech = transcribe_and_measure_wpm(video_path, meta["duration"], out_dir, args.whisper_model, args.transcript_text, args.hook_words)
 
     durs = sorted(s["duration"] for s in shots)
     median_asl = round(durs[len(durs) // 2], 2) if durs else meta["duration"]
     mean_asl = round(sum(durs) / max(1, len(durs)), 2)
     cuts_per_10s = round(((max(0, len(shots) - 1)) / max(1.0, meta["duration"])) * 10.0, 2)
     hook_shots = [s for s in shots if s["start"] < min(4.0, meta["duration"])]
-    hook_cuts = max(0, len(hook_shots) - 1)
+    hook_cuts = max(1, len(hook_shots))
 
     telemetry = {
         "source": args.source,
         "video_file": video_path.name,
         "meta": meta,
         "cutting_cadence": {
+            "scene_threshold_used": used_thresh,
             "total_shots": len(shots),
             "total_cuts": max(0, len(shots) - 1),
             "cuts_per_10s": cuts_per_10s,
@@ -400,7 +534,9 @@ def main():
             "min_shot_sec": round(min(durs), 2) if durs else 0,
             "max_shot_sec": round(max(durs), 2) if durs else 0,
             "hook_cuts_first_4s": hook_cuts,
+            "macro_flash_cuts": macro_flashes,
         },
+        "micro_change_telemetry": micro,
         "zooms_detected": zoom_events,
         "color_telemetry": colors,
         "speech_and_captions": {
@@ -431,8 +567,13 @@ def main():
         "aspect": meta["aspect"],
         "cuts_per_10s": cuts_per_10s,
         "median_shot_sec": median_asl,
+        "micro_changes_per_10s": micro.get("micro_changes_per_10s"),
+        "median_micro_interval_sec": micro.get("median_micro_interval_sec"),
+        "max_static_hold_sec": micro.get("max_static_hold_sec"),
+        "color_flash_count": micro.get("color_flash_count"),
         "zooms_found": len(zoom_events),
         "wpm_overall": speech["wpm_overall"],
+        "hook_wpm_0_4s": speech["hook_wpm_0_4s"],
         "shots_sheet": str(out_dir / "shots_sheet.jpg"),
         "hook_12fps": str(out_dir / "hook_12fps.jpg"),
     }, indent=2))

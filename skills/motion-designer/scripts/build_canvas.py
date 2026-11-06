@@ -77,6 +77,7 @@ font_map_spec = {
     "Space Grotesk": [("SpaceGrotesk-Variable.woff2", "300 700", "normal", None)],
     "Instrument Serif": [("InstrumentSerif-Regular.woff2", "400", "normal", None), ("InstrumentSerif-Italic.woff2", "400", "italic", None)],
     "Geist": [("Geist-Variable.woff2", "100 900", "normal", None)],
+    "Syne": [("Syne-Variable.woff2", "400 800", "normal", None)],
 }
 for fam, entries in font_map_spec.items():
     for (fn, weight, style, stretch) in entries:

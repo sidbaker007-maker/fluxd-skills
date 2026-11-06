@@ -19,3 +19,7 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v05-2026.11.06-learn-style-v1.0-cli-rtx` (2026-11-06) — Added learn-style v1.0 reverse-engineering pipeline with CUDA faster-whisper
 - Added `learn-style` v1.0 (`setup_check.py`, `analyze_reference.py`, `compile_my_style.py`) for extracting shot contact sheets, 12fps hook/transition strips, optical flow zooms, and word timings.
 
+## `v06-2026.11.06-vox-diorama-and-learn-style-v1.1` (2026-11-06) — Upgraded learn-style v1.1 (2-Second Fuse telemetry) and motion-designer v1.3 (Vox Diorama)
+- Upgraded `learn-style` v1.1 to measure 10fps micro-changes (`2-Second Fuse`) and full-screen `RANG` color-flash inversions.
+- Upgraded `motion-designer` v1.3 with Vox Belvedere paper-cutout diorama and camera choreography.
+

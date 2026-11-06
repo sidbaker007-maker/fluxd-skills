@@ -49,10 +49,6 @@ function printReport(r) {
 
 function hf(argv, opts = {}) {
   const localPy = path.join(SKILL, "scripts/local_renderer.py");
-  // Always use local_renderer.py for snapshot, check, and render so RTX NVENC, --res 4k/1080p, --alpha ProRes, and 7-Point Motion Audit run natively
-  if (argv[0] !== "capture" && !process.env.MD_USE_HYPERFRAMES) {
-    return spawnSync("python3", [localPy, ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
-  }
   const major = +process.versions.node.split(".")[0];
   if (major >= 22 && !process.env.MD_FORCE_LOCAL_RENDERER) {
     const r = spawnSync(npx, ["--yes", "hyperframes", ...argv], { encoding: "utf8", maxBuffer: 1 << 28, timeout: 45000, ...opts });
@@ -149,140 +145,6 @@ switch (cmd) {
     console.log(`${vfile}\nPut screenshots, recordings and a logo in ${path.join(work, "assets")}, then write the scenes.`);
     break;
   }
-  case "remotion": {
-    need();
-    const r = compose(work);
-    const v = readJSON(vfile);
-    const plan = readJSON(path.join(work, "build/plan.json"));
-    const remDir = path.join(work, "remotion-project");
-    fs.mkdirSync(path.join(remDir, "src"), { recursive: true });
-    const fps = 30;
-    const totalFrames = Math.max(30, Math.round((plan.duration || 10) * fps));
-    fs.writeFileSync(path.join(remDir, "package.json"), JSON.stringify({
-      name: (v.title || "motion-video").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      version: "1.0.0",
-      private: true,
-      scripts: { dev: "remotion studio", build: "remotion render VideoComposition out/video.mp4" },
-      dependencies: { "@remotion/cli": "^4.0.0", "@remotion/transitions": "^4.0.0", "react": "^18.3.1", "react-dom": "^18.3.1", "remotion": "^4.0.0" }
-    }, null, 2));
-    const scenesTsx = (plan.scenes || []).map((ps, idx) => {
-      const s = (v.scenes || [])[idx] || {};
-      const fromF = Math.max(0, Math.round(ps.t0 * fps));
-      const durF = Math.max(15, Math.round(ps.dur * fps));
-      const headline = String(s.title || s.text || s.kind || "").replace(/\*/g, "");
-      const sub = String(s.sub || s.vo || "").replace(/\[(?:AUDIO\s+)?PAUSE:\s*[\d.]+\s*s(?:ec(?:onds?)?)?\]/gi, "");
-      return `      <Sequence from={${fromF}} durationInFrames={${durF}} name=${JSON.stringify(`Scene-${idx + 1}-${s.kind}`)}>
-        <SceneCard title=${JSON.stringify(headline)} sub=${JSON.stringify(sub)} kicker=${JSON.stringify(s.kicker || s.movement || "")} />
-      </Sequence>`;
-    }).join("\n");
-    const compCode = `import React from 'react';
-import { AbsoluteFill, Sequence, interpolate, spring, useCurrentFrame, useVideoConfig, Easing } from 'remotion';
-
-const SceneCard: React.FC<{ title: string; sub: string; kicker: string }> = ({ title, sub, kicker }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  // Frame-driven animation per @remotion/skills best practices (no CSS transitions)
-  const sp = spring({ frame, fps, config: { damping: 16, stiffness: 120, mass: 0.9 } });
-  const opacity = interpolate(frame, [0, 12], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1) });
-  const translateY = interpolate(sp, [0, 1], [36, 0]);
-  return (
-    <AbsoluteFill style={{ backgroundColor: '#0B0B0B', color: '#F2EFE9', justifyContent: 'center', alignItems: 'flex-start', padding: '96px 128px', fontFamily: 'sans-serif' }}>
-      {kicker ? <div style={{ fontSize: 20, letterSpacing: '0.12em', color: '#FF5A1F', marginBottom: 18, opacity }}>{kicker}</div> : null}
-      <h1 style={{ fontSize: 72, lineHeight: 1.06, margin: 0, opacity, transform: \`translateY(\${translateY}px)\` }}>{title}</h1>
-      {sub ? <p style={{ fontSize: 28, color: '#94A3B8', marginTop: 28, maxWidth: 1100, opacity }}>{sub}</p> : null}
-    </AbsoluteFill>
-  );
-};
-
-export const VideoComposition: React.FC = () => {
-  return (
-    <AbsoluteFill style={{ backgroundColor: '#0B0B0B' }}>
-${scenesTsx}
-    </AbsoluteFill>
-  );
-};
-`;
-    const rootCode = `import React from 'react';
-import { Composition } from 'remotion';
-import { VideoComposition } from './VideoComposition';
-
-export const RemotionRoot: React.FC = () => {
-  return (
-    <>
-      <Composition
-        id="VideoComposition"
-        component={VideoComposition}
-        durationInFrames={${totalFrames}}
-        fps={${fps}}
-        width={${plan.W || 1920}}
-        height={${plan.H || 1080}}
-      />
-    </>
-  );
-};
-`;
-    fs.writeFileSync(path.join(remDir, "src/VideoComposition.tsx"), compCode);
-    fs.writeFileSync(path.join(remDir, "src/Root.tsx"), rootCode);
-    console.log(`Exported Remotion React project (${totalFrames} frames @ ${fps}fps) -> ${remDir}`);
-    break;
-  }
-  case "manifest": {
-    need();
-    const v = readJSON(vfile);
-    const rows = [];
-    (v.scenes || []).forEach((s, i) => {
-      const scNo = `Scene ${String(i + 1).padStart(2, "0")} (${s.kind})`;
-      const addItem = (relPath, kindLabel, desc) => {
-        if (!relPath || relPath === "auto") return;
-        const abs = path.isAbsolute(relPath) ? relPath : path.resolve(work, relPath);
-        const ok = fs.existsSync(abs);
-        rows.push({ scene: scNo, type: kindLabel, file: relPath, status: ok ? "READY" : "NEEDED", desc: desc || s.assetNote || s.title || s.text || "" });
-      };
-      if (s.bgVideo) addItem(s.bgVideo, "Video Clip / B-Roll", s.bgNote || `Background clip for ${scNo}`);
-      if (s.cutout && typeof s.cutout === "string" && s.cutout !== "auto") addItem(s.cutout, "Vox Cutout Image (.jpg/.png)", s.assetNote || `Cutout image for ${scNo}`);
-      else if (s.cutout && typeof s.cutout === "object" && s.cutout.src) addItem(s.cutout.src, "Vox Cutout Image (.jpg/.png)", s.cutout.label || `Cutout image for ${scNo}`);
-      if (s.media) [].concat(s.media).forEach((m) => addItem(m, /\.(mp4|mov|webm)$/i.test(m) ? "Video Clip" : "Image / Graphic", s.assetNote || `Visual asset for ${scNo}`));
-      if (s.sfxFile) addItem(s.sfxFile, "Custom SFX (.wav/.mp3)", s.sfxNote || `Custom sound effect for ${scNo}`);
-    });
-    if (v.sound && v.sound.voiceover) {
-      const absVo = path.isAbsolute(v.sound.voiceover) ? v.sound.voiceover : path.resolve(work, v.sound.voiceover);
-      rows.push({ scene: "Master Audio", type: "Recorded Voiceover", file: v.sound.voiceover, status: fs.existsSync(absVo) ? "READY" : "OPTIONAL / NEEDED", desc: "Your recorded voiceover track (optional if syncing in Premiere/DaVinci)" });
-    }
-    if (v.sound && v.sound.music && v.sound.music !== "auto" && v.sound.music !== "none") {
-      const absMu = path.isAbsolute(v.sound.music) ? v.sound.music : path.resolve(work, v.sound.music);
-      rows.push({ scene: "Master Audio", type: "Custom Music Bed", file: v.sound.music, status: fs.existsSync(absMu) ? "READY" : "NEEDED", desc: "Custom background music track" });
-    }
-    const mdLines = [
-      `# Pre-Flight Asset & SFX Checklist — ${v.title || "Project"}`,
-      "",
-      `- **Format**: \`${v.format || "16:9"}\` (${v.format === "9:16" ? "Vertical Short / Reel" : "Horizontal YouTube Feature"})`,
-      `- **Style**: \`${v.style || "polymath"}\``,
-      `- **Where to place files**: Drop into \`${path.join(work, "assets")}\` (in Gemini CLI) or upload directly in chat (in Gemini Web).`,
-      "",
-      "| Scene | Asset Type | Target File Path | Status | What to Provide / Description |",
-      "| :--- | :--- | :--- | :--- | :--- |",
-      ...(rows.length ? rows.map((r) => `| ${r.scene} | ${r.type} | \`${r.file}\` | **${r.status}** | ${String(r.desc).replace(/\|/g, "/").slice(0, 90)} |`) : ["| All Scenes | Procedural / Built-in | *(None required)* | **READY** | Uses built-in SVG schematics, Matplotlib plots & synthesized -16 LUFS audio |"]),
-      "",
-    ];
-    const manifestPath = path.join(work, "ASSETS_NEEDED.md");
-    fs.writeFileSync(manifestPath, mdLines.join("\n"));
-    console.log(mdLines.join("\n"));
-    console.log(`Saved checklist -> ${manifestPath}`);
-    break;
-  }
-  case "captions": {
-    need();
-    const r = compose(work);
-    const v = readJSON(vfile);
-    const slug = (v.title || "video").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "video";
-    const srtSrc = path.join(work, "captions.srt");
-    const srtDst = path.join(work, `${slug}.srt`);
-    if (fs.existsSync(srtSrc)) {
-      fs.copyFileSync(srtSrc, srtDst);
-      console.log(`Exported timed SRT subtitles (${r.duration.toFixed(1)}s) -> ${srtDst}`);
-    }
-    break;
-  }
   case "cutout": {
     need();
     const imgPath = pos[1];
@@ -332,6 +194,14 @@ export const RemotionRoot: React.FC = () => {
     const { serveBoard } = await import("./lib/board.js");
     const code = await serveBoard(work, { open: !!flags.open && !flags["no-open"], port: flags.port ? +flags.port : 0 });
     process.exit(code);
+  }
+  case "fusion": {
+    need();
+    const outComp = pos[1] ? path.resolve(pos[1]) : path.join(work, "vox_diorama_resolve.comp");
+    const py = path.join(SKILL, "scripts/vox_fusion_export.py");
+    const res = spawnSync("python3", [py, work, outComp], { encoding: "utf8", stdio: "inherit" });
+    if (res.status !== 0) die("Failed to export DaVinci Resolve Fusion (.comp) and cut-out pieces.");
+    break;
   }
   case "canvas": {
     need();
@@ -383,7 +253,6 @@ export const RemotionRoot: React.FC = () => {
       const final = path.join(work, `${slug}.mp4`);
       fs.rmSync(final, { force: true });
       try { fs.linkSync(out, final); } catch { fs.copyFileSync(out, final); } // same file, no second copy on disk
-      if (fs.existsSync(path.join(work, "captions.srt"))) fs.copyFileSync(path.join(work, "captions.srt"), path.join(work, `${slug}.srt`));
       fs.copyFileSync(vfile, out.replace(/\.mp4$/, ".json")); // the plan that made it, to go back to
       v.renders = [...(v.renders || []), { file: path.relative(work, out), at: new Date().toISOString(), style: v.style, format: v.format, duration: r.duration }];
       writeJSON(vfile, v);
