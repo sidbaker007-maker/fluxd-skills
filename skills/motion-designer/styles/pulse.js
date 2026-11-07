@@ -31,7 +31,7 @@
     bestFor: [
       "9:16 high-retention faceless Reels & YouTube Shorts (45-60s)",
       "HOOK -> DELAY -> REHOOK -> END ON PAYOFF storytelling",
-      "2-Second Fuse explainers (RANG, ZOOM, CUT, AWAAZ, NAYI CHEEZ)",
+      "2-Second Fuse explainers (COLOR FLASH, ZOOM, CUT, SOUND SYNC, NEW PROP)",
       "physics, cinema craft, geopolitics & macro-economic visual essays",
     ],
     avoid: "slow ambient mood pieces, static talking-head vlogs without graphics",

@@ -56,6 +56,25 @@
       .join("");
   };
   // Vox Guide (@justdodani): Ransom-note collage lettering where every word sits on its own torn newspaper scrap
+  // Official FLUXD Brand Kit Vector SVGs (Chamfered-Bracket Optical Phi-2 + Cinema-Gate Framed [ FLUXD ] Wordmark)
+  // Live English Spoken Caption Strip (renders whenever s.vo is provided and captions !== "off")
+  MD.voCaption = function (s) {
+    if (!s || !s.vo || s.captions === "off") return "";
+    const clean = String(s.vo).replace(/\[(?:AUDIO\s+)?PAUSE:[^\]]+\]/gi, "").trim();
+    if (!clean) return "";
+    return `<div class="md-vo-caption" data-layout-ignore><span class="md-vo-bar"></span><span class="md-vo-txt">${MD.tx(clean)}</span></div>`;
+  };
+
+  MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></svg>`;
+  };
+  MD.fluxdWordmark = function (cls = "fluxd-word-svg") {
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" fill="none"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char w-odd" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char w-even" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char w-odd" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char w-even" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char w-odd" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></svg>`;
+  };
+  MD.fluxdLockup = function (cls = "fluxd-lockup-svg") {
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 256" fill="none"><g transform="translate(16,0)"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></g><g transform="translate(272,0)"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></g></svg>`;
+  };
+
   MD.ransomTx = function (str) {
     let wi = 0;
     return lines(str)
@@ -567,6 +586,131 @@
       },
     },
     // Vox Guide (@justdodani) Ransom-Note Word-by-Word Drop (50px drop + fade in, 0.10s stagger, pure ease-out, zero bounce)
+    // Official FLUXD Binary Shutter Blink Suite (Blink 01A, Blink 01B, Blink 03, Blink 04)
+    // lemo-opuscar Executable Moves: Archive Light Table Loupe Dive, Satellite Scanner Bar, Kino-Montage 120BPM Slam, Whiteboard Hand Curve
+    loupeDive: {
+      len: () => 2.2,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((stage) => {
+          const runDur = s ? Math.max(2.4, s.dur) : 3.5;
+          const loupe = stage.querySelector(".lt-loupe");
+          const hlBar = stage.querySelector(".lt-hl-bar");
+          const card = stage.querySelector(".lt-reading-card");
+          if (loupe) {
+            tl.fromTo(loupe, { scale: 1.35, opacity: 0, x: -45, y: -30 }, { scale: 1.0, opacity: 1, x: 0, y: 0, duration: 0.42, ease: "power3.out" }, at + 0.15);
+            tl.to(loupe, { scale: 1.08, x: 12, y: -6, duration: Math.max(1.2, runDur - 0.6), ease: "sine.inOut" }, at + 0.58);
+          }
+          if (hlBar) {
+            tl.fromTo(hlBar, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.48, ease: "power2.out" }, at + 0.52);
+          }
+          if (card) {
+            tl.fromTo(card, { y: 28, opacity: 0, scale: 1.08 }, { y: 0, opacity: 1, scale: 1, duration: 0.38, ease: "expo.out" }, at + 0.85);
+          }
+        });
+      },
+    },
+    satScan: {
+      len: () => 2.2,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((stage) => {
+          const runDur = s ? Math.max(2.4, s.dur) : 3.5;
+          const bar = stage.querySelector(".sat-scan-bar");
+          const reveal = stage.querySelector(".sat-after-layer");
+          const rLine = stage.querySelector(".sat-range-line");
+          const ret = stage.querySelector(".sat-reticle");
+          if (bar) {
+            tl.fromTo(bar, { top: "0%" }, { top: "100%", duration: Math.min(1.6, runDur * 0.55), ease: "power1.inOut" }, at + 0.15);
+          }
+          if (reveal) {
+            tl.fromTo(reveal, { clipPath: "inset(0% 0% 100% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: Math.min(1.6, runDur * 0.55), ease: "power1.inOut" }, at + 0.15);
+          }
+          if (ret) {
+            tl.fromTo(ret, { scale: 1.45, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.34, ease: "back.out(2.2)" }, at + 0.45);
+          }
+          if (rLine && rLine.getTotalLength) {
+            const L = rLine.getTotalLength() || 400;
+            rLine.style.strokeDasharray = `${L} ${L}`;
+            tl.fromTo(rLine, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 0.85, ease: "power2.out" }, at + 0.55);
+          }
+        });
+      },
+    },
+    kinoSlam: {
+      len: () => 1.8,
+      run: (tl, els, at) => {
+        els.forEach((stage) => {
+          const band = stage.querySelector(".km-red-band");
+          const win = stage.querySelector(".km-window");
+          const mark = stage.querySelector(".km-doc-mark");
+          const blk = stage.querySelector(".km-num-block");
+          if (band) tl.fromTo(band, { xPercent: -110 }, { xPercent: 0, duration: 0.18, ease: "power3.out" }, at + 0.04);
+          if (win) tl.fromTo(win, { xPercent: 60, opacity: 0 }, { xPercent: 0, opacity: 1, duration: 0.22, ease: "expo.out" }, at + 0.14);
+          if (mark) tl.fromTo(mark, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.25, ease: "power3.out" }, at + 0.38);
+          if (blk) tl.fromTo(blk, { scale: 1.32, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.18, ease: "power4.out" }, at + 0.52);
+        });
+      },
+    },
+    wbDraw: {
+      len: () => 2.2,
+      run: (tl, els, at, o, c, s) => {
+        els.forEach((stage) => {
+          const runDur = s ? Math.max(2.2, s.dur - 0.4) : 2.8;
+          const sheen = stage.querySelector(".wb-sheen");
+          const paths = Array.from(stage.querySelectorAll(".wb-stroke"));
+          if (sheen) tl.fromTo(sheen, { xPercent: -15 }, { xPercent: 18, duration: runDur, ease: "none" }, at);
+          paths.forEach((p, idx) => {
+            const L = p.getTotalLength ? p.getTotalLength() : 600;
+            p.style.strokeDasharray = `${L} ${L}`;
+            tl.fromTo(p, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: Math.min(0.95, runDur * 0.45), ease: "sine.inOut" }, at + 0.12 + idx * 0.28);
+          });
+        });
+      },
+    },
+    fluxdBlink: {
+      len: () => 1.8,
+      run: (tl, els, at) => {
+        els.forEach((stage) => {
+          const mode = stage.dataset.mode || "blink04";
+          const phi = stage.querySelector(".fb-phi");
+          const word = stage.querySelector(".fb-word");
+          const odds = stage.querySelectorAll(".w-odd");
+          const evens = stage.querySelectorAll(".w-even, .w-dot");
+          if (mode === "blink01a" && phi) {
+            gsap.set(phi, { opacity: 0 });
+            [0.08, 0.24, 0.40, 0.62].forEach((t, idx) => {
+              tl.set(phi, { opacity: 1, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
+              if (idx < 3) tl.set(phi, { opacity: 0 }, at + t + 0.08);
+            });
+          } else if (mode === "blink01b" && word) {
+            gsap.set(word, { opacity: 0 });
+            [0.08, 0.24, 0.40, 0.62].forEach((t, idx) => {
+              tl.set(word, { opacity: 1, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
+              if (idx < 3) tl.set(word, { opacity: 0 }, at + t + 0.08);
+            });
+          } else if (mode === "blink03" && word) {
+            gsap.set([odds, evens], { opacity: 0 });
+            tl.set(odds, { opacity: 1 }, at + 0.08);
+            tl.set(odds, { opacity: 0 }, at + 0.22);
+            tl.set(evens, { opacity: 1 }, at + 0.22);
+            tl.set(evens, { opacity: 0 }, at + 0.36);
+            tl.set(odds, { opacity: 1 }, at + 0.36);
+            tl.set([odds, evens], { opacity: 1 }, at + 0.52);
+          } else {
+            // Default: Blink 04 — 2-Beat Chamfered-Bracket Phi-2 Blink -> [ FLUXD ] Framed Wordmark Hard Cut
+            if (phi && word) {
+              gsap.set(phi, { opacity: 1 });
+              gsap.set(word, { opacity: 0 });
+              tl.set(phi, { opacity: 0 }, at + 0.14);
+              tl.set(phi, { opacity: 1 }, at + 0.26);
+              tl.set(phi, { opacity: 0 }, at + 0.42);
+              tl.set(word, { opacity: 1 }, at + 0.48);
+              tl.set(word, { opacity: 0 }, at + 0.60);
+              tl.set(word, { opacity: 1 }, at + 0.68);
+            }
+          }
+        });
+      },
+    },
     ransomDrop: {
       len: (n, o) => D(o, "d", 0.58) + D(o, "st", 0.10) * Math.max(0, n - 1),
       run: (tl, els, at, o) => {
@@ -1236,11 +1380,11 @@
       markup: (s, c) => {
         const unlockedCount = s.unlocked != null ? +s.unlocked : 2;
         const rows = (s.items || [
-          "01 | RANG | Full-screen colour flash (1.2s)",
+          "01 | COLOR FLASH | Full-screen colour flash (1.2s)",
           "02 | ZOOM | Viewfinder scale push/pull (+22%)",
           "03 | CUT | 3-angle perspective cut (FAR/CLOSE)",
-          "04 | AWAAZ | 1 visual event = 1 sound transient",
-          "05 | NAYI CHEEZ | 1 spoken keyword = 1 vector prop",
+          "04 | SOUND SYNC | 1 visual event = 1 sound transient",
+          "05 | NEW PROP | 1 spoken keyword = 1 vector prop",
         ]).map((raw, idx) => {
           const parts = String(raw).split("|").map((x) => x.trim());
           const no = parts[0] && /^\d+$/.test(parts[0]) ? parts[0] : String(idx + 1).padStart(2, "0");
@@ -1249,7 +1393,7 @@
           const isUn = (idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1);
           return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isUn ? "✓" : "🔒"}</span></div>`;
         }).join("");
-        const stampHtml = s.stamp ? `<div class="ul-stamp${/alert|nahi|galti/i.test(s.stamp) ? " is-alert" : ""}">${esc(s.stamp)}</div>` : "";
+        const stampHtml = s.stamp ? `<div class="ul-stamp${/alert|never|mistake|nobody/i.test(s.stamp) ? " is-alert" : ""}">${esc(s.stamp)}</div>` : "";
         const stages = ["HOOK", "DELAY", "REHOOK", "PAYOFF"];
         const curStage = (s.stage || "REHOOK").toUpperCase();
         const stripHtml = `<div class="ul-strip">${stages.map((st) => `<div class="ul-seg${st === curStage ? " on" : ""}">${st === curStage ? '<span class="ul-here">YOU ARE HERE</span>' : ""}${st}</div>`).join("")}</div>`;
@@ -1344,7 +1488,7 @@
       markup: (s, c) => {
         const kw = s.keyword || "FLUX";
         const deckLbl = s.deckLabel || "20 IDEAS";
-        const sent = s.sentText || "blueprint bhej diya ✓";
+        const sent = s.sentText || "Blueprint sent to your DMs ✓";
         const cards = ["11", "14", "17", "20"].map((no, i, arr) => `<div class="ct-card${i === arr.length - 1 ? " is-top" : ""}" data-i="${i}"><span class="ct-cno">${no}</span><div class="ct-clines"><i></i><i></i><i></i></div><span class="ct-clbl">${i === arr.length - 1 ? esc(deckLbl) : "PROTOCOL"}</span></div>`).join("");
         return `<div class="k k-cta"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="26">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ct-comment-box"><div class="ct-hdr"><span>Comments</span><span class="ct-hearts">❤️ +37</span></div><div class="ct-input"><div class="ct-kw-wrap"><i class="ct-dot"></i><span class="ct-kw">${MD.tx(kw, { split: "chars" })}</span></div><span class="ct-post">Post</span></div></div><div class="ct-deck">${cards}</div><div class="ct-sent">✳ ${esc(sent)}</div></div></div>`;
       },
@@ -1553,6 +1697,182 @@
       },
     },
     // anything the kinds above can't say: your own HTML + events, styled by the theme's tokens
+    // Official FLUXD Brand Bumper Scene Kind (Blink 01A, Blink 01B, Blink 03, Blink 04)
+    // lemo-opuscar Executable Scene Kinds: lighttable, satellite, kinomontage, whiteboard
+    lighttable: {
+      fields: ["kicker", "title", "text", "value", "source", "cutout"],
+      min: () => 3.2,
+      markup: (s, c) => {
+        const catId = esc(s.kicker || "ARCHIVE // PLATE VII · LOC-CC0");
+        const headline = s.title || s.text || "The original ledger records 59 seconds.";
+        const val = esc(s.value || "59.0s");
+        const src = esc(s.source || "VERIFIED PRIMARY RECORD // NARA / RBI ARCHIVE");
+        const imgHtml = s.cutout ? `<img src="${esc(c.asset ? c.asset(s.cutout) : s.cutout)}" alt="" style="max-height:calc(var(--u)*22);border:2px solid #111315;"/>` : "";
+        return `
+          <div class="k k-lighttable">
+            <div class="lt-stage">
+              <div class="lt-backlight"></div>
+              <div class="lt-doc-sheet">
+                <div class="lt-cat-row"><span>${catId}</span><span>TRANS-ILLUMINATED 100Hz</span></div>
+                ${imgHtml}
+                <div class="lt-doc-lines">
+                  <div class="lt-line dim">01 // INITIAL DISPATCH ESTIMATE RECORDED IN FIELD LOG</div>
+                  <div class="lt-line active"><span class="lt-hl-bar"></span><span class="lt-lit-txt">${MD.tx(headline)}</span></div>
+                  <div class="lt-line dim">03 // CROSS-CHECKED AGAINST NEGATIVE EMULSION MARGIN</div>
+                </div>
+              </div>
+              <div class="lt-loupe">
+                <div class="lt-loupe-ring">
+                  <span class="lt-loupe-tag">LOUPE 2.5× // k=0.16</span>
+                  <div class="lt-loupe-focus">${val}</div>
+                </div>
+              </div>
+              <div class="lt-reading-card">
+                <div class="lt-rc-lbl">MEASURED ARCHIVE READING</div>
+                <div class="lt-rc-val">${val}</div>
+                <div class="lt-rc-src">${src}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      plan: (s) => [
+        ev(0.05, ".lt-stage", "loupeDive", 1, {}, { name: "tap", gain: 0.75 }),
+        ...(MD.parseNumber(s.value) ? [ev(0.55, ".lt-rc-val", "count", 1, {}, { name: "chips-stack", gain: 0.65 })] : []),
+      ],
+    },
+    satellite: {
+      fields: ["kicker", "title", "text", "value", "source"],
+      min: () => 3.2,
+      markup: (s) => {
+        const coords = esc(s.kicker || "26°34'N 56°15'E // ALT 420 KM · NADIR LOCK");
+        const claim = s.title || s.text || "Measured corridor narrows to *21 nautical miles*.";
+        const reading = esc(s.value || "38.9 KM");
+        const credit = esc(s.source || "USGS LANDSAT / ESA SENTINEL-2 · SURVEY OF INDIA COMPLIANT");
+        return `
+          <div class="k k-satellite">
+            <div class="sat-stage">
+              <div class="sat-analyst-grid"></div>
+              <div class="sat-after-layer"></div>
+              <div class="sat-scan-bar"><span>SCAN PASS // MULTI-SPECTRAL NADIR</span></div>
+              <svg class="sat-svg-overlay" viewBox="0 0 1000 560" preserveAspectRatio="none">
+                <path class="sat-old-shore" d="M 140,420 Q 360,340 540,390 T 860,260" fill="none" stroke="rgba(242,245,246,0.42)" stroke-width="2" stroke-dasharray="8 6"/>
+                <line class="sat-range-line" x1="240" y1="360" x2="720" y2="220" stroke="#F2F5F6" stroke-width="2.5"/>
+                <circle cx="240" cy="360" r="6" fill="#FFBE55"/>
+                <circle cx="720" cy="220" r="6" fill="#FFBE55"/>
+              </svg>
+              <div class="sat-reticle">
+                <span class="sr-tl"></span><span class="sr-tr"></span><span class="sr-bl"></span><span class="sr-br"></span>
+                <div class="sat-ret-lbl">TARGET LOCK</div>
+              </div>
+              <div class="sat-reading-panel">
+                <div class="sat-coords">${coords}</div>
+                <div class="sat-metric">${reading}</div>
+                <div class="sat-claim">${MD.tx(claim)}</div>
+                <div class="sat-credit">${credit}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      plan: () => [
+        ev(0.05, ".sat-stage", "satScan", 1, {}, { name: "swish", gain: 0.7 }),
+        ev(0.45, ".sat-claim", "fadeUp", 1, { d: 0.5 }),
+      ],
+    },
+    kinomontage: {
+      fields: ["kicker", "title", "text", "value", "source"],
+      min: () => 2.8,
+      markup: (s) => {
+        const tag = esc(s.kicker || "ARCHIVE DOC // 120 BPM CONSTRUCTIVIST CUT");
+        const title = s.title || s.text || "THE DOCUMENT IS *MARKED*, NOT QUOTED.";
+        const num = esc(s.value || "2,500 / DAY");
+        const src = esc(s.source || "PRIMARY RECORD · VERIFIED");
+        return `
+          <div class="k k-kinomontage">
+            <div class="km-stage">
+              <div class="km-red-band"><span>${tag}</span></div>
+              <div class="km-window">
+                <div class="km-doc-head">${src}</div>
+                <div class="km-doc-body">
+                  <span class="km-doc-mark"></span>
+                  <div class="km-doc-quote">${MD.tx(title)}</div>
+                </div>
+              </div>
+              <div class="km-num-block">
+                <div class="km-num-val">${num}</div>
+                <div class="km-num-unit">MEASURED OUTPUT</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      plan: () => [
+        ev(0.02, ".km-stage", "kinoSlam", 1, {}, { name: "punch", gain: 0.85 }),
+      ],
+    },
+    whiteboard: {
+      fields: ["kicker", "title", "text", "equation", "sub"],
+      min: () => 3.0,
+      markup: (s) => {
+        const region = esc(s.kicker || "BOARD REGION 01 // STROKE-ORDER DERIVATION");
+        const title = s.title || s.text || "Every stroke follows the *slow-fast-slow* hand curve.";
+        const eq = esc(s.equation || "Φ = ∬ F · dA   ⇒   CD = k₁ · (λ / NA)");
+        const note = esc(s.sub || "Blue = physical process · Red = governing bottleneck");
+        return `
+          <div class="k k-whiteboard">
+            <div class="wb-stage">
+              <div class="wb-sheen"></div>
+              <div class="wb-ghost">f(x) = ∫ e^(-st) dt   [ERASED PRIOR HYPOTHESIS]</div>
+              <div class="wb-region-tag">${region}</div>
+              <div class="wb-board-card">
+                <h2 class="wb-title">${MD.tx(title)}</h2>
+                <div class="wb-eq-box">
+                  <svg class="wb-svg" viewBox="0 0 860 150">
+                    <rect class="wb-stroke" x="14" y="18" width="832" height="114" rx="10" fill="none" stroke="#2563EB" stroke-width="4"/>
+                    <path class="wb-stroke" d="M 38,112 L 820,112" stroke="#E04826" stroke-width="5" stroke-linecap="round"/>
+                  </svg>
+                  <div class="wb-eq-txt">${eq}</div>
+                </div>
+                <div class="wb-note">${note}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      plan: () => [
+        ev(0.04, ".wb-stage", "wbDraw", 1, {}, { name: "scratch", gain: 0.72 }),
+        ev(0.25, ".wb-title", "fadeUp", 1, { d: 0.48 }),
+        ev(0.55, ".wb-eq-txt", "fadeUp", 1, { d: 0.52 }),
+      ],
+    },
+    bumper: {
+      fields: ["mode", "sub"],
+      min: () => 2.0,
+      markup: (s) => {
+        const mode = s.mode || "blink04";
+        const sub = s.sub || "WHERE CINEMA OPTICS, PHYSICAL LAW & GLOBAL SYSTEMS COLLIDE";
+        return `
+          <div class="k k-bumper">
+            <div class="fb-stage" data-mode="${esc(mode)}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative;">
+              <div class="fb-phi" style="width:calc(var(--u)*18);height:calc(var(--u)*18);display:${mode === "blink01b" || mode === "blink03" ? "none" : "flex"};align-items:center;justify-content:center;">
+                ${MD.fluxdPhi2()}
+              </div>
+              <div class="fb-word" style="width:calc(var(--u)*52);max-width:82%;display:${mode === "blink01a" ? "none" : "flex"};align-items:center;justify-content:center;">
+                ${MD.fluxdWordmark()}
+              </div>
+              <div class="fb-sub" style="margin-top:calc(var(--u)*3.2);font-family:var(--f-mono);font-size:calc(var(--u)*1.45);letter-spacing:0.14em;opacity:0.78;text-transform:uppercase;">
+                ${esc(sub)}
+              </div>
+            </div>
+          </div>
+        `;
+      },
+      plan: () => [
+        ev(0.02, ".fb-stage", "fluxdBlink", 1, {}, { name: "tap", gain: 0.75 }),
+        ev(0.72, ".fb-sub", "fadeUp", 1, { d: 0.45 }),
+      ],
+    },
     custom: {
       fields: ["html"],
       min: () => 2,
@@ -1566,6 +1886,28 @@
   MD.transitions = {
     cut: { ov: 0, run: () => {} },
     // Ben Marriott Scale/Velocity Match Cut: accelerates ~4% into the cut (Ease-In) and decelerates out of the cut (Ease-Out)
+    // feitangyuan/onetake Carry-Across-the-Cut + 180-deg Shutter Motion Blur + motionmaxxing 58% Ease-Out Landing
+    carryMorph: {
+      ov: 0.38,
+      run: (tl, out, inn, at, ov, c) => {
+        const half = ov / 2;
+        const axis = c && c.fmt === "portrait" ? "yPercent" : "xPercent";
+        // Outgoing accelerates (37% ease-in) with 180-deg directional motion blur smear
+        tl.fromTo(
+          out,
+          { [axis]: 0, scale: 1, filter: "blur(0px)", opacity: 1 },
+          { [axis]: -18, scale: 1.06, filter: "blur(7px)", opacity: 0, duration: half, ease: "power3.in" },
+          at - half
+        );
+        // Incoming decelerates from oversize (58% ease-out, never scale:0) and clears shutter blur
+        tl.fromTo(
+          inn,
+          { [axis]: 14, scale: 1.08, filter: "blur(6px)", opacity: 0 },
+          { [axis]: 0, scale: 1, filter: "blur(0px)", opacity: 1, duration: half * 1.45, ease: "expo.out" },
+          at - half * 0.3
+        );
+      },
+    },
     matchCut: {
       ov: 0.32,
       run: (tl, out, inn, at, ov) => {

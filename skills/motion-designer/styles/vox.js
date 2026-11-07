@@ -52,6 +52,12 @@
         vars: { "--paper-band": "#0F172A", "--cone": "rgba(250, 204, 21, 0.38)", "--tape": "#FACC15", "--tape-ink": "#0F172A", "--halftone": "rgba(15,23,42,0.06)" },
       },
       {
+        name: "VoxStage Hot-Red",
+        bg: "#C9BB9C", ink: "#1A1A1A", accent: "#D62E1F", accent2: "#FACC15", accent3: "#1D58D8", accentInk: "#FFFFFF",
+        muted: "#4A4336", surface: "#F4EFE4", line: "#A8997C",
+        vars: { "--paper-band": "#D62E1F", "--cone": "rgba(214, 46, 31, 0.28)", "--tape": "#D62E1F", "--tape-ink": "#FFFFFF", "--halftone": "rgba(26,26,26,0.075)" },
+      },
+      {
         name: "Sepia Dossier",
         bg: "#EDE3D2", ink: "#1C1613", accent: "#F59E0B", accent2: "#B91C1C", accent3: "#0F766E", accentInk: "#1C1613",
         muted: "#6B5E53", surface: "#FAF5EC", line: "#D5C7B2",

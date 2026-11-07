@@ -1,0 +1,14 @@
+:root {
+  /* Palette I (Default): Halation & Dark Telemetry */
+  --fluxd-surface-light: #F6F3EC; /* Silver-Halide Paper (60% Light Mode) */
+  --fluxd-surface-dark:  #111315; /* Anamorphic Carbon Ink (60% Dark Mode) */
+  --fluxd-signature:     #E04826; /* Kodak Halation Vermilion (15% Center Φ Pillar & [ ] Brackets) */
+  --fluxd-secondary:     #1E3A4C; /* Cherenkov Deep Slate (15% Containers & Maps) */
+  --fluxd-accent:        #F59E0B; /* Oscilloscope Amber (5% Dark-Mode Telemetry Highlight) */
+  --fluxd-muted:         #525860; /* Frame-Line Pewter (5% Citations & Gridlines) */
+
+  /* Typography Triad I (Default) */
+  --fluxd-font-display: 'Syne', system-ui, sans-serif;
+  --fluxd-font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --fluxd-font-mono:    'JetBrains Mono', monospace;
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <rect x="0" y="0" width="256" height="256" rx="44" fill="#111315"/>
+  
+  <!-- Left Optical Arc (Octagonal-chamfered precision ring for 100/100 angle audit & crispness) -->
+  <path class="mark-body" fill="#F6F3EC" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/>
+  <!-- Central Vertical Flux Bar -->
+  <rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/>
+  <!-- Right Optical Arc -->
+  <path class="mark-body" fill="#F6F3EC" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/>
+
+</svg>

@@ -1,0 +1,520 @@
+{
+  "updated_at": "2026-11-06T18:18:34Z",
+  "format": "9:16 faceless retention reels, 45-60 s",
+  "brand": {
+    "fonts": "Space Grotesk 700 / Syne 800 display + Instrument Serif Italic emphasis, Plus Jakarta Sans 600 body, JetBrains Mono 600 HUD",
+    "colours": "#0C0E0C carbon-grid bg, #F6F3EC halide-ivory text, #CCFF00 acid-volt flash & highlight, #E04826 halation-vermilion alert/strike",
+    "logo": "FLUXD Chamfered-Bracket Phi-2 ( | ) + [ FLUXD ] Framed Wordmark"
+  },
+  "reference_count": 2,
+  "cuts_per_10s": 3.38,
+  "median_shot_sec": 2.7,
+  "micro_changes_per_10s": 23.89,
+  "median_micro_interval_sec": 0.4,
+  "max_static_hold_sec": 1.6,
+  "hook_cuts_first_4s": 2.0,
+  "wpm_overall": 188.15,
+  "hook_wpm_0_4s": 210.0,
+  "median_pause_sec": 0.45,
+  "avg_zoom_pct": 56.15,
+  "caption_words_per_chunk": 6,
+  "caption_bottom_offset_pct": 82,
+  "transition_frames_30fps": 7,
+  "references": {
+    "comment-change-and-i-ll-dm-you-my-list-of-20-cha": {
+      "source": "/working_dir/c_592eff9d5995d5b4/user_uploaded_files/ttl=63d/user_uploaded/Comment CHANGE and I\u2019ll DM you my list of 20 change ideas.Faceless reels aren\u2019t boring. A screen.mp4",
+      "video_file": "Comment CHANGE and I\u2019ll DM you my list of 20 change ideas.Faceless reels aren\u2019t boring. A screen.mp4",
+      "meta": {
+        "width": 720,
+        "height": 1280,
+        "fps": 30.0,
+        "duration": 49.6,
+        "aspect": "9:16"
+      },
+      "cutting_cadence": {
+        "scene_threshold_used": 0.042,
+        "total_shots": 17,
+        "total_cuts": 16,
+        "cuts_per_10s": 3.23,
+        "mean_shot_length_sec": 2.92,
+        "median_shot_length_sec": 2.77,
+        "min_shot_sec": 1.5,
+        "max_shot_sec": 6.03,
+        "hook_cuts_first_4s": 2,
+        "macro_flash_cuts": [
+          16.833,
+          17.7,
+          23.333,
+          35.8
+        ]
+      },
+      "micro_change_telemetry": {
+        "total_micro_changes": 107,
+        "micro_changes_per_10s": 21.57,
+        "median_micro_interval_sec": 0.4,
+        "max_static_hold_sec": 1.6,
+        "passes_2_second_rule": true,
+        "color_flash_count": 1,
+        "color_flash_spans": [
+          {
+            "start": 16.9,
+            "end": 17.7,
+            "duration": 0.8
+          }
+        ]
+      },
+      "zooms_detected": [
+        {
+          "shot": 2,
+          "start": 3.767,
+          "end": 7.267,
+          "scale_factor": 0.488,
+          "type": "zoom_out",
+          "pct_change": -51.2
+        },
+        {
+          "shot": 3,
+          "start": 7.267,
+          "end": 8.767,
+          "scale_factor": 0.959,
+          "type": "zoom_out",
+          "pct_change": -4.1
+        },
+        {
+          "shot": 12,
+          "start": 27.833,
+          "end": 30.467,
+          "scale_factor": 0.962,
+          "type": "zoom_out",
+          "pct_change": -3.8
+        },
+        {
+          "shot": 15,
+          "start": 35.8,
+          "end": 41.833,
+          "scale_factor": 1.042,
+          "type": "zoom_in",
+          "pct_change": 4.2
+        },
+        {
+          "shot": 16,
+          "start": 41.833,
+          "end": 45.733,
+          "scale_factor": 0.941,
+          "type": "zoom_out",
+          "pct_change": -5.9
+        },
+        {
+          "shot": 17,
+          "start": 45.733,
+          "end": 49.6,
+          "scale_factor": 0.882,
+          "type": "zoom_out",
+          "pct_change": -11.8
+        }
+      ],
+      "color_telemetry": {
+        "dominant_hex": [
+          "#0E0E0C",
+          "#0E0E0E",
+          "#0F0F0E",
+          "#0E0E0D",
+          "#656B4D",
+          "#2B2F21"
+        ],
+        "caption_zone_hex": [
+          "#0D0D0C",
+          "#0E0E0E",
+          "#0E0E0C",
+          "#0E0E0D",
+          "#11110F",
+          "#0F0F0E"
+        ]
+      },
+      "speech_and_captions": {
+        "engine": "multimodal-transcript + ffmpeg-silencedetect",
+        "device": "cpu",
+        "word_count": 148,
+        "wpm_overall": 179.0,
+        "wpm_speaking_only": 180.6,
+        "hook_wpm_0_4s": 210.0,
+        "pause_count_over_350ms": 1,
+        "median_pause_sec": 0.42
+      },
+      "contact_sheets": {
+        "shots_sheet": "shots_sheet.jpg",
+        "hook_12fps": "hook_12fps.jpg",
+        "transition_12fps": [
+          "trans_01_12fps.jpg",
+          "trans_02_12fps.jpg",
+          "trans_03_12fps.jpg"
+        ]
+      },
+      "shots": [
+        {
+          "index": 1,
+          "start": 0.0,
+          "end": 3.767,
+          "duration": 3.767
+        },
+        {
+          "index": 2,
+          "start": 3.767,
+          "end": 7.267,
+          "duration": 3.5
+        },
+        {
+          "index": 3,
+          "start": 7.267,
+          "end": 8.767,
+          "duration": 1.5
+        },
+        {
+          "index": 4,
+          "start": 8.767,
+          "end": 10.5,
+          "duration": 1.733
+        },
+        {
+          "index": 5,
+          "start": 10.5,
+          "end": 13.667,
+          "duration": 3.167
+        },
+        {
+          "index": 6,
+          "start": 13.667,
+          "end": 15.633,
+          "duration": 1.966
+        },
+        {
+          "index": 7,
+          "start": 15.633,
+          "end": 17.7,
+          "duration": 2.067
+        },
+        {
+          "index": 8,
+          "start": 17.7,
+          "end": 20.567,
+          "duration": 2.867
+        },
+        {
+          "index": 9,
+          "start": 20.567,
+          "end": 23.333,
+          "duration": 2.766
+        },
+        {
+          "index": 10,
+          "start": 23.333,
+          "end": 25.333,
+          "duration": 2.0
+        },
+        {
+          "index": 11,
+          "start": 25.333,
+          "end": 27.833,
+          "duration": 2.5
+        },
+        {
+          "index": 12,
+          "start": 27.833,
+          "end": 30.467,
+          "duration": 2.634
+        },
+        {
+          "index": 13,
+          "start": 30.467,
+          "end": 32.867,
+          "duration": 2.4
+        },
+        {
+          "index": 14,
+          "start": 32.867,
+          "end": 35.8,
+          "duration": 2.933
+        },
+        {
+          "index": 15,
+          "start": 35.8,
+          "end": 41.833,
+          "duration": 6.033
+        },
+        {
+          "index": 16,
+          "start": 41.833,
+          "end": 45.733,
+          "duration": 3.9
+        },
+        {
+          "index": 17,
+          "start": 45.733,
+          "end": 49.6,
+          "duration": 3.867
+        }
+      ]
+    },
+    "comment-rehook-and-i-ll-dm-you-a-free-pdf-with-2": {
+      "source": "/working_dir/c_592eff9d5995d5b4/user_uploaded_files/ttl=63d/user_uploaded/Comment REHOOK and I\u2019ll DM you a free PDF with 20 copy-paste rehook lines.Your retention doesn\u2019t.mp4",
+      "video_file": "Comment REHOOK and I\u2019ll DM you a free PDF with 20 copy-paste rehook lines.Your retention doesn\u2019t.mp4",
+      "meta": {
+        "width": 720,
+        "height": 1280,
+        "fps": 30.0,
+        "duration": 51.1,
+        "aspect": "9:16"
+      },
+      "cutting_cadence": {
+        "scene_threshold_used": 0.042,
+        "total_shots": 19,
+        "total_cuts": 18,
+        "cuts_per_10s": 3.52,
+        "mean_shot_length_sec": 2.69,
+        "median_shot_length_sec": 2.63,
+        "min_shot_sec": 1.47,
+        "max_shot_sec": 6.63,
+        "hook_cuts_first_4s": 2,
+        "macro_flash_cuts": [
+          14.033,
+          19.467,
+          35.3
+        ]
+      },
+      "micro_change_telemetry": {
+        "total_micro_changes": 134,
+        "micro_changes_per_10s": 26.22,
+        "median_micro_interval_sec": 0.4,
+        "max_static_hold_sec": 0.9,
+        "passes_2_second_rule": true,
+        "color_flash_count": 1,
+        "color_flash_spans": [
+          {
+            "start": 14.1,
+            "end": 18.6,
+            "duration": 4.5
+          }
+        ]
+      },
+      "zooms_detected": [
+        {
+          "shot": 2,
+          "start": 2.833,
+          "end": 9.467,
+          "scale_factor": 0.947,
+          "type": "zoom_out",
+          "pct_change": -5.3
+        },
+        {
+          "shot": 5,
+          "start": 13.9,
+          "end": 15.367,
+          "scale_factor": 0.881,
+          "type": "zoom_out",
+          "pct_change": -11.9
+        },
+        {
+          "shot": 6,
+          "start": 15.367,
+          "end": 17.133,
+          "scale_factor": 0.956,
+          "type": "zoom_out",
+          "pct_change": -4.4
+        },
+        {
+          "shot": 8,
+          "start": 18.6,
+          "end": 21.667,
+          "scale_factor": 6.701,
+          "type": "zoom_in",
+          "pct_change": 570.1
+        },
+        {
+          "shot": 9,
+          "start": 21.667,
+          "end": 24.633,
+          "scale_factor": 0.921,
+          "type": "zoom_out",
+          "pct_change": -7.9
+        },
+        {
+          "shot": 11,
+          "start": 29.233,
+          "end": 31.867,
+          "scale_factor": 1.398,
+          "type": "zoom_in",
+          "pct_change": 39.8
+        },
+        {
+          "shot": 13,
+          "start": 34.567,
+          "end": 36.167,
+          "scale_factor": 0.399,
+          "type": "zoom_out",
+          "pct_change": -60.1
+        },
+        {
+          "shot": 14,
+          "start": 36.167,
+          "end": 37.967,
+          "scale_factor": 0.944,
+          "type": "zoom_out",
+          "pct_change": -5.6
+        }
+      ],
+      "color_telemetry": {
+        "dominant_hex": [
+          "#CDFF09",
+          "#0F0F0E",
+          "#0E0E0D",
+          "#161614",
+          "#D3FF0F",
+          "#D0FF09"
+        ],
+        "caption_zone_hex": [
+          "#CDFF09",
+          "#CCFF09",
+          "#CDFF07",
+          "#0E0E0C",
+          "#0E0E0E",
+          "#CDFF0A"
+        ]
+      },
+      "speech_and_captions": {
+        "engine": "multimodal-transcript + ffmpeg-silencedetect",
+        "device": "cpu",
+        "word_count": 168,
+        "wpm_overall": 197.3,
+        "wpm_speaking_only": 201.0,
+        "hook_wpm_0_4s": 210.0,
+        "pause_count_over_350ms": 2,
+        "median_pause_sec": 0.49
+      },
+      "contact_sheets": {
+        "shots_sheet": "shots_sheet.jpg",
+        "hook_12fps": "hook_12fps.jpg",
+        "transition_12fps": [
+          "trans_01_12fps.jpg",
+          "trans_02_12fps.jpg",
+          "trans_03_12fps.jpg"
+        ]
+      },
+      "shots": [
+        {
+          "index": 1,
+          "start": 0.0,
+          "end": 2.833,
+          "duration": 2.833
+        },
+        {
+          "index": 2,
+          "start": 2.833,
+          "end": 9.467,
+          "duration": 6.634
+        },
+        {
+          "index": 3,
+          "start": 9.467,
+          "end": 11.067,
+          "duration": 1.6
+        },
+        {
+          "index": 4,
+          "start": 11.067,
+          "end": 13.9,
+          "duration": 2.833
+        },
+        {
+          "index": 5,
+          "start": 13.9,
+          "end": 15.367,
+          "duration": 1.467
+        },
+        {
+          "index": 6,
+          "start": 15.367,
+          "end": 17.133,
+          "duration": 1.766
+        },
+        {
+          "index": 7,
+          "start": 17.133,
+          "end": 18.6,
+          "duration": 1.467
+        },
+        {
+          "index": 8,
+          "start": 18.6,
+          "end": 21.667,
+          "duration": 3.067
+        },
+        {
+          "index": 9,
+          "start": 21.667,
+          "end": 24.633,
+          "duration": 2.966
+        },
+        {
+          "index": 10,
+          "start": 24.633,
+          "end": 29.233,
+          "duration": 4.6
+        },
+        {
+          "index": 11,
+          "start": 29.233,
+          "end": 31.867,
+          "duration": 2.634
+        },
+        {
+          "index": 12,
+          "start": 31.867,
+          "end": 34.567,
+          "duration": 2.7
+        },
+        {
+          "index": 13,
+          "start": 34.567,
+          "end": 36.167,
+          "duration": 1.6
+        },
+        {
+          "index": 14,
+          "start": 36.167,
+          "end": 37.967,
+          "duration": 1.8
+        },
+        {
+          "index": 15,
+          "start": 37.967,
+          "end": 40.133,
+          "duration": 2.166
+        },
+        {
+          "index": 16,
+          "start": 40.133,
+          "end": 44.1,
+          "duration": 3.967
+        },
+        {
+          "index": 17,
+          "start": 44.1,
+          "end": 46.233,
+          "duration": 2.133
+        },
+        {
+          "index": 18,
+          "start": 46.233,
+          "end": 48.033,
+          "duration": 1.8
+        },
+        {
+          "index": 19,
+          "start": 48.033,
+          "end": 51.1,
+          "duration": 3.067
+        }
+      ]
+    }
+  }
+}

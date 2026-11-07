@@ -1,0 +1,22 @@
+{
+  "style": "pulse",
+  "format": "9:16",
+  "wpm": 188,
+  "captions": "top-progressive-mixed",
+  "brand": {
+    "fonts": "Space Grotesk 700 / Syne 800 display + Instrument Serif Italic emphasis, Plus Jakarta Sans 600 body, JetBrains Mono 600 HUD",
+    "colours": "#0C0E0C carbon-grid bg, #F6F3EC halide-ivory text, #CCFF00 acid-volt flash & highlight, #E04826 halation-vermilion alert/strike",
+    "logo": "FLUXD Chamfered-Bracket Phi-2 ( | ) + [ FLUXD ] Framed Wordmark"
+  },
+  "cadence": {
+    "cuts_per_10s": 3.38,
+    "target_scene_dur_sec": 2.7,
+    "micro_changes_per_10s": 23.89,
+    "median_micro_interval_sec": 0.4,
+    "max_static_hold_sec": 1.6,
+    "hook_cuts_first_4s": 2.0,
+    "zoom_pct": 56.15,
+    "transition_frames": 7,
+    "pause_sec": 0.45
+  }
+}

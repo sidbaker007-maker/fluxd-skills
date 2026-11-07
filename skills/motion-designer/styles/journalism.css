@@ -1,0 +1,72 @@
+/* Journalism CSS — bang-motion Visual Journalism, VoxStage Hot-Red registration outlines, Vintage Sketch & Academic Argument */
+.st-journalism {
+  background: var(--bg);
+  color: var(--ink);
+}
+.jr-map-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    radial-gradient(circle, var(--line) 1px, transparent 1px),
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: calc(var(--u) * 3) calc(var(--u) * 3), calc(var(--u) * 12) calc(var(--u) * 12), calc(var(--u) * 12) calc(var(--u) * 12);
+  opacity: 0.55;
+}
+.jr-vignette {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.26) 100%);
+}
+.jr-hud-top {
+  position: absolute; top: calc(var(--u) * 3.0); left: calc(var(--u) * 5.0); right: calc(var(--u) * 5.0);
+  display: flex; justify-content: space-between; align-items: center; z-index: 9; pointer-events: none;
+}
+.jr-dossier-pill {
+  font-family: var(--f-mono); font-size: calc(var(--u) * 1.65); font-weight: 800;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  background: var(--jr-badge); color: var(--jr-badge-ink);
+  padding: calc(var(--u) * 0.42) calc(var(--u) * 1.35);
+  box-shadow: 3px 3px 0 var(--jr-out);
+  transform: rotate(-1.2deg);
+}
+.jr-beat-idx {
+  font-family: var(--f-mono); font-size: calc(var(--u) * 1.5); font-weight: 700;
+  color: var(--muted); letter-spacing: 0.14em;
+}
+.jr-source-badge {
+  position: absolute; left: calc(var(--u) * 5.0); bottom: calc(var(--u) * 2.8); z-index: 9;
+  display: inline-flex; align-items: center; gap: calc(var(--u) * 0.7);
+  font-family: var(--f-mono); font-size: calc(var(--u) * 1.48); font-weight: 700;
+  background: var(--surface); color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--jr-out);
+  padding: calc(var(--u) * 0.35) calc(var(--u) * 1.15);
+}
+.jr-source-badge .jr-dot {
+  width: calc(var(--u) * 0.9); height: calc(var(--u) * 0.9);
+  border-radius: 50%; background: var(--jr-out); display: inline-block;
+}
+.jr-carry-tag {
+  position: absolute; right: calc(var(--u) * 5.0); bottom: calc(var(--u) * 2.8); z-index: 9;
+  font-family: var(--f-mono); font-size: calc(var(--u) * 1.35); font-weight: 700;
+  color: var(--muted); border-bottom: 1.5px dashed var(--jr-out);
+  padding-bottom: 2px;
+}
+
+/* MG-VOXSTAGE Hot-Red Offset Registration Outline & Archival Cutout Treatment */
+.st-journalism .card, .st-journalism .ts-card, .st-journalism .pv-col, .st-journalism .an-myth, .st-journalism .dev.plain {
+  background: var(--surface);
+  border: 2.5px solid #FFFFFF;
+  outline: 2.5px solid var(--jr-out);
+  outline-offset: 3px;
+  box-shadow: 0 calc(var(--u) * 1.6) calc(var(--u) * 3.2) rgba(0, 0, 0, 0.35);
+}
+.st-journalism .w.em {
+  color: var(--accent);
+  font-style: italic;
+}
+.st-journalism .w.pill .wi {
+  background: var(--jr-out); color: #FFFFFF;
+  padding: 0 calc(var(--u) * 0.85);
+  border: 1.5px solid #FFFFFF;
+  display: inline-block; transform: rotate(-1.8deg);
+}

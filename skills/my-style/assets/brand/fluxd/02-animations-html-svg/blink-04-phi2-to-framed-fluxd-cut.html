@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FLUXD Bumper — Blink 04 — 2-Beat Φ-2 Blink to [ FLUXD ] Hard Cut</title>
+  <style>
+    :root { --canvas: #F6F3EC; --ink: #111315; --sig: #E04826; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ink);
+      color: var(--canvas);
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    body.light-mode { background: var(--canvas); color: var(--ink); }
+    .stage { width: 52vw; max-width: 680px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 260px; }
+    .stage svg { width: 100%; height: auto; max-height: 240px; }
+    .controls {
+      position: fixed; bottom: 20px; right: 20px; display: flex; gap: 8px; opacity: 0.35; transition: opacity 0.2s;
+    }
+    .controls:hover { opacity: 1; }
+    button {
+      background: rgba(255,255,255,0.12); color: inherit; border: 1px solid currentColor; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 12px;
+    }
+    
+@keyframes phiCutPhase {
+  0%, 8%, 18%, 26% { opacity: 1; }
+  4%, 13%, 22%, 31%, 100% { opacity: 0; }
+}
+@keyframes wordCutPhase {
+  0%, 34%, 42% { opacity: 0; }
+  38%, 47%, 100% { opacity: 1; }
+}
+.phi-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; animation: phiCutPhase 2.8s steps(1, end) infinite; }
+.phi-layer svg { max-width: 220px; }
+.word-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; animation: wordCutPhase 2.8s steps(1, end) infinite; }
+
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage"><div class="phi-layer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <!-- Left Optical Arc (Octagonal-chamfered precision ring for 100/100 angle audit & crispness) -->
+  <path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/>
+  <!-- Central Vertical Flux Bar -->
+  <rect class="mark-accent" x="114" y="16" width="28" height="224" fill="var(--sig, currentColor)"/>
+  <!-- Right Optical Arc -->
+  <path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/>
+</svg></div><div class="word-layer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" fill="none">
+  <!-- Left Cinema Gate Bracket -->
+  <path class="w-dot" fill="var(--sig, currentColor)" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/>
+  <!-- F -->
+  <path class="w-char w-1" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/>
+  <!-- L -->
+  <path class="w-char w-2" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/>
+  <!-- U -->
+  <path class="w-char w-3" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/>
+  <!-- X -->
+  <path class="w-char w-4" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z"/>
+  <path class="w-char w-4" fill="currentColor" d="M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/>
+  <!-- D -->
+  <path class="w-char w-5" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/>
+  <!-- Right Cinema Gate Bracket -->
+  <path class="w-dot" fill="var(--sig, currentColor)" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/>
+</svg></div></div>
+  <div class="controls">
+    <button onclick="replay()">↻ Replay</button>
+    <button onclick="document.body.classList.toggle('light-mode')">◐ Toggle Dark/Light</button>
+  </div>
+  <script>
+    function replay() {
+      const s = document.getElementById('stage');
+      const html = s.innerHTML;
+      s.innerHTML = '';
+      void s.offsetWidth;
+      s.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

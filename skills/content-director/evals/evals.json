@@ -1,0 +1,50 @@
+{
+  "skill_name": "content-director",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "india-cinema-socioeconomics",
+      "prompt": "I want to make a YouTube video essay and companion Instagram content about how the collapse of single-screen cinemas and the rise of expensive multiplexes in India changed the physics of how Indian movies are shot, lit, and written—connecting RBI/MOSPI household consumption data and ticket economics with lens choices, aspect ratios, and storytelling shifts from classic parallel/mass cinema to modern OTT/multiplex releases.",
+      "expected_output": "A full multi-platform YouTube (16:9) and Instagram (9:16 Reel + 4:5 Carousel) content blueprint synthesizing Indian socio-economic data (RBI/MOSPI), optical/acoustic cinema physics, Pre-Flight Asset checklist, 135 WPM script, and Instagram loop/carousel adaptations.",
+      "files": [],
+      "expectations": [
+        "Includes a Packaging & CTR Blueprint with 3 distinct working title archetypes and a YouTube/Instagram thumbnail composition spec (<= 4 word hook text)",
+        "Cites India-specific or domain-specific empirical datasets (such as RBI DBIE, MOSPI PLFS/CPI, Economic Survey, ISRO PRADAN, NASA/JWST, or UN Comtrade) alongside concrete metrics",
+        "Presents a mathematical or physical equation/formalism at M.Sc. Physics rigor paired with motion-designer math or telemetry specs",
+        "Includes a complete Pre-Flight Asset, Movie Clip, Cutout JPG & Custom SFX Checklist table with target filenames in assets/ and built-in fallbacks",
+        "Provides a timestamped spoken voiceover script & storyboard paced at ~135 WPM with explicit [AUDIO PAUSE: Xs] markers, kinetic verb-first prose, and zero banned AI cliches",
+        "Includes a dedicated Instagram Adaptation Suite containing both a 9:16 Reel script with a seamless loop ending and a 4:5 multi-slide Instagram Carousel breakdown with caption/pinned comment strategy"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "astrophysics-cinema-interstellar-isro",
+      "prompt": "Help me build a YouTube + Instagram content package connecting the relativistic optics and orbital mechanics in Interstellar (Kerr black hole photon rings, gravitational redshift, and Oberth effect maneuvers) with how ISRO actually uses non-Keplerian halo orbits around the Sun-Earth L1 point (Aditya-L1) and lunar south pole trajectories (Chandrayaan-3) on a fraction of Hollywood's budget. Remember I have a Master's in Physics, so don't dumb down the real physics equations.",
+      "expected_output": "A full multi-platform YouTube and Instagram content blueprint combining Kerr metric/three-body Lagrangian physics, ISRO PRADAN & NASA data, Interstellar film formalism, Pre-Flight Asset checklist, 135 WPM script, and Instagram Reel + Carousel suite.",
+      "files": [],
+      "expectations": [
+        "Includes a Packaging & CTR Blueprint with 3 distinct working title archetypes and a YouTube/Instagram thumbnail composition spec (<= 4 word hook text)",
+        "Cites India-specific or domain-specific empirical datasets (such as RBI DBIE, MOSPI PLFS/CPI, Economic Survey, ISRO PRADAN, NASA/JWST, or UN Comtrade) alongside concrete metrics",
+        "Presents a mathematical or physical equation/formalism at M.Sc. Physics rigor paired with motion-designer math or telemetry specs",
+        "Includes a complete Pre-Flight Asset, Movie Clip, Cutout JPG & Custom SFX Checklist table with target filenames in assets/ and built-in fallbacks",
+        "Provides a timestamped spoken voiceover script & storyboard paced at ~135 WPM with explicit [AUDIO PAUSE: Xs] markers, kinetic verb-first prose, and zero banned AI cliches",
+        "Includes a dedicated Instagram Adaptation Suite containing both a 9:16 Reel script with a seamless loop ending and a 4:5 multi-slide Instagram Carousel breakdown with caption/pinned comment strategy"
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "geopolitics-semiconductors-optics",
+      "prompt": "Create a YouTube video script and Instagram Reel/Carousel package on the geopolitics of the global semiconductor chokepoint (Taiwan, ASML, US-China sanctions, and India's semiconductor mission), explained through the hard optical physics of Extreme Ultraviolet (EUV) lithography at 13.5 nanometers, Rayleigh diffraction limits, and tin-droplet laser-produced plasma.",
+      "expected_output": "A full multi-platform YouTube and Instagram content blueprint synthesizing EUV Rayleigh diffraction physics, UN Comtrade/GDELT/India semiconductor socio-economic data, Pre-Flight Asset checklist, 135 WPM script, and Instagram Reel + Carousel suite.",
+      "files": [],
+      "expectations": [
+        "Includes a Packaging & CTR Blueprint with 3 distinct working title archetypes and a YouTube/Instagram thumbnail composition spec (<= 4 word hook text)",
+        "Cites India-specific or domain-specific empirical datasets (such as RBI DBIE, MOSPI PLFS/CPI, Economic Survey, ISRO PRADAN, NASA/JWST, or UN Comtrade) alongside concrete metrics",
+        "Presents a mathematical or physical equation/formalism at M.Sc. Physics rigor paired with motion-designer math or telemetry specs",
+        "Includes a complete Pre-Flight Asset, Movie Clip, Cutout JPG & Custom SFX Checklist table with target filenames in assets/ and built-in fallbacks",
+        "Provides a timestamped spoken voiceover script & storyboard paced at ~135 WPM with explicit [AUDIO PAUSE: Xs] markers, kinetic verb-first prose, and zero banned AI cliches",
+        "Includes a dedicated Instagram Adaptation Suite containing both a 9:16 Reel script with a seamless loop ending and a 4:5 multi-slide Instagram Carousel breakdown with caption/pinned comment strategy"
+      ]
+    }
+  ]
+}

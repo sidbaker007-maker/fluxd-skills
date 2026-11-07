@@ -70,7 +70,7 @@ export const FONTS = {
 const FALLBACK = { serif: "Georgia, serif", mono: "ui-monospace, Menlo, monospace", sans: "system-ui, sans-serif" };
 const famStack = (f, kind = "sans") => `"${f}", ${FALLBACK[kind]}`;
 
-const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15, anomaly: 1.0, telescope: 1.0, pivot: 1.0, telemetry: 1.0, rehook: 1.0, unlock: 1.0, fuse: 1.0, props: 1.0, cta: 1.0, diorama: 1.0 };
+const DENSE_K = { features: 1.3, compare: 1.3, list: 1.3, steps: 1.3, quote: 1.2, chart: 1.25, outro: 1.3, logo: 1.15, rank: 1.25, donut: 1.2, line: 1.15, anomaly: 1.0, telescope: 1.0, pivot: 1.0, telemetry: 1.0, rehook: 1.0, unlock: 1.0, fuse: 1.0, props: 1.0, cta: 1.0, diorama: 1.0, lighttable: 1.0, satellite: 1.0, kinomontage: 1.0, whiteboard: 1.0, bumper: 1.0 };
 const DENSE = {
   landscape: DENSE_K,
   portrait: { ...DENSE_K, list: 1.25, steps: 1.25, features: 1.2, compare: 1.2, chart: 1.25, quote: 1.15, outro: 1.25 },

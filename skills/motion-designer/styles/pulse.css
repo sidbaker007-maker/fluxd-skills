@@ -196,3 +196,5 @@
   --ink: #F6F3EC;
   --muted: #8C9488;
 }
+
+.pl-svg-lockup svg { height: calc(var(--u) * 2.5); width: auto; display: block; }

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" fill="none">
+  <!-- Left Cinema Gate Bracket -->
+  <path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/>
+  <!-- F -->
+  <path class="w-char w-1" fill="#F6F3EC" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/>
+  <!-- L -->
+  <path class="w-char w-2" fill="#F6F3EC" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/>
+  <!-- U -->
+  <path class="w-char w-3" fill="#F6F3EC" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/>
+  <!-- X -->
+  <path class="w-char w-4" fill="#F6F3EC" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z"/>
+  <path class="w-char w-4" fill="#F6F3EC" d="M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/>
+  <!-- D -->
+  <path class="w-char w-5" fill="#F6F3EC" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/>
+  <!-- Right Cinema Gate Bracket -->
+  <path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/>
+</svg>
