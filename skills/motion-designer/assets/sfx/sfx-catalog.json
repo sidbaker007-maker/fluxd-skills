@@ -1,0 +1,146 @@
+{
+  "whoosh-fast-whip": {
+    "key": "whoosh-fast-whip",
+    "file": "assets/sfx/01_whooshes/whoosh-fast-whip.wav",
+    "category": "transition",
+    "durationSec": 0.36,
+    "peakOffsetSec": 0.122,
+    "defaultVolume": 0.62,
+    "description": "Transition sound (whoosh-fast-whip.wav), peak at 0.122s of 0.36s"
+  },
+  "whoosh-paper-turn": {
+    "key": "whoosh-paper-turn",
+    "file": "assets/sfx/01_whooshes/whoosh-paper-turn.wav",
+    "category": "transition",
+    "durationSec": 0.52,
+    "peakOffsetSec": 0.19,
+    "defaultVolume": 0.62,
+    "description": "Transition sound (whoosh-paper-turn.wav), peak at 0.19s of 0.52s"
+  },
+  "whoosh-soft-air": {
+    "key": "whoosh-soft-air",
+    "file": "assets/sfx/01_whooshes/whoosh-soft-air.wav",
+    "category": "transition",
+    "durationSec": 0.48,
+    "peakOffsetSec": 0.164,
+    "defaultVolume": 0.62,
+    "description": "Transition sound (whoosh-soft-air.wav), peak at 0.164s of 0.48s"
+  },
+  "hit-cinematic-thud": {
+    "key": "hit-cinematic-thud",
+    "file": "assets/sfx/02_impacts/hit-cinematic-thud.wav",
+    "category": "impact",
+    "durationSec": 0.75,
+    "peakOffsetSec": 0.037,
+    "defaultVolume": 0.72,
+    "description": "Impact sound (hit-cinematic-thud.wav), peak at 0.037s of 0.75s"
+  },
+  "hit-stamp-slam": {
+    "key": "hit-stamp-slam",
+    "file": "assets/sfx/02_impacts/hit-stamp-slam.wav",
+    "category": "impact",
+    "durationSec": 0.45,
+    "peakOffsetSec": 0.021,
+    "defaultVolume": 0.72,
+    "description": "Impact sound (hit-stamp-slam.wav), peak at 0.021s of 0.45s"
+  },
+  "hit-sub-boom": {
+    "key": "hit-sub-boom",
+    "file": "assets/sfx/02_impacts/hit-sub-boom.wav",
+    "category": "impact",
+    "durationSec": 1.25,
+    "peakOffsetSec": 0.04,
+    "defaultVolume": 0.72,
+    "description": "Impact sound (hit-sub-boom.wav), peak at 0.04s of 1.25s"
+  },
+  "riser-tension-suck": {
+    "key": "riser-tension-suck",
+    "file": "assets/sfx/03_risers/riser-tension-suck.wav",
+    "category": "riser",
+    "durationSec": 0.85,
+    "peakOffsetSec": 0.733,
+    "defaultVolume": 0.58,
+    "description": "Riser sound (riser-tension-suck.wav), peak at 0.733s of 0.85s"
+  },
+  "riser-warm-swell": {
+    "key": "riser-warm-swell",
+    "file": "assets/sfx/03_risers/riser-warm-swell.wav",
+    "category": "riser",
+    "durationSec": 1.35,
+    "peakOffsetSec": 1.17,
+    "defaultVolume": 0.58,
+    "description": "Riser sound (riser-warm-swell.wav), peak at 1.17s of 1.35s"
+  },
+  "foley-camera-shutter": {
+    "key": "foley-camera-shutter",
+    "file": "assets/sfx/04_tactile/foley-camera-shutter.wav",
+    "category": "foley",
+    "durationSec": 0.22,
+    "peakOffsetSec": 0.022,
+    "defaultVolume": 0.65,
+    "description": "Foley sound (foley-camera-shutter.wav), peak at 0.022s of 0.22s"
+  },
+  "foley-card-place": {
+    "key": "foley-card-place",
+    "file": "assets/sfx/04_tactile/foley-card-place.wav",
+    "category": "foley",
+    "durationSec": 0.28,
+    "peakOffsetSec": 0.021,
+    "defaultVolume": 0.65,
+    "description": "Foley sound (foley-card-place.wav), peak at 0.021s of 0.28s"
+  },
+  "foley-chalk-draw": {
+    "key": "foley-chalk-draw",
+    "file": "assets/sfx/04_tactile/foley-chalk-draw.wav",
+    "category": "foley",
+    "durationSec": 0.44,
+    "peakOffsetSec": 0.091,
+    "defaultVolume": 0.65,
+    "description": "Foley sound (foley-chalk-draw.wav), peak at 0.091s of 0.44s"
+  },
+  "foley-pen-highlight": {
+    "key": "foley-pen-highlight",
+    "file": "assets/sfx/04_tactile/foley-pen-highlight.wav",
+    "category": "foley",
+    "durationSec": 0.38,
+    "peakOffsetSec": 0.08,
+    "defaultVolume": 0.65,
+    "description": "Foley sound (foley-pen-highlight.wav), peak at 0.08s of 0.38s"
+  },
+  "chime-subtle-lock": {
+    "key": "chime-subtle-lock",
+    "file": "assets/sfx/05_data_ui/chime-subtle-lock.wav",
+    "category": "ui",
+    "durationSec": 0.65,
+    "peakOffsetSec": 0.02,
+    "defaultVolume": 0.52,
+    "description": "Ui sound (chime-subtle-lock.wav), peak at 0.02s of 0.65s"
+  },
+  "tick-soft-counter": {
+    "key": "tick-soft-counter",
+    "file": "assets/sfx/05_data_ui/tick-soft-counter.wav",
+    "category": "ui",
+    "durationSec": 0.14,
+    "peakOffsetSec": 0.011,
+    "defaultVolume": 0.52,
+    "description": "Ui sound (tick-soft-counter.wav), peak at 0.011s of 0.14s"
+  },
+  "drone-dark-investigative": {
+    "key": "drone-dark-investigative",
+    "file": "assets/sfx/06_ambience/drone-dark-investigative.wav",
+    "category": "ambience",
+    "durationSec": 2.0,
+    "peakOffsetSec": 0.504,
+    "defaultVolume": 0.22,
+    "description": "Ambience sound (drone-dark-investigative.wav), peak at 0.504s of 2.0s"
+  },
+  "drone-warm-editorial": {
+    "key": "drone-warm-editorial",
+    "file": "assets/sfx/06_ambience/drone-warm-editorial.wav",
+    "category": "ambience",
+    "durationSec": 2.0,
+    "peakOffsetSec": 0.502,
+    "defaultVolume": 0.22,
+    "description": "Ambience sound (drone-warm-editorial.wav), peak at 0.502s of 2.0s"
+  }
+}

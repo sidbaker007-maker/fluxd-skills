@@ -1,0 +1,16 @@
+{
+  "name": "FLUXD",
+  "short_name": "FLUXD",
+  "description": "For intellectually curious viewers tired of shallow pop-science and plot summaries, FLUXD is the investigative video journal that braids daily cinema craft, M.Sc.-level physics rigor, geopolitics, and street-level Indian & global socio-economics into visceral visual stories.",
+  "theme_color": "#E04826",
+  "background_color": "#F6F3EC",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

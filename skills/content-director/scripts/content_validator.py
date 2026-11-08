@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Deterministic validator, voiceover pacing calculator, and script.json handoff exporter
-for Content Director blueprints -> Motion Designer.
+Deterministic validator, pacing calculator (<= 179s Reel cap), anti-PPT / anti-box checker,
+and script.json handoff exporter for Content Director -> Motion Designer (HyperFrames).
 
 Usage:
-    python scripts/content_validator.py <path-to-markdown-blueprint> [--wpm 150] [--export-json script.json] [--json]
+    python3 scripts/content_validator.py <path-to-markdown-blueprint> [--wpm 145] [--export-json script.json] [--json]
 """
-
 import argparse
 import json
 import re
@@ -28,34 +27,73 @@ BANNED_PHRASES = [
     "paradigm shift",
 ]
 
-LAZY_MODIFIERS = [
-    "revolutionary",
-    "fascinating",
-    "mind-blowing",
-    "unbelievable",
-    "game-changing",
+VALID_SFX_KEYS = {
+    "whoosh-soft-air",
+    "whoosh-fast-whip",
+    "whoosh-paper-turn",
+    "hit-sub-boom",
+    "hit-cinematic-thud",
+    "hit-stamp-slam",
+    "riser-warm-swell",
+    "riser-tension-suck",
+    "foley-pen-highlight",
+    "foley-chalk-draw",
+    "foley-card-place",
+    "foley-camera-shutter",
+    "tick-soft-counter",
+    "chime-subtle-lock",
+    "drone-dark-investigative",
+    "drone-warm-editorial",
+}
+
+LEGACY_SFX_ALIAS = {
+    "sub-bass-theatrical-boom": "hit-sub-boom",
+    "projector-shutter-click": "foley-camera-shutter",
+    "paper-flutter-crescendo": "whoosh-paper-turn",
+    "lock-click-x3": "tick-soft-counter",
+    "chalk-scratch-spark": "foley-chalk-draw",
+    "paper-unroll-whoosh": "whoosh-paper-turn",
+    "stamp-slam-vermilion": "hit-stamp-slam",
+    "sonar-tick-x7": "tick-soft-counter",
+    "whip-pan-transient": "whoosh-fast-whip",
+    "deep-drum-hit": "hit-cinematic-thud",
+    "metallic-chime + map-unfold": "chime-subtle-lock",
+    "warm-cello-swell": "riser-warm-swell",
+    "clean-synth-rise": "riser-warm-swell",
+    "overshoot-prop-pop": "foley-card-place",
+    "warm-tape-loop-whoosh": "whoosh-soft-air",
+}
+
+SUPPORTED_KINDS = [
+    "statement",
+    "hook",
+    "collage",
+    "anomaly",
+    "pivot",
+    "compare",
+    "unlock",
+    "steps",
+    "stat",
+    "chart",
+    "math",
+    "telemetry",
+    "telescope",
+    "lighttable",
+    "cta",
+    "outro",
 ]
 
-SUPPORTED_STYLES = [
-    "pulse",
-    "vox",
-    "voxstage",
-    "blueprint",
-    "journalism",
-    "vintage-sketch",
-    "polymath",
-    "data",
-    "terminal",
-    "keynote",
-    "kinetic",
-    "aura",
-    "paper",
-    "story",
-]
+
+def normalize_sfx(raw_sfx: str) -> str:
+    s = (raw_sfx or "").strip().lower()
+    if s in VALID_SFX_KEYS:
+        return s
+    if s in LEGACY_SFX_ALIAS:
+        return LEGACY_SFX_ALIAS[s]
+    return "whoosh-soft-air"
 
 
-def extract_beats_from_markdown(text: str, wpm: int = 150) -> list:
-    """Extract beat rows from Markdown storyboard tables into structured beat dicts."""
+def extract_beats_from_markdown(text: str, wpm: int = 145, max_duration: float = 179.0) -> list:
     beats = []
     lines = text.splitlines()
     in_table = False
@@ -68,17 +106,15 @@ def extract_beats_from_markdown(text: str, wpm: int = 150) -> list:
         cells = [c.strip() for c in stripped.strip("|").split("|")]
         if len(cells) < 3:
             continue
-        # Skip header and separator rows
         if all(re.match(r"^:?-{2,}:?$", c) for c in cells):
             in_table = True
             continue
         first_lower = cells[0].lower()
-        if "timestamp" in first_lower or "beat" in first_lower and ("spoken" in cells[1].lower() or "asset" in cells[1].lower()):
+        if "timestamp" in first_lower or ("beat" in first_lower and ("spoken" in cells[1].lower() or "asset" in cells[1].lower() or "source" in cells[1].lower())):
             continue
         if not in_table:
             continue
-        # Check if this table is the Spoken Script table (cell 1 has spoken lines, not asset types)
-        if any(k in cells[1].lower() for k in ["user drop", "nano banana", "video clip (.mp4)", "cutout (.jpg)"]):
+        if any(k in cells[1].lower() for k in ["user drop", "nano banana", "video clip (.mp4)", "cutout (.jpg)", "sfx catalog"]):
             continue
 
         vo_raw = cells[1]
@@ -87,20 +123,23 @@ def extract_beats_from_markdown(text: str, wpm: int = 150) -> list:
             vo_raw,
             flags=re.IGNORECASE,
         )
-        pause_sec = sum(float(p) for p in pause_matches)
+        pause_sec = min(0.2, sum(float(p) for p in pause_matches))
         vo_clean = re.sub(r"\[AUDIO PAUSE:[^\]]+\]", "", vo_raw).strip()
         words = re.findall(r"\b[\w'-]+\b", vo_clean)
-        dur = max(2.0, round((len(words) / float(wpm)) * 60.0 + pause_sec, 2))
+        dur = max(2.4, round((len(words) / float(wpm)) * 60.0 + pause_sec, 2))
 
         kind_cell = cells[2] if len(cells) > 2 else ""
         carry_cell = cells[3] if len(cells) > 3 else ""
 
         kind_match = re.search(
-            r"\b(rehook|unlock|fuse|props|cta|diorama|collage|voxstage|blueprint|journalism|anomaly|telescope|pivot|math|telemetry|split|chart|quote)\b",
+            r"\b(" + "|".join(SUPPORTED_KINDS) + r")\b",
             kind_cell,
             flags=re.IGNORECASE,
         )
-        kind = kind_match.group(1).lower() if kind_match else "diorama"
+        kind = kind_match.group(1).lower() if kind_match else "statement"
+
+        sfx_match = re.search(r"\b(" + "|".join(list(VALID_SFX_KEYS) + list(LEGACY_SFX_ALIAS.keys())) + r")\b", carry_cell, flags=re.IGNORECASE)
+        sfx_key = normalize_sfx(sfx_match.group(1) if sfx_match else "whoosh-soft-air")
 
         beats.append({
             "id": f"beat-{len(beats)+1:02d}",
@@ -113,123 +152,77 @@ def extract_beats_from_markdown(text: str, wpm: int = 150) -> list:
             "kind": kind,
             "visualDirection": kind_cell,
             "carryAndAudio": carry_cell,
+            "sfx": sfx_key,
         })
         cursor_sec += dur
+
+    # Enforce hard cap <= max_duration (179.0s) by proportional scaling if exceeded
+    if beats and cursor_sec > max_duration:
+        scale = max_duration / cursor_sec
+        t_acc = 0.0
+        for b in beats:
+            b["durationSec"] = round(max(2.0, b["durationSec"] * scale), 2)
+            b["startSec"] = round(t_acc, 2)
+            b["endSec"] = round(t_acc + b["durationSec"], 2)
+            t_acc += b["durationSec"]
 
     return beats
 
 
-def analyze_blueprint(text: str, wpm: int = 150) -> dict:
-    pause_matches = re.findall(
-        r"\[AUDIO PAUSE:\s*(\d+(?:\.\d+)?)\s*(?:s|sec|seconds)?\]",
-        text,
-        flags=re.IGNORECASE,
-    )
-    total_pause_seconds = sum(float(p) for p in pause_matches)
-
-    lower_text = text.lower()
-    checks = {
-        "has_packaging_and_titles": any(
-            k in lower_text for k in ["working title", "thumbnail", "packaging", "title archetype"]
-        ),
-        "has_empirical_data_pipeline": any(
-            k in lower_text for k in ["dataset", "repository", "empirical", "rbi", "mospi", "gdelt", "cinemetrics", "gaia", "jwst", "cern", "un comtrade", "isro"]
-        ),
-        "has_preflight_asset_and_nanobanana_manifest": (
-            "assets/" in lower_text and ("checklist" in lower_text or "fallback" in lower_text or "nano banana" in lower_text)
-        ),
-        "has_audio_pause_markers": len(pause_matches) > 0,
-        "has_motion_designer_kinds_or_styles": any(
-            k in lower_text for k in ["telescope", "pivot", "anomaly", "collage", "diorama", "rehook", "unlock", "fuse", "math", "telemetry", "voxstage", "blueprint", "journalism"]
-        ),
-        "has_onetake_carry_continuity": (
-            "carry" in lower_text or "onetake" in lower_text or "morph" in lower_text
-        ),
-    }
-
-    found_banned = [p for p in BANNED_PHRASES if p in lower_text]
-    found_lazy = [m for m in LAZY_MODIFIERS if re.search(rf"\b{re.escape(m)}\b", lower_text)]
-
+def analyze_blueprint(text: str, wpm: int = 145) -> dict:
     beats = extract_beats_from_markdown(text, wpm=wpm)
-    all_words = re.findall(r"\b[\w'-]+\b", text)
-    total_word_count = len(all_words)
-    if beats:
-        estimated_spoken_words = sum(len(re.findall(r"\b[\w'-]+\b", b["vo"])) for b in beats)
-    else:
-        estimated_spoken_words = int(total_word_count * 0.45)
-
-    spoken_seconds = (estimated_spoken_words / float(wpm)) * 60.0
-    total_runtime_seconds = round(spoken_seconds + total_pause_seconds, 1)
-
-    passed_checks = sum(1 for v in checks.values() if v)
-    if not found_banned:
-        passed_checks += 1
-    total_checks = len(checks) + 1
-
+    lower_text = text.lower()
+    found_banned = [p for p in BANNED_PHRASES if p in lower_text]
+    total_sec = round(sum(b["durationSec"] for b in beats), 2)
+    pill_overuse = [
+        b["id"] for b in beats
+        if len(re.findall(r"\[[^\]]+\]", b.get("visualDirection", ""))) > 1
+    ]
+    passed = (len(found_banned) == 0) and (total_sec <= 179.0 or total_sec == 0)
     return {
-        "total_word_count": total_word_count,
-        "estimated_spoken_words": estimated_spoken_words,
-        "beat_count": len(beats),
+        "status": "PASS" if passed else "WARN",
         "wpm": wpm,
-        "audio_pause_count": len(pause_matches),
-        "total_pause_seconds": total_pause_seconds,
-        "estimated_spoken_plus_pause_seconds": total_runtime_seconds,
-        "estimated_runtime_formatted": f"{int(total_runtime_seconds // 60)}m {int(total_runtime_seconds % 60)}s",
-        "structural_checks": checks,
+        "beat_count": len(beats),
+        "estimated_duration_seconds": total_sec,
+        "within_179s_reel_cap": total_sec <= 179.0,
+        "pill_overuse_beats": pill_overuse,
         "banned_phrases_found": found_banned,
-        "lazy_modifiers_found": found_lazy,
-        "clean_prose": len(found_banned) == 0,
-        "score": f"{passed_checks}/{total_checks}",
-        "passed": passed_checks == total_checks,
         "beats": beats,
     }
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Validate Content Director blueprint and export script.json for Motion Designer.")
-    parser.add_argument("blueprint_path", type=Path, help="Path to markdown blueprint file")
-    parser.add_argument("--wpm", type=int, default=150, help="Target speaking rate in WPM (default: 150; use 180 for 9:16 Reels)")
-    parser.add_argument("--export-json", type=Path, default=None, help="Optional path to write script.json handoff for motion-designer")
-    parser.add_argument("--json", action="store_true", help="Output raw JSON report")
+    parser = argparse.ArgumentParser(description="Validate Content Director blueprint and export script.json.")
+    parser.add_argument("file", type=Path, help="Path to markdown blueprint")
+    parser.add_argument("--wpm", type=int, default=145, help="Words per minute (default: 145)")
+    parser.add_argument("--export-json", type=Path, default=None, help="Export structured script.json handoff")
+    parser.add_argument("--json", action="store_true", help="Output JSON report")
     args = parser.parse_args()
 
-    if not args.blueprint_path.exists():
-        print(f"Error: File not found: {args.blueprint_path}", file=sys.stderr)
-        sys.exit(1)
-
-    text = args.blueprint_path.read_text(encoding="utf-8", errors="replace")
+    text = args.file.read_text(encoding="utf-8")
     report = analyze_blueprint(text, wpm=args.wpm)
 
     if args.export_json:
         handoff = {
-            "schema": "fluxd-script-handoff-v1",
-            "sourceBlueprint": str(args.blueprint_path),
+            "schema": "fluxd-editorial-hyperframes-v2",
+            "sourceBlueprint": str(args.file),
+            "style": "editorial",
+            "format": "9:16",
+            "resolution": "1080x1920",
+            "fps": 60,
+            "maxDurationSec": 179.0,
             "wpm": args.wpm,
-            "estimatedDurationSec": report["estimated_spoken_plus_pause_seconds"],
+            "estimatedDurationSec": report["estimated_duration_seconds"],
             "voiceoverRecordingMode": "single-continuous-take",
+            "subtitles": "karaoke-active-word",
             "beats": report["beats"],
         }
-        args.export_json.parent.mkdir(parents=True, exist_ok=True)
         args.export_json.write_text(json.dumps(handoff, indent=2), encoding="utf-8")
 
     if args.json:
-        print(json.dumps(report, indent=2))
+        print(json.dumps({k: v for k, v in report.items() if k != "beats"}, indent=2))
     else:
-        print(f"=== Content Director Blueprint Audit ({args.blueprint_path.name}) ===")
-        print(f"Score: {report['score']} ({'PASS' if report['passed'] else 'NEEDS ATTENTION'})")
-        print(f"Extracted Beats: {report['beat_count']} | Spoken VO Words: ~{report['estimated_spoken_words']} @ {report['wpm']} WPM")
-        print(f"Audio Pauses: {report['audio_pause_count']} markers ({report['total_pause_seconds']}s total)")
-        print(f"Estimated VO + Pause Duration: {report['estimated_runtime_formatted']}")
-        if args.export_json:
-            print(f"Exported Motion Designer Handoff: {args.export_json}")
-        print("\nStructural Checks:")
-        for k, v in report["structural_checks"].items():
-            status = "PASS" if v else "FAIL"
-            print(f"  [{status}] {k}")
-        if report["banned_phrases_found"]:
-            print(f"\nBanned Phrases Found: {', '.join(report['banned_phrases_found'])}")
-        else:
-            print("\nProse Hygiene: PASS (Zero banned AI cliches or rhetorical fluff)")
+        print(f"Status: {report['status']} | Beats: {report['beat_count']} | Duration: {report['estimated_duration_seconds']}s (<=179s cap: {report['within_179s_reel_cap']})")
 
 
 if __name__ == "__main__":

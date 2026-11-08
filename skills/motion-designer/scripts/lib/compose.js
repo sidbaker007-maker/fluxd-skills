@@ -431,7 +431,8 @@ export function compose(work, opts = {}) {
     const wrapStyle = scale !== 1 ? ` style="--u:${r3(u * scale)}px"` : "";
     const bgVidUrl = s.bgVideo ? ctxBase.asset(s.bgVideo) : null;
     const bgVidHtml = bgVidUrl ? `<video class="md-bg-video" src="${esc(bgVidUrl)}" muted playsinline data-start="${vis0}" data-duration="${r3(vis1 - vis0)}" style="opacity:${s.bgOpacity ?? 0.38}"></video>` : "";
-    htmlScenes.push(`<section class="scene kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div></section>`);
+    const karaokeHtml = (v.subtitles !== false && s.vo && MDx.karaokeSub) ? MDx.karaokeSub(s, dur) : "";
+    htmlScenes.push(`<section class="scene clip kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-start="${t0}" data-duration="${dur}" data-track-kind="graphics" data-track-index="1" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div>${karaokeHtml}</section>`);
     scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
   });
 
@@ -531,7 +532,7 @@ export function compose(work, opts = {}) {
 <script src="assets/style.js"></script>
 </head>
 <body>
-<div id="root" class="md st-${st.id} ${fmt} pal-${esc((pal.name || "").split(" ")[0].toLowerCase())}${v.transparent ? " is-transparent" : ""}" data-composition-id="main" data-start="0" data-width="${W}" data-height="${H}" data-duration="${duration}">
+<div id="root" class="md st-${st.id} ${fmt} pal-${esc((pal.name || "").split(" ")[0].toLowerCase())}${v.transparent ? " is-transparent" : ""}" data-composition-id="main" data-start="0" data-width="${W}" data-height="${H}" data-duration="${duration}" data-motion-blur="on" data-motion-blur-shutter="240">
 <div class="md-bg">${bgHtml}</div>
 ${htmlScenes.join("\n")}
 <div class="md-wipe" data-layout-ignore>${wipes}</div>
@@ -553,6 +554,11 @@ MD.build(${JSON.stringify(P)}, function (tl) {
     sounds: kept.length, music: music === "none" ? null : music === "auto" ? "composed" : path.basename(music), warnings: [...new Set(warn)],
     mixFile: opts.audio !== false ? "assets/mix.wav" : null, soundtrack: soundReport, bpm: bpmOf,
   };
+  const motionAssertions = {
+    compositionId: "main",
+    assertions: scenes.map((s) => ({ kind: "keepsMoving", withinSelector: `#${s.id}`, startSec: s.t0, endSec: r3(s.t0 + s.dur) })),
+  };
+  writeJSON(path.join(out, "main.motion.json"), motionAssertions);
   writeJSON(path.join(out, "plan.json"), report);
   return report;
 }

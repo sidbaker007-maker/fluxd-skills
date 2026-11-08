@@ -58,14 +58,90 @@
   // Vox Guide (@justdodani): Ransom-note collage lettering where every word sits on its own torn newspaper scrap
   // Official FLUXD Brand Kit Vector SVGs (Chamfered-Bracket Optical Phi-2 + Cinema-Gate Framed [ FLUXD ] Wordmark)
   // Live English Spoken Caption Strip (renders whenever s.vo is provided and captions !== "off")
-  MD.voCaption = function (s) {
-    if (!s || !s.vo || s.captions === "off") return "";
-    const clean = String(s.vo).replace(/\[(?:AUDIO\s+)?PAUSE:[^\]]+\]/gi, "").trim();
-    if (!clean) return "";
-    return `<div class="md-vo-caption" data-layout-ignore><span class="md-vo-bar"></span><span class="md-vo-txt">${MD.tx(clean)}</span></div>`;
+  // Word-Tokenized Active Karaoke Subtitle Engine (3-5 words per phrase chunk, active word lit & scaled)
+  MD.karaokeChunks = function (s, dur) {
+    if (!s || !s.vo || s.captions === "off") return [];
+    const totalDur = Math.max(1.5, Number(dur || s.dur || s.duration || 4.0));
+    const pauseMatches = String(s.vo).match(/\[(?:AUDIO\s+)?PAUSE:\s*([\d.]+)/i);
+    const pauseSec = pauseMatches ? Math.min(0.6, parseFloat(pauseMatches[1]) || 0) : 0;
+    const clean = String(s.vo)
+      .replace(/\[(?:AUDIO\s+)?PAUSE:[^\]]+\]/gi, "")
+      .replace(/[\*\[\]`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!clean) return [];
+
+    let words = [];
+    if (Array.isArray(s.words) && s.words.length > 0) {
+      words = s.words.map((w) => ({
+        text: String(w.text || w.word || "").replace(/[\*\[\]`]/g, "").trim(),
+        start: Number(w.start || 0),
+        end: Number(w.end || 0.25),
+      })).filter((w) => w.text);
+    } else {
+      const rawWords = clean.split(" ").filter(Boolean);
+      const speakWindow = Math.max(1.0, totalDur - pauseSec - 0.16);
+      const weights = rawWords.map((w) => Math.max(2, w.length) + (/[,;:\u2014\-]$/.test(w) ? 2.2 : /[\.\?!]$/.test(w) ? 3.0 : 0));
+      const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      let cursor = 0.06;
+      words = rawWords.map((w, idx) => {
+        const wDur = (weights[idx] / totalWeight) * speakWindow;
+        const st = Number(cursor.toFixed(3));
+        const en = Number(Math.min(totalDur - 0.04, cursor + wDur).toFixed(3));
+        cursor += wDur;
+        return { text: w, start: st, end: Math.max(st + 0.08, en) };
+      });
+    }
+
+    // Group into 3-5 word chunks (breaking at punctuation or 4 words)
+    const chunks = [];
+    let cur = [];
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      cur.push(w);
+      const hasPunct = /[,;:\u2014\.\?!]$/.test(w.text);
+      const remaining = words.length - 1 - i;
+      if (cur.length >= 5 || (cur.length >= 3 && hasPunct) || (cur.length === 4 && remaining >= 2)) {
+        chunks.push({
+          start: cur[0].start,
+          end: cur[cur.length - 1].end,
+          words: cur,
+        });
+        cur = [];
+      }
+    }
+    if (cur.length > 0) {
+      if (chunks.length > 0 && cur.length === 1) {
+        chunks[chunks.length - 1].words.push(cur[0]);
+        chunks[chunks.length - 1].end = cur[0].end;
+      } else {
+        chunks.push({
+          start: cur[0].start,
+          end: cur[cur.length - 1].end,
+          words: cur,
+        });
+      }
+    }
+    return chunks;
   };
 
-  MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
+  MD.karaokeSub = function (s, dur) {
+    const chunks = MD.karaokeChunks(s, dur);
+    if (!chunks.length) return "";
+    const htmlChunks = chunks.map((ch, pi) => {
+      const wSpans = ch.words.map((w, wi) =>
+        `<span class="kw" data-w="${wi}" data-start="${w.start.toFixed(3)}" data-end="${w.end.toFixed(3)}">${esc(w.text)}</span>`
+      ).join(" ");
+      return `<div class="ks-phrase" data-p="${pi}" data-pstart="${ch.start.toFixed(3)}" data-pend="${ch.end.toFixed(3)}">${wSpans}</div>`;
+    }).join("");
+    return `<div class="md-karaoke-sub" data-track-kind="captions" data-layout-ignore>${htmlChunks}</div>`;
+  };
+
+  MD.voCaption = function (s, dur) {
+    return MD.karaokeSub(s, dur);
+  };
+
+MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
     return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></svg>`;
   };
   MD.fluxdWordmark = function (cls = "fluxd-word-svg") {
@@ -1251,11 +1327,24 @@
     },
     // Vox Mixed-Media & Cutout Collage Kind (supports single or layered JPG/PNG cutouts + raw MP4 footage + SVG chalk annotations)
     collage: {
-      label: "Vox Mixed-Media Collage",
+      label: "Editorial Artifact & Showcase",
       fields: ["kicker", "title", "sub", "media", "callouts"],
       min: (s) => Math.max(3.4, (s.title ? readSecs(s.title) * 0.6 : 0) + (s.callouts || []).length * 0.4 + 1.4),
       markup: (s, c) => {
         const ms = [].concat(s.media || []).filter(Boolean).slice(0, 3);
+        const isEditorial = c && c.st && c.st.id === "editorial";
+        if (isEditorial) {
+          if (ms.length >= 2) {
+            const cardsHtml = ms.map((m, i) => {
+              const callTxt = (s.callouts && s.callouts[i]) ? s.callouts[i] : `Edition 0${i + 1}`;
+              return `<div class="ed-seq-card" data-i="${i}"><div class="ed-seq-thumb">${MD.media(m, c)}</div><div class="ed-seq-meta"><span class="ed-seq-idx">0${i + 1} // FEATURED</span><div class="ed-seq-lbl">${MD.tx(callTxt)}</div></div></div>`;
+            }).join("");
+            return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ed-multi-grid n${ms.length}">${cardsHtml}</div></div></div>`;
+          }
+          const singleMedia = ms.length ? MD.media(ms[0], c) : `<svg class="vx-archival-svg" viewBox="0 0 480 320"><rect width="480" height="320" fill="#16181D"/><circle cx="240" cy="160" r="78" fill="#E04826" opacity="0.85"/></svg>`;
+          const singleCap = (s.callouts && s.callouts[0]) ? `<div class="ed-caption-strip">${MD.tx(s.callouts[0])}</div>` : "";
+          return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="28">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ed-showcase"><div class="ed-hero-card"><div class="ed-hero-img-wrap">${singleMedia}</div>${singleCap}</div></div></div></div>`;
+        }
         const isColor = s.color ? " is-color" : "";
         const annType = s.annotation || "circle";
         const chalkSvg = annType === "arrow"
@@ -1270,14 +1359,31 @@
       plan: (s, c, dur) => {
         const e = [];
         let t = 0.08;
-        if (s.kicker) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        const isEditorial = c && c.st && c.st.id === "editorial";
+        if (s.kicker && !isEditorial) e.push(ev(t, ".kicker", T(c, "kicker", "fadeUp"), 1));
         if (s.title) {
-          const te = titleEvent(c, s, 0.14, s.title, ".title");
+          const te = titleEvent(c, s, 0.12, s.title, ".title");
           e.push(te, ...emphEvents(s, c, s.title, ".title", after(te) - 0.25));
           t = after(te) - 0.2;
         }
-        if (s.sub) e.push(ev(Math.max(0.45, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
+        if (s.sub) e.push(ev(Math.max(0.38, t), ".sub", T(c, "body", "fadeUp"), MD.count(s.sub)));
         const ms = [].concat(s.media || ["default"]).slice(0, 3);
+        if (isEditorial) {
+          if (ms.length >= 2) {
+            const mTimes = Array.isArray(s.mediaTimes) && s.mediaTimes.length === ms.length
+              ? s.mediaTimes.map((x) => Math.min(dur - 0.8, Math.max(0.25, +x * 0.45)))
+              : ms.map((_, i) => 0.35 + i * Math.min(1.4, (dur - 1.2) / ms.length));
+            ms.forEach((_, i) => {
+              e.push(ev(mTimes[i], `.ed-seq-card[data-i="${i}"]`, "rise", 1, { d: 0.55 }, sfxOf(c, "card") || "card-place", "start"));
+            });
+          } else {
+            e.push(ev(0.26, ".ed-hero-img-wrap", "scaleIn", 1, { d: 0.65 }, sfxOf(c, "media") || "card-place", "start"));
+            if (s.callouts && s.callouts[0]) {
+              e.push(ev(0.68, ".ed-caption-strip", "fadeUp", 1, { y: 16, d: 0.48 }, "tap", "start"));
+            }
+          }
+          return e;
+        }
         ms.forEach((_, i) => e.push(ev(0.18 + i * 0.18, `.vx-cutout-card[data-i="${i}"], .vx-cutout-card.c${i}`, T(c, "media", "pop"), 1, {}, sfxOf(c, "media") || "card-place", "start")));
         e.push(ev(Math.max(0.65, t + 0.2), ".vx-chalk", "draw", 1, { d: 0.95 }, "scratch", "start"));
         const nc = (s.callouts || []).length;
@@ -1374,25 +1480,29 @@
     },
     // Retention HUD Kind 2: Progressive Blurred-to-Unlocked Checklist & Open-Loop Roadmap (from Reel 1 & Reel 2)
     unlock: {
-      label: "Progressive Locked-to-Unlocked Checklist",
+      label: "Editorial Perspective Index",
       fields: ["kicker", "title", "sub", "items", "unlocked", "unlockIndex", "stamp", "stage", "cta"],
       min: (s) => Math.max(3.2, (s.title ? readSecs(s.title) * 0.5 : 0) + (s.items || []).length * 0.28 + 1.2),
       markup: (s, c) => {
-        const unlockedCount = s.unlocked != null ? +s.unlocked : 2;
+        const isEditorial = (c && c.st && c.st.id === "editorial") || Boolean(s.unlockAll);
+        const totalItems = (s.items || []).length || 4;
+        const unlockedCount = isEditorial ? totalItems : (s.unlocked != null ? +s.unlocked : 2);
         const rows = (s.items || [
-          "01 | COLOR FLASH | Full-screen colour flash (1.2s)",
-          "02 | ZOOM | Viewfinder scale push/pull (+22%)",
-          "03 | CUT | 3-angle perspective cut (FAR/CLOSE)",
-          "04 | SOUND SYNC | 1 visual event = 1 sound transient",
-          "05 | NEW PROP | 1 spoken keyword = 1 vector prop",
+          "01 | PERSPECTIVE A | First regional or historical lens",
+          "02 | PERSPECTIVE B | Second oral or folkloric shift",
+          "03 | PERSPECTIVE C | Third literary transformation",
+          "04 | PERSPECTIVE D | Fourth cross-border telling",
         ]).map((raw, idx) => {
           const parts = String(raw).split("|").map((x) => x.trim());
           const no = parts[0] && /^\d+$/.test(parts[0]) ? parts[0] : String(idx + 1).padStart(2, "0");
           const rt = parts.length >= 2 ? parts[1] : parts[0];
-          const rs = parts.length >= 3 ? parts[2] : "";
-          const isUn = (idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1);
-          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isUn ? "✓" : "🔒"}</span></div>`;
+          const rs = parts.length >= 3 ? parts.slice(2).join(" · ") : "";
+          const isUn = isEditorial || ((idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1));
+          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isEditorial ? "→" : (isUn ? "✓" : "🔒")}</span></div>`;
         }).join("");
+        if (isEditorial) {
+          return `<div class="k k-unlock"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ul-board"><div class="ul-rows">${rows}</div></div></div></div>`;
+        }
         const stampHtml = s.stamp ? `<div class="ul-stamp${/alert|never|mistake|nobody/i.test(s.stamp) ? " is-alert" : ""}">${esc(s.stamp)}</div>` : "";
         const stages = ["HOOK", "DELAY", "REHOOK", "PAYOFF"];
         const curStage = (s.stage || "REHOOK").toUpperCase();
@@ -1402,16 +1512,18 @@
       },
       plan: (s, c) => {
         const e = [];
-        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        const isEditorial = (c && c.st && c.st.id === "editorial") || Boolean(s.unlockAll);
+        if (s.kicker && !isEditorial) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
         if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
-        const n = (s.items || []).length || 5;
-        e.push(ev(0.22, ".ul-row", "fadeUp", n, { st: 0.09, y: 16 }, "tick", "start"));
-        if (s.unlockIndex) {
-          e.push(ev(0.95, `.ul-row[data-idx="${s.unlockIndex}"]`, "unlockRow", 1, {}, "confirm", "start"));
+        if (s.sub && isEditorial) e.push(ev(0.32, ".sub", "fadeUp", 1, { y: 12 }));
+        const n = (s.items || []).length || 4;
+        e.push(ev(0.28, ".ul-row", "fadeUp", n, { st: 0.18, y: 18 }, "tick", "start"));
+        if (!isEditorial) {
+          if (s.unlockIndex) e.push(ev(0.95, `.ul-row[data-idx="${s.unlockIndex}"]`, "unlockRow", 1, {}, "confirm", "start"));
+          if (s.stamp) e.push(ev(1.25, ".ul-stamp", "overshootPop", 1, { d: 0.45 }, "punch", "start"));
+          e.push(ev(0.55, ".ul-strip", "fadeUp", 1, { y: 12 }));
+          if (s.cta) e.push(ev(1.4, ".ul-save-pill", "overshootPop", 1, { d: 0.42 }, "select", "start"));
         }
-        if (s.stamp) e.push(ev(1.25, ".ul-stamp", "overshootPop", 1, { d: 0.45 }, "punch", "start"));
-        e.push(ev(0.55, ".ul-strip", "fadeUp", 1, { y: 12 }));
-        if (s.cta) e.push(ev(1.4, ".ul-save-pill", "overshootPop", 1, { d: 0.42 }, "select", "start"));
         return e;
       },
     },
@@ -1482,20 +1594,30 @@
     },
     // Retention HUD Kind 5: Interactive Comment-Trigger & Fanned 20-Card Deck (from Reel 1 & Reel 2)
     cta: {
-      label: "Interactive Comment CTA & Card Deck",
+      label: "Editorial Recommendation & Discussion Sign-Off",
       fields: ["kicker", "title", "keyword", "deckLabel", "sentText"],
       min: (s) => Math.max(3.0, (s.title ? readSecs(s.title) * 0.5 : 0) + 1.8),
       markup: (s, c) => {
-        const kw = s.keyword || "FLUX";
-        const deckLbl = s.deckLabel || "20 IDEAS";
-        const sent = s.sentText || "Blueprint sent to your DMs ✓";
+        const isEditorial = c && c.st && c.st.id === "editorial";
+        const kw = s.keyword || "RAMAYANA";
+        const deckLbl = s.deckLabel || "300+ LIVING TELLINGS";
+        const sent = s.sentText || "Many Ramayanas, Many Lessons — Audible Original & HarperCollins";
+        if (isEditorial) {
+          return `<div class="k k-cta"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="32">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-outro-card"><span class="ed-outro-badge">${esc(deckLbl)}</span><div class="ed-outro-rec">${esc(sent)}</div><div class="ed-outro-prompt">Share in the comments which version of the epic you grew up hearing</div><div class="ed-outro-brand"><div class="ed-outro-lockup">${MD.fluxdLockup("ed-lockup-lg")}</div><span class="ed-outro-handle">@fluxd.tv · WHERE CINEMA OPTICS, PHYSICAL LAW &amp; GLOBAL SYSTEMS COLLIDE</span></div></div></div></div>`;
+        }
         const cards = ["11", "14", "17", "20"].map((no, i, arr) => `<div class="ct-card${i === arr.length - 1 ? " is-top" : ""}" data-i="${i}"><span class="ct-cno">${no}</span><div class="ct-clines"><i></i><i></i><i></i></div><span class="ct-clbl">${i === arr.length - 1 ? esc(deckLbl) : "PROTOCOL"}</span></div>`).join("");
         return `<div class="k k-cta"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="26">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ct-comment-box"><div class="ct-hdr"><span>Comments</span><span class="ct-hearts">❤️ +37</span></div><div class="ct-input"><div class="ct-kw-wrap"><i class="ct-dot"></i><span class="ct-kw">${MD.tx(kw, { split: "chars" })}</span></div><span class="ct-post">Post</span></div></div><div class="ct-deck">${cards}</div><div class="ct-sent">✳ ${esc(sent)}</div></div></div>`;
       },
       plan: (s, c) => {
         const e = [];
-        if (s.kicker) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
+        const isEditorial = c && c.st && c.st.id === "editorial";
+        if (s.kicker && !isEditorial) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
         if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
+        if (isEditorial) {
+          e.push(ev(0.32, ".ed-outro-card", "rise", 1, { d: 0.55 }, "card-place", "start"));
+          e.push(ev(0.55, ".ed-outro-lockup", "fluxdBlink", 1, {}, "tap", "start"));
+          return e;
+        }
         e.push(ev(0.2, ".ct-comment-box", "fadeUp", 1, { y: 18, d: 0.45 }));
         e.push(ev(0.38, ".ct-kw", "typewriter", MD.count(s.keyword || "FLUX", "chars"), { rate: 0.065 }, "tick", "start"));
         e.push(ev(0.65, ".ct-card", "cardFan", 4, {}, "card-fan", "start"));
@@ -1994,6 +2116,19 @@
         tl.set(el, { visibility: "visible" }, s.vis0);
         tl.set(el, { visibility: "hidden" }, s.vis1);
         if (st.scene && st.scene.run) st.scene.run(tl, el, s, c);
+        const kPhrases = el.querySelectorAll(".ks-phrase");
+        kPhrases.forEach((ph) => {
+          const p0 = +ph.dataset.pstart || 0, p1 = +ph.dataset.pend || s.dur;
+          tl.set(ph, { opacity: 0, visibility: "hidden", y: 5 }, 0);
+          tl.fromTo(ph, { opacity: 0, visibility: "visible", y: 5 }, { opacity: 1, visibility: "visible", y: 0, duration: 0.10, ease: "power2.out" }, s.t0 + p0);
+          tl.set(ph, { opacity: 0, visibility: "hidden" }, s.t0 + p1);
+          ph.querySelectorAll(".kw").forEach((kw) => {
+            const w0 = +kw.dataset.start || 0, w1 = +kw.dataset.end || (w0 + 0.22);
+            tl.set(kw, { opacity: 0.42, scale: 1, color: "#F6F3EC" }, 0);
+            tl.to(kw, { opacity: 1, scale: 1.08, color: "#FACC15", duration: 0.05, ease: "power2.out" }, s.t0 + w0);
+            tl.to(kw, { opacity: 0.78, scale: 1.0, color: "#F6F3EC", duration: 0.07, ease: "power1.out" }, s.t0 + w1);
+          });
+        });
         if (P.drift) tl.fromTo(k, { scale: 1 }, { scale: 1 + P.drift, duration: s.vis1 - s.t0, ease: "none" }, s.t0);
         for (const e of s.events) {
           const els = e.sel ? Array.from(el.querySelectorAll(e.sel)) : [k];

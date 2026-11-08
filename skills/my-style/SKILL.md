@@ -1,53 +1,38 @@
 ---
 name: my-style
-description: "Applies the creator's reverse-engineered 9:16 Retention HUD, 2-Second Fuse, and Rehook motion style in exact numbers for FLUXD. Trigger whenever the user asks to script, storyboard, edit, caption, or render videos in 'my-style', or runs content-director or motion-designer for 9:16 faceless retention reels, 45-60 s."
+description: Applies the creator's reverse-engineered 9:16 Retention HUD, 2-Second Fuse, and Rehook motion style in exact numbers for FLUXD (100% English defaults). Trigger whenever the user asks to script, storyboard, edit, caption, or render videos in 'my-style', or runs content-director or motion-designer for 9:16 faceless retention reels, 45-60 s.
 ---
-
-# My Style (FLUXD 2-Second Fuse & Retention Rehook Engine)
+# My Style (FLUXD 2-Second Fuse & Retention Rehook Engine — English Default)
 
 ## Summary
 
-Codifies the quantitative editing, pacing, 3-zone HUD layout, mixed-font progressive top headlines, 2-second fuse micro-changes (`COLOR FLASH, ZOOM, CUT, SOUND SYNC, NEW PROP`), and 4-stage retention storytelling (`HOOK -> DELAY -> REHOOK -> END ON PAYOFF`) derived from `2` analyzed reference video(s) and locked to the creator's **FLUXD** brand tokens.
-
-## When to Use
-
-- Scripting or storyboarding high-retention `9:16` Reels or YouTube Shorts in `content-director`
-- Generating faceless motion-graphics Reels in `motion-designer` using the `pulse` (Retention HUD) or `polymath` styles
-- Auditing edit timelines in Premiere Pro or DaVinci Resolve against the `< 2.0s` static hold limit
+Codifies the quantitative editing, pacing, 3-zone HUD layout, mixed-font progressive English top headlines, 2-second fuse micro-changes (`01 COLOR FLASH, 02 ZOOM, 03 CUT, 04 SOUND SYNC, 05 NEW PROP`), Sub-Beat Audio-Synced Pop-Ups (`subbeats`), and 4-stage retention storytelling (`HOOK -> DELAY -> REHOOK -> END ON PAYOFF`) derived from analyzed reference telemetry and locked to the creator's **FLUXD** brand tokens.
 
 ## Brand Identity Tokens (Locked to FLUXD)
 
-- **Target Format**: `9:16 faceless retention reels, 45-60 s`
-- **Typography**: `Space Grotesk 700 / Syne 800 display + Instrument Serif Italic emphasis, Plus Jakarta Sans 600 body, JetBrains Mono 600 HUD`
-- **Colour Palette**: `#0C0E0C carbon-grid bg, #F6F3EC halide-ivory text, #CCFF00 acid-volt flash & highlight, #E04826 halation-vermilion alert/strike`
-- **Logo Asset**: `FLUXD Chamfered-Bracket Phi-2 ( | ) + [ FLUXD ] Framed Wordmark`
+- **Target Format & Language**: `9:16 faceless retention reels, 45-210 s, 100% English (en)`
+- **Primary Visual Styles**: `journalism (Visual Journalism Dark #0B0B0B)` for cultural/investigative storytelling; `pulse (FLUXD Carbon Volt #0C0E0C)` for fast retention/system breakdowns.
+- **Typography**: `Space Grotesk 700 / Syne 800 display + Instrument Serif Italic emphasis, Plus Jakarta Sans 600/700 body & spoken English captions, JetBrains Mono 600 HUD`
+- **Colour Palette**: `#0B0B0B / #111315 carbon-grid bg, #F6F3EC halide-ivory text, #FACC15 dossier-yellow / #CCFF00 acid-volt highlight, #E04826 halation-vermilion alert/strike`
+- **Logo Asset**: `Official Vector FLUXD Chamfered-Bracket Phi-2 ( | ) + [ FLUXD ] Framed Wordmark (Native SVG in Browser & Native Vector Shape Layer in After Effects)`
 
 ## Deterministic "Do X When Y" Production Rules
 
-### 1. The 2-Second Fuse & Cutting Cadence
+### 1. The 2-Second Micro-Change Cadence & Sub-Beat Audio Sync
 
-- **Rule 1.1 (Zero >2.0s Static Hold)**: Do trigger a micro visual change every **`0.4s - 1.20s`** (maintaining **`23.89 micro-changes per 10s`** and a hard ceiling of **`1.6s` max static hold**) by firing one of the 5 visual levers: `01 RANG` (full-screen colour flash), `02 ZOOM` (camera scale push/pull), `03 CUT` (angle/framing shift), `04 AWAAZ` (`1 event = 1 sound`), or `05 NAYI CHEEZ` (`1 keyword = 1 vector prop`).
-- **Rule 1.2 (Chapter Board Cadence)**: Do transition the central stage board every **`2.7 seconds`** (**`3.38 chapters per 10 seconds`**, ~14-18 numbered chapters across a 50s Reel), updating the top-left chapter tracker (`01 · HOOK` .. `14 · CTA`) and top-right live counter (`● CHANGES N` or `● STAGE`).
-- **Rule 1.3 (Corner-Dock Context Transition)**: When moving from a diagnostic graph/hook card into its explanation, do shrink and dock the previous card (`1.00x -> 0.42x` over **`7 frames` / `0.23s`**) into the top-left corner while popping the new locked/detail card into the foreground so visual context is never lost.
+- **Rule 1.1 (Zero >2.0s Static Hold)**: Trigger a micro visual change every **`0.4s - 1.20s`** (maintaining **`23.89 micro-changes per 10s`** and a hard ceiling of **`1.6s` max static hold**) using the 5 English visual levers: `01 COLOR FLASH` (full-screen colour inversion), `02 ZOOM` (camera scale push/pull), `03 CUT` (angle/framing shift), `04 SOUND SYNC` (`1 event = 1 sound`), or `05 NEW PROP` (`1 spoken keyword = 1 cutout/prop pop-up`).
+- **Rule 1.2 (Exact Sub-Beat Audio-Synced Pop-Ups)**: When a single spoken beat names multiple items sequentially (such as an English audiobook cover, a Hindi audiobook cover, and publisher HarperCollins India), use `"kind": "subbeats"` (or `mediaTimes` on `collage`) so each card pops up at the **exact second (`+Xs`)** the narrator speaks its name, rather than showing all cards at the start of the beat.
+- **Rule 1.3 (Corner-Dock Context Transition)**: When moving from a hook card into its explanation, shrink and dock the previous card (`1.00x -> 0.42x` over **`7 frames` / `0.23s`**) into the top-left corner while popping the new detail card into the foreground.
 
-### 2. Full-Screen Colour Flashes (`RANG`), Zooms & Prop Physics
+### 2. Visual Restraint Guardrails (No Unprompted Bombs, Timers, or Generic Templates)
 
-- **Rule 2.1 (Periodic Full-Screen `RANG` Inversion)**: Do invert the entire canvas (or a `-4deg` diagonal split) from Dark Carbon Grid (`#0C0E0C` / `#111315`) to High-Contrast Signal Accent (`#CCFF00` Acid Volt or `#E04826` Vermilion) with dark ink text (`#0B0B0B`) for **`1.2s - 3.5s` once every `14 - 16 seconds`** when introducing a premise twist or mid-video rehook.
-- **Rule 2.2 (Viewfinder Zoom Push/Pull)**: Do apply a **`+22.0%` optical scale push (`1.00x -> 1.22x`)** framed by `[ REC 1.0x -> 1.5x ]` corner brackets on sustained mechanical diagrams.
-- **Rule 2.3 (Overshoot Prop Pop - `NAYI CHEEZ`)**: Do spawn a dedicated vector prop or badge on every emphasized noun/number using a **`7-frame` (`0.23s`) overshoot pop (`1.42x -> 1.15x -> 1.00x`)** paired with a synchronized SFX transient (`pop`, `ding`, `scratch`, or `whoosh`).
+- **Rule 2.1 (No Unprompted `2s FUSE` Timer Bars or Ticking Bombs)**: Keep `showFuseBar: false` by default so the bottom HUD shows only the clean `( | ) [ FLUXD ]` vector brand bar without a distracting `1.6s` countdown timer. Never use `"kind": "fuse"` (ticking bomb) or `"kind": "rehook"` (eyeball drop graph) on narrative, cultural, or documentary topics; use custom Style-Anchored Nano Banana cutouts instead.
+- **Rule 2.2 (Progressive Multi-Case Unlock — `1/N -> N/N UNLOCKED`)**: On `"kind": "unlock"` checklist beats, progressively unblur and unlock each row one by one across the scene duration (`1/4` $ightarrow$ `4/4 UNLOCKED`) synced to the voiceover.
 
-### 3. 3-Zone HUD Layout & Progressive Mixed Typography
+### 3. 3-Zone English HUD Layout & Spoken Caption Strip
 
-- **Rule 3.1 (Top-Left Progressive Headline Zone)**: Do anchor the spoken headline in the top zone (**`82%` from the bottom edge**, i.e., `12%-22%` from the top edge, capped at **`6 words` per visible phrase**) rather than crowding the bottom of the screen.
-- **Rule 3.2 (Sans + Italic Serif + Tilted Pill Contrast)**: Do set base headline words in geometric sans (`Space Grotesk` / `Syne` 700), set 1-2 emotional/causal pivot words per sentence in **Accent Italic Serif (`Instrument Serif Italic`)**, and wrap hook metrics in a **`-2deg` tilted solid accent pill box** with dark ink text.
-- **Rule 3.3 (Bottom 2s Fuse Bar & Brand Lockup)**: Do anchor the **`THIS REEL · 2s FUSE`** progress bar and the **`( | ) [ FLUXD ]`** brand lockup at `5%-8%` from the bottom edge.
-
-### 4. 4-Stage Retention Storytelling Architecture (`HOOK -> DELAY -> REHOOK -> PAYOFF`)
-
-- **Rule 4.1 (0-4s Premise Inversion Hook @ `210 WPM`)**: Do open at **`210 WPM`** by crossing out two conventional assumptions (`MYTH A ❌`, `MYTH B ❌`) and revealing `? 1 ANOMALY` alongside a live dropping curve or countdown timer.
-- **Rule 4.2 (4-10s Blurred Locked Roadmap - `DELAY`)**: Do display the 3-5 step roadmap early with steps `02..05` blurred (`filter: blur(5px)`) and padlocked (`🔒 ?`), opening a second question before answering the first so the curiosity loop stays open.
-- **Rule 4.3 (25-35s Mid-Video `REHOOK` + Save Checkpoint)**: Do fire a mid-video rehook at `50%-65%` duration (reminding the viewer why item `#04/#05` or step `#03` is the real game-changer) followed by a saveable checklist card (`SAVE FOR LATER 🔖`) with a `[ HOOK | DELAY | REHOOK | PAYOFF ]` progress bar showing `YOU ARE HERE`.
-- **Rule 4.4 (End Immediately on `PAYOFF`)**: Do cut the explanation the exact second the final locked item unlocks (`END ON PAYOFF ✂️`) and transition straight into a 3-second interactive CTA card (`0 seconds` of post-payoff filler).
+- **Rule 3.1 (Top-Center Safe-Zone Headline — `82%` from Bottom)**: Anchor the visual beat headline in the upper safe zone (`12%-22%` from top edge, capped at `6-8 words`) using `Syne` / `Space Grotesk` + `Instrument Serif Italic` (`*word*`) + `-2deg` tilted accent pills (`[word]`).
+- **Rule 3.2 (Bottom Spoken English Voiceover Caption Strip + `.srt`)**: Render live spoken English subtitles (`.md-vo-caption`) in `Plus Jakarta Sans Bold` (`#F6F3EC` on `#111315` with a `4px` `#E04826` Vermilion left bar) synced to `voiceover.wav` / `.mp3`, and export `captions.srt` + a native `[EN CAPTION]` text track in `build_after_effects.jsx`.
 
 ## Reference Notes & Preset Files
 

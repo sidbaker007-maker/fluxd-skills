@@ -1,0 +1,93 @@
+{
+  "brand": {
+    "name": "FLUXD",
+    "category": "Polymathic Investigative Media Channel (YouTube 16:9 & Instagram 9:16 / 4:5)",
+    "positioning": "For intellectually curious viewers tired of shallow pop-science and plot summaries, FLUXD is the investigative video journal that braids daily cinema craft, M.Sc.-level physics rigor, geopolitics, and street-level Indian & global socio-economics into visceral visual stories.",
+    "tagline": "Where Cinema Optics, Physical Law, and Global Systems Collide."
+  },
+  "color": {
+    "surface_light": {
+      "$value": "#F6F3EC",
+      "$type": "color",
+      "name": "Silver-Halide Paper",
+      "share": "60% (Light Mode / Vox Collage Canvas)",
+      "job": "Warm archival cellulose paper background for mixed-media cutouts, carousel cards, and editorial typography.",
+      "contrast_on_canvas": 1.0,
+      "contrast_on_ink": 16.8
+    },
+    "surface_dark": {
+      "$value": "#111315",
+      "$type": "color",
+      "name": "Anamorphic Carbon Ink",
+      "share": "60% (Dark Mode / Polymath Telemetry Stage)",
+      "job": "Deep optical barrel black-blue for 16:9 YouTube dark telemetry scenes, 3Blue1Brown math stages, and primary body ink.",
+      "contrast_on_canvas": 16.8,
+      "contrast_on_ink": 1.0
+    },
+    "signature": {
+      "$value": "#E04826",
+      "$type": "color",
+      "name": "Kodak Halation Vermilion",
+      "share": "10%\u201315% (Signature Brand Signal)",
+      "job": "Inspired by 35mm tungsten film halation and red-border investigative highlights. Drives immediate thumbnail and avatar recognition.",
+      "contrast_on_canvas": 3.7,
+      "contrast_on_ink": 4.54
+    },
+    "secondary": {
+      "$value": "#1E3A4C",
+      "$type": "color",
+      "name": "Cherenkov Deep Slate",
+      "share": "20% (Structural Container & Geopolitical Map Tone)",
+      "job": "High-density astrophysical & maritime slate for data containers, secondary bars, and geopolitical map overlays.",
+      "contrast_on_canvas": 10.74,
+      "contrast_on_ink": 1.56
+    },
+    "accent": {
+      "$value": "#F59E0B",
+      "$type": "color",
+      "name": "Oscilloscope Amber",
+      "share": "5% (Dark-Mode Telemetry Spark)",
+      "job": "High-luminance phase-space trajectory and equation highlight locked strictly to Anamorphic Carbon Ink dark surfaces (8.95:1).",
+      "contrast_on_canvas": 1.94,
+      "contrast_on_ink": 8.67
+    },
+    "muted_neutral": {
+      "$value": "#525860",
+      "$type": "color",
+      "name": "Frame-Line Pewter",
+      "share": "5%\u201310% (Axis Labels, Hairlines & Citations)",
+      "job": "Calibrated neutral passing 6.64:1 AA/AAA on Silver-Halide Paper for RBI/MOSPI/NASA source citations and gridlines.",
+      "contrast_on_canvas": 6.48,
+      "contrast_on_ink": 2.59
+    }
+  },
+  "typography": {
+    "headline": {
+      "family": "Syne",
+      "weights": [
+        700,
+        800
+      ],
+      "tracking": "-0.025em"
+    },
+    "body": {
+      "family": "Plus Jakarta Sans",
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "line_height": 1.6
+    },
+    "mono": {
+      "family": "JetBrains Mono",
+      "weights": [
+        400,
+        600
+      ],
+      "tracking": "0.06em"
+    },
+    "scale_ratio": "1.250 (Major Third)"
+  }
+}

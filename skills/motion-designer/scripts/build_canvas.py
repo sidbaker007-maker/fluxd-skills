@@ -283,7 +283,8 @@ window.__MD_BUNDLE = {payload_json};
       const base = (DENSE[fmt] || {{}})[s.kind] ?? 1;
       const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
       const wrapStyle = scale !== 1 ? ` style="--u:${{r3(u * scale)}}px"` : "";
-      htmlScenes.push(`<section class="scene kind-${{esc(s.kind)}} tone-${{esc(tone)}} ${{esc(cls)}}" id="${{id}}" data-tone="${{esc(tone)}}">${{st.sceneDecor ? st.sceneDecor(s, i, c) : ""}}<div class="tr"><div class="k-wrap"${{wrapStyle}}>${{html}}</div></div></section>`);
+      const karaokeHtml = (v.subtitles !== false && s.vo && MDx.karaokeSub) ? MDx.karaokeSub(s, dur) : "";
+      htmlScenes.push(`<section class="scene clip kind-${{esc(s.kind)}} tone-${{esc(tone)}} ${{esc(cls)}}" id="${{id}}" data-start="${{t0}}" data-duration="${{dur}}" data-track-kind="graphics" data-tone="${{esc(tone)}}">${{st.sceneDecor ? st.sceneDecor(s, i, c) : ""}}<div class="tr"><div class="k-wrap"${{wrapStyle}}>${{html}}</div></div>${{karaokeHtml}}</section>`);
       scenes.push({{ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({{ ...e, len: r3(lens[j]) }})), tone }});
     }});
 

@@ -78,8 +78,7 @@
       run: () => {},
     },
 
-    scene: {
-      markup: (s, c, idx) => {
+    sceneDecor: (s, idx, c) => {
         const num = String((idx || 0) + 1).padStart(2, "0");
         const tag = esc(s.tag || s.kicker || `DOSSIER // BEAT ${num}`);
         const src = s.source ? `<div class="jr-source-badge"><span class="jr-dot"></span>SOURCE: ${esc(s.source)}</div>` : "";
@@ -92,8 +91,6 @@
           ${src}
           ${carry}
         `;
-      },
-      plan: () => [ev(0.04, ".jr-dossier-pill", "fadeUp", 1, { d: 0.35 })],
     },
   });
 })();

@@ -27,3 +27,7 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 - Embedded official FLUXD brand identity tokens (`#F6F3EC`, `#111315`, `#E04826`, `#1E3A4C`, `#F59E0B`, `#525860`) and SVG marks (`[ Φ-2 ] [ FLUXD ]`).
 - Compiled `my-style` v1.0 from reference Reel telemetry.
 
+## `v08-2026.11.08-editorial-guidebook-staging-and-my-style-v2.0` (2026-11-08) — Added FLUXD Editorial & HyperFrames Guidebook staging and my-style v2.0
+- Added `editorial-motion-guidebook.md` (Swiss 12-column open stage, hard cap of 2 text levels, Zone 3 Active-Word Karaoke subtitles, and peak-aligned SFX formula).
+- Updated `my-style` to v2.0.
+
