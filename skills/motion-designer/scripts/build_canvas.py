@@ -45,7 +45,8 @@ mix_data_uri = "data:audio/mpeg;base64," + b64_file(mix_mp3)
 
 # Collect media assets as data URIs
 media_uris = {}
-for fn in os.listdir(os.path.join(WORK_DIR, "assets")):
+assets_dir = os.path.join(WORK_DIR, "assets")
+for fn in (os.listdir(assets_dir) if os.path.exists(assets_dir) else []):
     p = os.path.join(WORK_DIR, "assets", fn)
     if fn.endswith(".jpg"):
         media_uris[f"assets/{fn}"] = "data:image/jpeg;base64," + b64_file(p)
@@ -231,9 +232,10 @@ window.__MD_BUNDLE = {payload_json};
       durs = durs.map((d) => r3(d * f));
     }}
     durs = durs.map((d, i) => {{
+      if (typeof sc[i].dur === "number") return r3(d);
       const q = Math.max(1, Math.round(d / hb));
       let qd = q * hb;
-      if (qd < mins[i] * 0.9 && typeof sc[i].dur !== "number") qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
+      if (qd < mins[i] * 0.9) qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
       return r3(qd);
     }});
 
@@ -283,6 +285,7 @@ window.__MD_BUNDLE = {payload_json};
       const base = (DENSE[fmt] || {{}})[s.kind] ?? 1;
       const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
       const wrapStyle = scale !== 1 ? ` style="--u:${{r3(u * scale)}}px"` : "";
+      if (s.vo && (!Array.isArray(s.words) || !s.words.length) && MDx.karaokeWords) {{ s.words = MDx.karaokeWords(s, dur); }}
       const karaokeHtml = (v.subtitles !== false && s.vo && MDx.karaokeSub) ? MDx.karaokeSub(s, dur) : "";
       htmlScenes.push(`<section class="scene clip kind-${{esc(s.kind)}} tone-${{esc(tone)}} ${{esc(cls)}}" id="${{id}}" data-start="${{t0}}" data-duration="${{dur}}" data-track-kind="graphics" data-tone="${{esc(tone)}}">${{st.sceneDecor ? st.sceneDecor(s, i, c) : ""}}<div class="tr"><div class="k-wrap"${{wrapStyle}}>${{html}}</div></div>${{karaokeHtml}}</section>`);
       scenes.push({{ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({{ ...e, len: r3(lens[j]) }})), tone }});

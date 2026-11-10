@@ -141,14 +141,29 @@
     return MD.karaokeSub(s, dur);
   };
 
-MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
+MD.karaokeWords = function (s, dur) {
+    const chs = MD.karaokeChunks(s, dur);
+    const out = [];
+    for (const c of chs) {
+      for (const w of c.words || []) out.push({ text: w.text, start: w.start, end: w.end });
+    }
+    return out;
+  };
+
+  MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
     return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></svg>`;
   };
+  MD.fluxdSeal = function (cls = "fluxd-seal-svg") {
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none"><rect x="12" y="12" width="232" height="232" rx="44" stroke="currentColor" stroke-width="12" fill="rgba(14,14,16,0.72)"/><g transform="translate(28, 28) scale(0.78)"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></g></svg>`;
+  };
   MD.fluxdWordmark = function (cls = "fluxd-word-svg") {
-    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" fill="none"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char w-odd" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char w-even" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char w-odd" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char w-even" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char w-odd" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></svg>`;
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 256" fill="none"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char w-odd w-1" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char w-even w-2" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char w-odd w-3" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char w-even w-4" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char w-odd w-5" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></svg>`;
   };
   MD.fluxdLockup = function (cls = "fluxd-lockup-svg") {
-    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 256" fill="none"><g transform="translate(16,0)"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></g><g transform="translate(272,0)"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></g></svg>`;
+    return `<svg class="${cls}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 256" fill="none"><g class="fb-phi" transform="translate(16,0)"><path class="mark-body" fill="currentColor" d="M 100 48 L 72 48 L 32 88 L 32 168 L 72 208 L 100 208 L 100 176 L 84 176 L 64 156 L 64 100 L 84 80 L 100 80 Z"/><rect class="mark-accent" x="114" y="16" width="28" height="224" fill="#E04826"/><path class="mark-body" fill="currentColor" d="M 156 48 L 184 48 L 224 88 L 224 168 L 184 208 L 156 208 L 156 176 L 172 176 L 192 156 L 192 100 L 172 80 L 156 80 Z"/></g><g class="fb-word" transform="translate(272,0)"><path class="w-dot" fill="#E04826" d="M 28 48 L 68 48 L 68 72 L 52 72 L 52 184 L 68 184 L 68 208 L 28 208 Z"/><path class="w-char w-odd w-1" fill="currentColor" d="M 96 64 L 188 64 L 188 94 L 130 94 L 130 118 L 176 118 L 176 146 L 130 146 L 130 192 L 96 192 Z"/><path class="w-char w-even w-2" fill="currentColor" d="M 216 64 L 250 64 L 250 162 L 308 162 L 308 192 L 216 192 Z"/><path class="w-char w-odd w-3" fill="currentColor" d="M 332 64 L 366 64 L 366 152 L 376 162 L 406 162 L 416 152 L 416 64 L 450 64 L 450 166 L 424 192 L 358 192 L 332 166 Z"/><path class="w-char w-even w-4" fill="currentColor" d="M 476 64 L 512 64 L 604 156 L 604 192 L 568 192 L 476 100 Z M 568 64 L 604 64 L 604 100 L 512 192 L 476 192 L 476 156 Z"/><path class="w-char w-odd w-5" fill="currentColor" d="M 632 64 L 708 64 L 740 96 L 740 160 L 708 192 L 632 192 Z M 666 94 L 666 162 L 694 162 L 706 150 L 706 106 L 694 94 Z"/><path class="w-dot" fill="#E04826" d="M 772 48 L 812 48 L 812 208 L 772 208 L 772 184 L 788 184 L 788 72 L 772 72 Z"/></g></svg>`;
+  };
+  MD.fluxdEndCardHero = function (mode = "blink04", handle = "@fluxd.tv · WHERE CINEMA OPTICS, PHYSICAL LAW & GLOBAL SYSTEMS COLLIDE") {
+    return `<div class="ed-endcard-hero" data-mode="${esc(mode)}"><div class="ed-endcard-stage"><div class="ed-endcard-phi fb-phi">${MD.fluxdPhi2("ed-hero-phi-svg")}</div><div class="ed-endcard-lockup fb-word">${MD.fluxdLockup("ed-hero-lockup-svg")}</div></div><div class="ed-outro-handle">${esc(handle)}</div></div>`;
   };
 
   MD.ransomTx = function (str) {
@@ -215,7 +230,11 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
     if (!url) return `<div class="ph"><span>${esc(o.label || "Your screenshot goes here")}</span></div>`;
     if (isVideo(src)) {
       const id = `v${(c.vid = (c.vid || 0) + 1)}-${c.sceneId}`;
-      // timing is filled by the composer (data-start/data-duration = the scene's window)
+      const isEd = c && c.st && c.st.id === "editorial";
+      if (isEd) {
+        const clipLbl = esc(o.label || "ARCHIVE FEED // PiP MONITOR");
+        return `<div class="ed-pip-video-card"><div class="ed-pip-hdr"><span class="ed-pip-rec"><i></i>REC</span><span class="ed-pip-tag">${clipLbl}</span></div><div class="ed-pip-frame"><video id="${id}" class="md-vid ed-pip-vid" src="${esc(url)}" muted playsinline loop data-md-video="1"></video></div></div>`;
+      }
       return `<video id="${id}" class="md-vid" src="${esc(url)}" muted playsinline data-md-video="1"></video>`;
     }
     return `<img src="${esc(url)}" alt="" draggable="false">`;
@@ -363,6 +382,32 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
       },
     },
     // Ben Marriott 3-Frame Slingshot Anticipation Move (pulls backward before shooting into place)
+    // Spring-Physics Whip-Pop Entrance for Editorial Cards & Pop-Up Elements (3D perspective + velocity skew + elastic overshoot)
+    cardWhipIn: {
+      len: (n, o) => D(o, "d", 0.68) + D(o, "st", 0.1) * (n - 1),
+      run: (tl, els, at, o) => {
+        const d = D(o, "d", 0.68), st = D(o, "st", 0.1), dir = D(o, "dir", 1);
+        gsap.set(els, { opacity: 0, y: 46, x: 24 * dir, scaleX: 0.88, scaleY: 1.12, skewY: 4.5 * dir, rotationX: 16, rotationZ: -2.2 * dir, transformPerspective: 1400 });
+        tl.to(els, {
+          keyframes: [
+            { opacity: 1, y: -9, x: -4 * dir, scaleX: 1.05, scaleY: 0.96, skewY: -1.2 * dir, rotationX: -4, rotationZ: 0.8 * dir, duration: d * 0.46, ease: "expo.out" },
+            { y: 3, x: 1 * dir, scaleX: 0.985, scaleY: 1.015, skewY: 0.3 * dir, rotationX: 1.5, rotationZ: -0.2 * dir, duration: d * 0.28, ease: "sine.inOut" },
+            { y: 0, x: 0, scaleX: 1, scaleY: 1, skewY: 0, rotationX: 0, rotationZ: 0, duration: d * 0.26, ease: "power3.out" },
+          ],
+          stagger: st,
+        }, at);
+        els.forEach((el, idx) => {
+          const thumb = el.querySelector(".ed-seq-thumb img, .ed-hero-img-wrap img, .ed-pip-vid");
+          if (thumb) {
+            tl.fromTo(thumb, { scale: 1.22, filter: "brightness(1.35) contrast(1.1)" }, { scale: 1.03, filter: "brightness(1) contrast(1)", duration: d * 0.85, ease: "expo.out" }, at + idx * st);
+          }
+          const meta = el.querySelectorAll(".ed-seq-idx, .ed-seq-lbl, .ed-pip-hdr");
+          if (meta.length) {
+            tl.fromTo(meta, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: d * 0.55, stagger: 0.05, ease: "back.out(2.2)" }, at + idx * st + 0.1);
+          }
+        });
+      },
+    },
     slingshot: {
       len: (n, o) => D(o, "d", 0.78) + D(o, "st", 0.09) * (n - 1),
       run: (tl, els, at, o) => {
@@ -742,47 +787,81 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         });
       },
     },
+    // Frame-Exact 3.0s FLUXD Optical Shutter Blink & Binary Lockup Choreography (Synced to fxFluxdBlink)
     fluxdBlink: {
-      len: () => 1.8,
-      run: (tl, els, at) => {
+      len: () => 2.8,
+      run: (tl, els, at, o, c, s) => {
         els.forEach((stage) => {
-          const mode = stage.dataset.mode || "blink04";
           const phi = stage.querySelector(".fb-phi");
           const word = stage.querySelector(".fb-word");
           const odds = stage.querySelectorAll(".w-odd");
-          const evens = stage.querySelectorAll(".w-even, .w-dot");
-          if (mode === "blink01a" && phi) {
-            gsap.set(phi, { opacity: 0 });
-            [0.08, 0.24, 0.40, 0.62].forEach((t, idx) => {
-              tl.set(phi, { opacity: 1, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
-              if (idx < 3) tl.set(phi, { opacity: 0 }, at + t + 0.08);
-            });
-          } else if (mode === "blink01b" && word) {
-            gsap.set(word, { opacity: 0 });
-            [0.08, 0.24, 0.40, 0.62].forEach((t, idx) => {
-              tl.set(word, { opacity: 1, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
-              if (idx < 3) tl.set(word, { opacity: 0 }, at + t + 0.08);
-            });
-          } else if (mode === "blink03" && word) {
-            gsap.set([odds, evens], { opacity: 0 });
-            tl.set(odds, { opacity: 1 }, at + 0.08);
-            tl.set(odds, { opacity: 0 }, at + 0.22);
-            tl.set(evens, { opacity: 1 }, at + 0.22);
-            tl.set(evens, { opacity: 0 }, at + 0.36);
-            tl.set(odds, { opacity: 1 }, at + 0.36);
-            tl.set([odds, evens], { opacity: 1 }, at + 0.52);
-          } else {
-            // Default: Blink 04 — 2-Beat Chamfered-Bracket Phi-2 Blink -> [ FLUXD ] Framed Wordmark Hard Cut
-            if (phi && word) {
-              gsap.set(phi, { opacity: 1 });
-              gsap.set(word, { opacity: 0 });
-              tl.set(phi, { opacity: 0 }, at + 0.14);
-              tl.set(phi, { opacity: 1 }, at + 0.26);
-              tl.set(phi, { opacity: 0 }, at + 0.42);
-              tl.set(word, { opacity: 1 }, at + 0.48);
-              tl.set(word, { opacity: 0 }, at + 0.60);
-              tl.set(word, { opacity: 1 }, at + 0.68);
+          const evens = stage.querySelectorAll(".w-even");
+          const dots = stage.querySelectorAll(".w-dot");
+          const accents = stage.querySelectorAll(".mark-accent");
+          const sub = stage.parentElement ? stage.parentElement.querySelector(".fb-sub, .ed-outro-handle") : null;
+
+          // Initial state at t = at + 0.00s (Optical Capacitor Charge)
+          gsap.set(stage, { opacity: 0, scale: 0.88, filter: "blur(6px)" });
+          if (phi) gsap.set(phi, { opacity: 1, scaleX: 0.92, scaleY: 1.08 });
+          if (word) gsap.set(word, { opacity: 0, scale: 0.96 });
+          if (sub) gsap.set(sub, { opacity: 0, y: 12 });
+
+          // +0.00s -> +0.16s: Optical Charge & Chamfered Bracket Snap-In
+          tl.to(stage, { opacity: 1, scale: 1.0, filter: "blur(0px)", duration: 0.16, ease: "expo.out" }, at);
+          if (phi) {
+            tl.to(phi, { scaleX: 1.0, scaleY: 1.0, duration: 0.16, ease: "back.out(2.2)" }, at);
+
+            // +0.18s: BLINK #1 — Mechanical Leica Dual-Curtain Shutter Close & Release (+0.24s)
+            tl.to(phi, { scaleY: 0.06, scaleX: 1.12, opacity: 0.25, duration: 0.04, ease: "power4.in" }, at + 0.18);
+            tl.to(phi, { scaleY: 1.06, scaleX: 0.98, opacity: 1.0, duration: 0.06, ease: "expo.out" }, at + 0.24);
+            tl.to(phi, { scaleY: 1.0, scaleX: 1.0, duration: 0.06 }, at + 0.30);
+
+            // +0.38s: BLINK #2 — Anamorphic Vermilion (#E04826) Optical Flash & Shutter Close (+0.50s)
+            tl.to(phi, { scale: 1.14, color: "#E04826", filter: "drop-shadow(0 0 24px rgba(224,72,38,0.85))", duration: 0.05, ease: "power3.out" }, at + 0.38);
+            tl.to(phi, { scaleY: 0.04, scaleX: 1.18, opacity: 0, filter: "drop-shadow(0 0 0px rgba(224,72,38,0))", duration: 0.05, ease: "power4.in" }, at + 0.50);
+          }
+
+          // +0.56s & +0.72s: BLINK #3 — Binary Alternating Wordmark Strobe ([ F_U_D ] <-> [ _L_X_ ])
+          if (word) {
+            tl.set(word, { opacity: 1, scale: 1.0 }, at + 0.56);
+            if (odds.length && evens.length) {
+              // +0.56s: Odd glyphs (F, U, D) + brackets ignite left
+              tl.set(odds, { opacity: 1, y: -2 }, at + 0.56);
+              tl.set(evens, { opacity: 0.10, y: 3 }, at + 0.56);
+              if (dots.length) tl.set(dots, { opacity: 1 }, at + 0.56);
+              // +0.72s: Even glyphs (L, X) ignite right
+              tl.set(odds, { opacity: 0.10, y: 3 }, at + 0.72);
+              tl.set(evens, { opacity: 1, y: -2 }, at + 0.72);
+              // +0.88s: 60ms Vacuum Blackout Anticipation Frame before the Master Drop
+              tl.set([odds, evens, dots], { opacity: 0, y: 0 }, at + 0.88);
+            } else {
+              tl.set(word, { opacity: 0.15 }, at + 0.72);
+              tl.set(word, { opacity: 0 }, at + 0.88);
             }
+          }
+
+          // +0.94s: MASTER LOCKUP IGNITION & SUB-BASS BLOOM (Phi-2 + [ F L U X D ] Full Lockup with Elastic Spring Settle)
+          if (phi) {
+            tl.set(phi, { color: "inherit", opacity: 1, scaleX: 1.16, scaleY: 0.86 }, at + 0.94);
+            tl.to(phi, { scaleX: 1.0, scaleY: 1.0, duration: 0.62, ease: "elastic.out(1, 0.36)" }, at + 0.94);
+          }
+          if (word) {
+            tl.set(word, { opacity: 1, scale: 1.10 }, at + 0.94);
+            tl.to(word, { scale: 1.0, duration: 0.68, ease: "elastic.out(1, 0.38)" }, at + 0.94);
+            if (odds.length && evens.length) {
+              tl.set([odds, evens, dots], { opacity: 1, y: 0 }, at + 0.94);
+            }
+          }
+          if (accents.length) {
+            tl.fromTo(
+              accents,
+              { filter: "brightness(2.2) drop-shadow(0 0 28px #E04826)" },
+              { filter: "brightness(1.0) drop-shadow(0 0 8px rgba(224,72,38,0.45))", duration: 0.85, ease: "power2.out" },
+              at + 0.94
+            );
+          }
+          if (sub) {
+            tl.to(sub, { opacity: 0.86, y: 0, duration: 0.55, ease: "power3.out" }, at + 1.16);
           }
         });
       },
@@ -1336,14 +1415,14 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         if (isEditorial) {
           if (ms.length >= 2) {
             const cardsHtml = ms.map((m, i) => {
-              const callTxt = (s.callouts && s.callouts[i]) ? s.callouts[i] : `Edition 0${i + 1}`;
-              return `<div class="ed-seq-card" data-i="${i}"><div class="ed-seq-thumb">${MD.media(m, c)}</div><div class="ed-seq-meta"><span class="ed-seq-idx">0${i + 1} // FEATURED</span><div class="ed-seq-lbl">${MD.tx(callTxt)}</div></div></div>`;
+              const rawCall = (s.callouts && s.callouts[i]) ? String(s.callouts[i]).replace(/^\d+\s*[\|\/\-·:]+\s*/, "").trim() : "";
+              const metaHtml = rawCall ? `<div class="ed-seq-meta"><span class="ed-seq-rule"></span><div class="ed-seq-lbl">${MD.tx(rawCall)}</div></div>` : "";
+              return `<div class="ed-seq-card" data-i="${i}"><div class="ed-seq-thumb">${MD.media(m, c)}</div>${metaHtml}</div>`;
             }).join("");
-            return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ed-multi-grid n${ms.length}">${cardsHtml}</div></div></div>`;
+            return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-multi-grid n${ms.length}">${cardsHtml}</div></div></div>`;
           }
           const singleMedia = ms.length ? MD.media(ms[0], c) : `<svg class="vx-archival-svg" viewBox="0 0 480 320"><rect width="480" height="320" fill="#16181D"/><circle cx="240" cy="160" r="78" fill="#E04826" opacity="0.85"/></svg>`;
-          const singleCap = (s.callouts && s.callouts[0]) ? `<div class="ed-caption-strip">${MD.tx(s.callouts[0])}</div>` : "";
-          return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="28">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ed-showcase"><div class="ed-hero-card"><div class="ed-hero-img-wrap">${singleMedia}</div>${singleCap}</div></div></div></div>`;
+          return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="28">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-showcase"><div class="ed-hero-card"><div class="ed-hero-img-wrap">${singleMedia}</div></div></div></div></div>`;
         }
         const isColor = s.color ? " is-color" : "";
         const annType = s.annotation || "circle";
@@ -1371,13 +1450,13 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         if (isEditorial) {
           if (ms.length >= 2) {
             const mTimes = Array.isArray(s.mediaTimes) && s.mediaTimes.length === ms.length
-              ? s.mediaTimes.map((x) => Math.min(dur - 0.8, Math.max(0.25, +x * 0.45)))
+              ? s.mediaTimes.map((x) => Math.min(dur - 0.6, Math.max(0.15, +x)))
               : ms.map((_, i) => 0.35 + i * Math.min(1.4, (dur - 1.2) / ms.length));
             ms.forEach((_, i) => {
-              e.push(ev(mTimes[i], `.ed-seq-card[data-i="${i}"]`, "rise", 1, { d: 0.55 }, sfxOf(c, "card") || "card-place", "start"));
+              e.push(ev(mTimes[i], `.ed-seq-card[data-i="${i}"]`, "cardWhipIn", 1, { d: 0.68, dir: i % 2 === 0 ? 1 : -1 }, sfxOf(c, "card") || "card-place", "start"));
             });
           } else {
-            e.push(ev(0.26, ".ed-hero-img-wrap", "scaleIn", 1, { d: 0.65 }, sfxOf(c, "media") || "card-place", "start"));
+            e.push(ev(0.24, ".ed-hero-img-wrap", "cardWhipIn", 1, { d: 0.72, dir: 1 }, sfxOf(c, "media") || "card-place", "start"));
             if (s.callouts && s.callouts[0]) {
               e.push(ev(0.68, ".ed-caption-strip", "fadeUp", 1, { y: 16, d: 0.48 }, "tap", "start"));
             }
@@ -1498,7 +1577,8 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
           const rt = parts.length >= 2 ? parts[1] : parts[0];
           const rs = parts.length >= 3 ? parts.slice(2).join(" · ") : "";
           const isUn = isEditorial || ((idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1));
-          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isEditorial ? "→" : (isUn ? "✓" : "🔒")}</span></div>`;
+          const leadBadge = isEditorial ? `<span class="ul-accent-bar"></span>` : `<span class="ul-no">${esc(no)}</span>`;
+          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}">${leadBadge}<div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isEditorial ? "↗" : (isUn ? "✓" : "🔒")}</span></div>`;
         }).join("");
         if (isEditorial) {
           return `<div class="k k-unlock"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ul-board"><div class="ul-rows">${rows}</div></div></div></div>`;
@@ -1603,7 +1683,9 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         const deckLbl = s.deckLabel || "300+ LIVING TELLINGS";
         const sent = s.sentText || "Many Ramayanas, Many Lessons — Audible Original & HarperCollins";
         if (isEditorial) {
-          return `<div class="k k-cta"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="32">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-outro-card"><span class="ed-outro-badge">${esc(deckLbl)}</span><div class="ed-outro-rec">${esc(sent)}</div><div class="ed-outro-prompt">Share in the comments which version of the epic you grew up hearing</div><div class="ed-outro-brand"><div class="ed-outro-lockup">${MD.fluxdLockup("ed-lockup-lg")}</div><span class="ed-outro-handle">@fluxd.tv · WHERE CINEMA OPTICS, PHYSICAL LAW &amp; GLOBAL SYSTEMS COLLIDE</span></div></div></div></div>`;
+          const mode = s.blinkMode || "blink04";
+          const promptTxt = s.promptText || "Share in the comments which version of the epic you grew up hearing";
+          return `<div class="k k-cta"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-outro-card"><span class="ed-outro-badge">${esc(deckLbl)}</span><div class="ed-outro-rec">${esc(sent)}</div><div class="ed-outro-prompt">${esc(promptTxt)}</div></div>${MD.fluxdEndCardHero(mode)}</div></div>`;
         }
         const cards = ["11", "14", "17", "20"].map((no, i, arr) => `<div class="ct-card${i === arr.length - 1 ? " is-top" : ""}" data-i="${i}"><span class="ct-cno">${no}</span><div class="ct-clines"><i></i><i></i><i></i></div><span class="ct-clbl">${i === arr.length - 1 ? esc(deckLbl) : "PROTOCOL"}</span></div>`).join("");
         return `<div class="k k-cta"><div class="box">${kicker(s, c)}${s.title ? `<h2 class="title" data-fit data-maxh="26">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ct-comment-box"><div class="ct-hdr"><span>Comments</span><span class="ct-hearts">❤️ +37</span></div><div class="ct-input"><div class="ct-kw-wrap"><i class="ct-dot"></i><span class="ct-kw">${MD.tx(kw, { split: "chars" })}</span></div><span class="ct-post">Post</span></div></div><div class="ct-deck">${cards}</div><div class="ct-sent">✳ ${esc(sent)}</div></div></div>`;
@@ -1614,8 +1696,8 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         if (s.kicker && !isEditorial) e.push(ev(0.06, ".kicker", T(c, "kicker", "fadeUp"), 1));
         if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
         if (isEditorial) {
-          e.push(ev(0.32, ".ed-outro-card", "rise", 1, { d: 0.55 }, "card-place", "start"));
-          e.push(ev(0.55, ".ed-outro-lockup", "fluxdBlink", 1, {}, "tap", "start"));
+          e.push(ev(0.28, ".ed-outro-card", "rise", 1, { d: 0.52 }, "card-place", "start"));
+          e.push(ev(0.32, ".ed-endcard-hero", "fluxdBlink", 1, {}, "fluxd-blink", "start"));
           return e;
         }
         e.push(ev(0.2, ".ct-comment-box", "fadeUp", 1, { y: 18, d: 0.45 }));
@@ -1991,7 +2073,7 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
         `;
       },
       plan: () => [
-        ev(0.02, ".fb-stage", "fluxdBlink", 1, {}, { name: "tap", gain: 0.75 }),
+        ev(0.02, ".fb-stage", "fluxdBlink", 1, {}, { name: "fluxd-blink", gain: 1.0 }),
         ev(0.72, ".fb-sub", "fadeUp", 1, { d: 0.45 }),
       ],
     },
@@ -2026,6 +2108,47 @@ MD.fluxdPhi2 = function (cls = "fluxd-phi2-svg") {
           inn,
           { [axis]: 14, scale: 1.08, filter: "blur(6px)", opacity: 0 },
           { [axis]: 0, scale: 1, filter: "blur(0px)", opacity: 1, duration: half * 1.45, ease: "expo.out" },
+          at - half * 0.3
+        );
+      },
+    },
+    // 3D Z-Space Camera Dolly Through (Outgoing flies past camera lens, incoming emerges from depth)
+    zDollyThrough: {
+      ov: 0.42,
+      run: (tl, out, inn, at, ov) => {
+        const half = ov / 2;
+        tl.fromTo(
+          out,
+          { scale: 1, filter: "blur(0px)", opacity: 1 },
+          { scale: 1.38, filter: "blur(9px)", opacity: 0, duration: half * 1.1, ease: "power3.in" },
+          at - half
+        );
+        tl.fromTo(
+          inn,
+          { scale: 0.78, filter: "blur(8px)", opacity: 0 },
+          { scale: 1, filter: "blur(0px)", opacity: 1, duration: half * 1.45, ease: "expo.out" },
+          at - half * 0.35
+        );
+      },
+    },
+    // High-Velocity Directional Whip-Pan Match Cut with Skew & Elastic Landing
+    whipPanMatch: {
+      ov: 0.36,
+      run: (tl, out, inn, at, ov, c) => {
+        const half = ov / 2;
+        const horiz = c && c.fmt !== "portrait";
+        const axis = horiz ? "xPercent" : "yPercent";
+        const skewProp = horiz ? "skewX" : "skewY";
+        tl.fromTo(
+          out,
+          { [axis]: 0, [skewProp]: 0, filter: "blur(0px)", opacity: 1 },
+          { [axis]: -34, [skewProp]: -6, filter: "blur(8px)", opacity: 0, duration: half, ease: "power3.in" },
+          at - half
+        );
+        tl.fromTo(
+          inn,
+          { [axis]: 32, [skewProp]: 5, filter: "blur(7px)", opacity: 0 },
+          { [axis]: 0, [skewProp]: 0, filter: "blur(0px)", opacity: 1, duration: half * 1.5, ease: "expo.out" },
           at - half * 0.3
         );
       },

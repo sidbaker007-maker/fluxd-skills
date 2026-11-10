@@ -274,6 +274,52 @@ function pad(notes, sec, r, { cutoff = 2600, attack = 0.8, release = 1.4, detune
   for (let i = 0; i < n; i++) { L[i] = (h[0](f[2](f[0](L[i]))) * g + lo[i] * 0.12 + air[i] * 0.1) * env[i]; R[i] = (h[1](f[3](f[1](R[i]))) * g + lo[i] * 0.12 - air[i] * 0.1) * env[i]; }
   return { L, R };
 }
+// bowed cello / sarangi-inspired formant string swell for investigative & cultural cinema scores
+function bowedString(notes, sec, r, { cutoff = 1950, attack = 0.65, release = 1.25 } = {}) {
+  const n = Math.ceil(sec * SR), L = new Float32Array(n), R = new Float32Array(n);
+  const env = adsr(sec, attack, 0.4, 0.88, release);
+  for (const m of notes) {
+    const f0 = mtof(m);
+    for (let k = 0; k < 3; k++) {
+      const det = (k - 1) * 0.045;
+      const v = osc("saw", f0 * Math.pow(2, det / 12), sec, { phase: r(), vib: 0.0035, vibF: 4.8 + k * 0.4 });
+      // Dual body-formant filters (cello/sarangi wood resonances at ~280Hz and ~1150Hz)
+      const fBody = biquad("peak", 280, 1.4, 4.5), fWood = biquad("peak", 1150, 1.8, 3.5), fLp = biquad("lp", cutoff, 0.65);
+      const dst = k % 2 ? R : L;
+      for (let i = 0; i < n; i++) dst[i] += fLp(fWood(fBody(v[i]))) * 0.19;
+    }
+  }
+  const ros = filt(noise(sec, r, true), biquad("bp", 3100, 1.2), biquad("lp", 5400));
+  for (let i = 0; i < n; i++) {
+    L[i] = (L[i] + ros[i] * 0.035) * env[i];
+    R[i] = (R[i] - ros[i] * 0.035) * env[i];
+  }
+  return { L, R };
+}
+// deep cinematic taiko / frame-drum transient pulse (warm low membrane + rim texture)
+function taikoTom(r, { pitch = 58, dec = 0.52 } = {}) {
+  const sec = dec + 0.18, n = Math.ceil(sec * SR), o = new Float32Array(n);
+  let ph = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / SR;
+    ph += pitch * (1 + 0.65 * Math.exp(-t / 0.045)) / SR;
+    const body = Math.sin(TAU * ph) + 0.28 * Math.sin(TAU * ph * 1.58);
+    o[i] = Math.tanh(body * 1.45) * Math.exp(-t / (dec * 0.55)) * Math.min(1, i / 64);
+  }
+  const skin = filt(mul(noise(0.045, r, true), expDecay(0.045, 0.012)), biquad("bp", 820, 0.9), biquad("lp", 2400));
+  for (let i = 0; i < skin.length; i++) o[i] += skin[i] * 0.24;
+  return filt(o, biquad("lp", 1100), biquad("hp", 36));
+}
+// warm analog Reese sub-bass (two detuned low saws + sub fundamental through a dark ladder filter)
+function reeseBass(note, sec, { cutoff = 240 } = {}) {
+  const f = mtof(note), n = Math.ceil(sec * SR), o = new Float32Array(n), env = adsr(sec, 0.08, 0.25, 0.85, 0.35);
+  const s1 = osc("saw", f * 0.996, sec), s2 = osc("saw", f * 1.004, sec), sub = osc("sine", f * 0.5, sec);
+  const lp = biquad("lp", cutoff, 0.85);
+  for (let i = 0; i < n; i++) {
+    o[i] = Math.tanh((lp((s1[i] + s2[i]) * 0.38) + sub[i] * 0.52) * 1.3) * env[i];
+  }
+  return o;
+}
 // a soft, low synth note (Terminal's arpeggio): a triangle through a low filter
 function softSynth(note, sec, cut = 1800) {
   const o = osc("saw", mtof(note), sec), f = biquad("lp", cut, 0.7);
@@ -316,6 +362,157 @@ function fxImpact(r, note) {
   return { L, R, peak: 0.01 };
 }
 // a low, dark swell that grows into its end (a hiss climbing to the sky is what sounds cheap)
+// Frame-Exact 3.0s FLUXD Optical Shutter Blink & Sub-Drop Sonic Signature
+// Synced to fluxdBlink visual keyframes in runtime/kit.js:
+//   +0.00s..+0.16s : Analog Optical Capacitor Charge Riser (160Hz -> 920Hz)
+//   +0.18s & +0.24s: Blink #1 — Leica Dual-Curtain Mechanical Shutter Close (+0.18s) & Release (+0.24s)
+//   +0.38s & +0.50s: Blink #2 — Vermilion (#E04826) High-Voltage Optical Flash (+0.38s) & Shutter Snap (+0.50s)
+//   +0.56s & +0.72s: Blink #3 — Binary Wordmark Strobe Relays ([ F_U_D ] @ +0.56s A4 left, [ _L_X_ ] @ +0.72s E5 right)
+//   +0.88s..+0.94s : 60ms Vacuum Blackout Silence Dip (maximum dynamic contrast)
+//   +0.94s..+3.00s : Master Lockup Ignition — Deep D1/D2 Sub-Bass Bloom + D-Dorian 9th Chord + Specular Glass Shimmer
+export function fxFluxdBlink(r = rng(19)) {
+  const sec = 3.05, n = Math.ceil(sec * SR);
+  const sub = new Bus(sec), dry = new Bus(sec), send = new Bus(sec);
+
+  // Helper: Crisp mechanical Leica camera shutter blade click + woody body resonance
+  const shutterClick = (freqHi, freqBody, dur = 0.048, punch = 1.0) => {
+    const m = Math.ceil(dur * SR), o = new Float32Array(m);
+    const nz = filt(noise(dur, r), biquad("bp", freqHi, 1.6), biquad("hp", 900));
+    let ph = 0;
+    for (let i = 0; i < m; i++) {
+      const t = i / SR;
+      ph += (freqBody * (1 + 1.8 * Math.exp(-t / 0.004))) / SR;
+      const body = Math.sin(TAU * ph) * Math.exp(-t / 0.011);
+      const blade = nz[i] * Math.exp(-t / 0.0045) * 2.8;
+      const latch = t > 0.012 ? Math.sin(TAU * (freqHi * 0.65) * (t - 0.012)) * Math.exp(-(t - 0.012) / 0.003) * 0.55 : 0;
+      o[i] = Math.tanh((body * 0.85 + blade + latch) * 1.6 * punch);
+    }
+    return o;
+  };
+
+  // 1. +0.00s -> +0.16s: Optical Capacitor Charge Riser
+  {
+    const d = 0.16, m = Math.ceil(d * SR), cL = new Float32Array(m), cR = new Float32Array(m);
+    let ph = 0;
+    const nz = filt(noise(d, r, true), biquad("bp", 1200, 1.1));
+    for (let i = 0; i < m; i++) {
+      const k = i / m;
+      const f = 180 * Math.pow(980 / 180, k * k);
+      ph += f / SR;
+      const env = Math.pow(k, 1.8) * Math.sin(Math.PI * k) * 0.42;
+      const sig = (Math.sin(TAU * ph) * 0.65 + nz[i] * 0.55) * env;
+      cL[i] = sig * (1 - 0.25 * k);
+      cR[i] = sig * (0.75 + 0.25 * k);
+    }
+    dry.add({ L: cL, R: cR }, 0.0, 0.85);
+  }
+
+  // 2. +0.18s & +0.24s: BLINK #1 — Dual-Curtain Shutter Close (+0.18s) & Open (+0.24s)
+  {
+    const cl1 = shutterClick(2650, 118, 0.052, 1.1);
+    const cl2 = shutterClick(3350, 145, 0.045, 0.92);
+    dry.add(cl1, 0.18, 0.82, -0.22);
+    send.add(cl1, 0.18, 0.18, -0.22);
+    dry.add(cl2, 0.24, 0.76, 0.22);
+    send.add(cl2, 0.24, 0.16, 0.22);
+  }
+
+  // 3. +0.38s & +0.50s: BLINK #2 — Vermilion (#E04826) Optical Flash Impact (+0.38s) & Shutter Close (+0.50s)
+  {
+    const flDur = 0.12, m = Math.ceil(flDur * SR), fL = new Float32Array(m), fR = new Float32Array(m);
+    const spark = filt(noise(flDur, r, true), biquad("bp", 2850, 1.2), biquad("hp", 600));
+    let ph1 = 0, ph2 = 0;
+    for (let i = 0; i < m; i++) {
+      const t = i / SR;
+      ph1 += (92 * (1 + 1.4 * Math.exp(-t / 0.012))) / SR;
+      ph2 += 587.33 / SR; // D5 optical ping
+      const thump = Math.sin(TAU * ph1) * Math.exp(-t / 0.042) * 0.78;
+      const ping = Math.sin(TAU * ph2) * Math.exp(-t / 0.055) * 0.36;
+      const sp = spark[i] * Math.exp(-t / 0.024) * 1.4;
+      fL[i] = Math.tanh((thump + ping + sp) * 1.35);
+      fR[i] = Math.tanh((thump + ping * 0.92 - sp * 0.85) * 1.35);
+    }
+    dry.add({ L: fL, R: fR }, 0.38, 0.88);
+    send.add({ L: fL, R: fR }, 0.38, 0.28);
+    const clSnap = shutterClick(2900, 105, 0.042, 0.95);
+    dry.add(clSnap, 0.50, 0.78, 0.0);
+  }
+
+  // 4. +0.56s & +0.72s: BLINK #3 — Binary Alternating Wordmark Strobe ([ F_U_D ] @ +0.56s, [ _L_X_ ] @ +0.72s)
+  {
+    // +0.56s: Odd glyphs (A4 = 440Hz crystalline relay + mechanical click, panned Left -0.42)
+    const r1 = shutterClick(2400, 130, 0.04, 0.85);
+    const t1 = fxTap(69, false); // A4 (440 Hz)
+    dry.add(r1, 0.56, 0.65, -0.42);
+    dry.add(t1.L, 0.56, 0.52, -0.38);
+    send.add(t1.L, 0.56, 0.32, -0.38);
+
+    // +0.72s: Even glyphs (E5 = 659.25Hz crystalline relay + mechanical click, panned Right +0.42)
+    const r2 = shutterClick(3100, 150, 0.04, 0.88);
+    const t2 = fxTap(76, false); // E5 (659.25 Hz)
+    dry.add(r2, 0.72, 0.65, 0.42);
+    dry.add(t2.L, 0.72, 0.54, 0.38);
+    send.add(t2.L, 0.72, 0.35, 0.38);
+  }
+
+  // Enforce crisp 60ms Vacuum Blackout gate at +0.88s..+0.935s before the Master Lockup Drop
+  {
+    const g0 = Math.round(0.875 * SR), g1 = Math.round(0.938 * SR);
+    for (let i = g0; i < g1 && i < dry.n; i++) {
+      const k = i < g0 + 180 ? 1 - (i - g0) / 180 : 0.04;
+      dry.L[i] *= k; dry.R[i] *= k;
+      send.L[i] *= 0.25; send.R[i] *= 0.25;
+    }
+  }
+
+  // 5. +0.94s -> +3.00s: MASTER LOCKUP IGNITION (Deep D1/D2 Sub-Drop + D-Dorian 9th Cinema Chord + Specular Shimmer)
+  {
+    const dropDur = 2.05, m = Math.ceil(dropDur * SR);
+    const subWave = new Float32Array(m);
+    let phSub = 0, phOct = 0;
+    const fD1 = mtof(38), fD2 = mtof(50); // D2 (73.4Hz) -> D1 (36.7Hz) chest-hitting cinema sub drop
+    for (let i = 0; i < m; i++) {
+      const t = i / SR;
+      const f = fD1 * (1 + 1.15 * Math.exp(-t / 0.065));
+      phSub += f / SR;
+      phOct += (f * 2) / SR;
+      const env = Math.min(1, i / (0.006 * SR)) * Math.exp(-t / 0.88);
+      const raw = Math.sin(TAU * phSub) * 0.82 + Math.sin(TAU * phOct + 0.4) * 0.32;
+      subWave[i] = Math.tanh(raw * 1.45) * env;
+    }
+    sub.add(filt(subWave, biquad("lp", 190)), 0.94, 0.92);
+
+    // Crisp transient lockup impact at +0.94s
+    const lockClick = shutterClick(3600, 95, 0.055, 1.15);
+    dry.add(lockClick, 0.94, 0.72, 0.0);
+
+    // Warm D-Dorian 9th Cinema Chord (D3, A3, C4, E4, F4) across bowed strings + Rhodes tine bell
+    const chordNotes = [50, 57, 60, 64, 65];
+    const strBloom = bowedString(chordNotes, 1.95, r, { cutoff: 2650, attack: 0.035, release: 1.15 });
+    const epBloom = epChord([50, 57, 62, 64, 69], 1.85, 0.68, r, { roll: 0.018, trem: 0.14 });
+    dry.add(strBloom, 0.94, 0.58);
+    send.add(strBloom, 0.94, 0.65);
+    dry.add(epBloom, 0.94, 0.52);
+    send.add(epBloom, 0.94, 0.48);
+
+    // Specular Glass Glint Shimmer (+0.98s -> +1.65s) tracking the Vermilion light sweep across [ F L U X D ]
+    const glintNotes = [74, 76, 79, 81, 86]; // D5, E5, G5, A5, D6
+    glintNotes.forEach((gn, idx) => {
+      const p = pluck(gn, 0.95, r, { bright: 0.45, decay: 0.996 });
+      const atT = 0.96 + idx * 0.055;
+      const pan = -0.5 + idx * 0.25;
+      dry.add(p, atT, 0.22, pan);
+      send.add(p, atT, 0.38, pan);
+    });
+  }
+
+  const wet = reverb(send, { room: 0.86, damp: 0.32, wet: 1.0 });
+  const out = new Bus(sec);
+  out.mixFrom(sub, 0.95);
+  out.mixFrom(dry, 0.92);
+  out.mixFrom(wet, 0.55);
+  return { L: out.L, R: out.R, peak: 0.0 };
+}
 function fxRiser(r, sec = 1.4) {
   const n = Math.ceil(sec * SR), L = new Float32Array(n), R = new Float32Array(n);
   const src = noise(sec, r, true), bl = biquad("bp", 140, 0.8), br = biquad("bp", 140, 0.8), ll = biquad("lp", 2200), lr = biquad("lp", 2200);
@@ -335,7 +532,7 @@ const KIND = {
   punch: "thump", land: "thump", "land-light": "thump", drop: "thump", "impact-bass-1": "impact", "impact-bass-2": "impact", "sub-drop": "impact", bong: "impact", bell: "bell", chime: "bell", glass: "bell", sparkle: "bell",
   tick: "blip", "tick-2": "blip", select: "blip", toggle: "blip", switch: "blip", confirm: "blip", "click-ui": "blip", "click-release": "blip", "click-soft": "blip", click: "blip", tap: "blip", pluck: "blip", pop: "blip", "two-tone": "blip", "tone-up": "blip", "tone-down": "blip", open: "blip", "card-place": "blip", "card-place-2": "blip", "chips-stack": "blip", ping: "blip", notification: "blip",
   "key-press": "key", typing: "key", scroll: "key", "glitch-ui": "key", glitch: "key", scratch: "swish", "error-soft": "blip",
-  "riser-air": "riser", riser: "riser",
+  "riser-air": "riser", riser: "riser", "fluxd-blink": "fluxdBlink", fluxdBlink: "fluxdBlink",
   thump: "thump", impact: "impact", blip: "blip", key: "key",
 };
 
@@ -362,6 +559,7 @@ function voicing(root, scale, deg, size, prev) {
 }
 export const _voicing = voicing;
 export const PRESETS = {
+  editorial: { bpm: 92, root: 50, scale: MIN, prog: [0, 5, 3, 6], ext: 5, parts: ["taikoPulse", "shaker8", "bowedPad", "cinemaArp", "reeseSub", "vinyl"], swing: 0.06, verb: 0.38, duck: 0.78 },
   pulse: { bpm: 120, root: 57, scale: MIN, prog: [0, 5, 3, 6], ext: 4, parts: ["kickSoft", "hat16", "shaker8", "pluck8", "bass8", "pad"], swing: 0.04, verb: 0.24, duck: 0.72 },
   polymath: { bpm: 90, root: 57, scale: MIN, prog: [0, 5, 3, 4], ext: 5, parts: ["kickSoft", "brush", "epArp", "pad", "bassSwell", "vinyl"], swing: 0.04, verb: 0.42, duck: 0.88 },
   vox: { bpm: 98, root: 60, scale: MIN, prog: [0, 5, 3, 4], ext: 4, parts: ["kickSoft", "brush", "shaker8", "pluck8", "epHold", "bassLong", "vinyl"], swing: 0.12, verb: 0.26, duck: 0.88 },
@@ -398,6 +596,7 @@ function compose_music(P, plan, r) {
     if (!intro(b)) for (let q = 0; q < 16; q++) {
       const t = Math.max(0, at(q));
       if (!before(t)) break;
+      if (has("taikoPulse") && (q === 0 || q === 6 || q === 10 || (q === 14 && b % 2 === 1))) { const tk = taikoTom(r, { pitch: q === 0 ? 52 : 68, dec: q === 0 ? 0.55 : 0.34 }); drums.add(tk, t, q === 0 ? 0.62 : 0.38, (q % 4 - 1.5) * 0.15); send.add(tk, t, 0.18); if (q === 0) kicks.push(t); }
       if (has("kick4") && q % 4 === 0) { drums.add(kick(r), t, 0.75 * human(r, 0.08)); kicks.push(t); }
       if (has("kickHalf") && (q === 0 || q === 8)) { drums.add(kick(r, { punch: 0.6, dec: 0.32 }), t, 0.45); kicks.push(t); }
       if (has("kickSoft") && (q === 0 || q === 8 || (q === 6 && b % 2))) { drums.add(kick(r, { punch: 0.7, dec: 0.3 }), t, 0.55); kicks.push(t); }
@@ -412,6 +611,7 @@ function compose_music(P, plan, r) {
       if (has("hat16")) drums.add(hat(r), t, (q % 4 === 2 ? 0.16 : 0.08) * human(r, 0.4), -0.2);
     }
     // harmony
+    if (has("bowedPad")) { const bp = bowedString(ch, len + 1.4, r, { cutoff: 2100 + 400 * Math.sin(b * 0.8), attack: intro(b) ? 1.1 : 0.45 }); inst.add(bp, t0, 0.42); send.add(bp, t0, 0.48); }
     if (has("pad")) { const p = pad(ch, len + 1.2, r, { cutoff: P.bpm < 90 ? 2800 : 2400, attack: intro(b) ? 1.4 : 0.5 }); inst.add(p, t0, has("epArp") ? 0.5 : 0.28); send.add(p, t0, 0.4); }
     if (has("epHold")) for (const q of b % 2 ? [0, 10] : [0]) { const t = at(q); if (!before(t)) continue; const c = epChord(ch, q ? spb * 1.5 : len + 0.3, 0.42, r); inst.add(c, Math.max(0, t), q ? 0.3 : 0.45); send.add(c, Math.max(0, t), 0.3); }
     if (has("epStab") && !intro(b)) for (const q of [3, 6, 10, 14]) { const t = at(q); if (before(t)) { const c = epChord(ch, spb * 0.55, 0.5, r, { roll: 0.004 }); inst.add(c, t, 0.5, q % 2 ? 0.15 : -0.15); send.add(c, t, 0.25); } }
@@ -419,16 +619,27 @@ function compose_music(P, plan, r) {
     if (has("epArp")) for (let q = 0; q < 16; q += 4) { const t = Math.max(0, at(q)); if (!before(t)) break; const v = ep(ch[(q / 4) % ch.length], spb * 3, 0.3 * human(r, 0.2)); inst.add(v, t, 0.42, (q / 4 - 1.5) * 0.3); send.add(v, t, 0.5); }
     if (has("pluck8") && !intro(b)) { const pat = [0, 2, 1, 3, 2, 1, 0, 2]; for (let k = 0; k < 8; k++) { if (k === 3 || k === 7) continue; const t = Math.max(0, at(k * 2)); if (!before(t)) break; const s = pluck(ch[pat[k] % ch.length], 0.8, r, { bright: 0.28, decay: 0.993 }); inst.add(s, t, human(r, 0.2), (k % 3 - 1) * 0.3); send.add(s, t, 0.3); } }
     if (has("guitar8")) { const pat = [0, 1, 2, 3, 2, 1, 2, 3]; for (let k = 0; k < 8; k++) { const t = Math.max(0, at(k * 2)); if (!before(t)) break; const m = k === 0 ? (ch[0] - 12 >= 45 ? ch[0] - 12 : ch[0]) : ch[pat[k] % ch.length]; const s = pluck(m, 1.2, r, { bright: 0.22, decay: 0.996 }); inst.add(s, t, 0.9 * human(r, 0.2), k % 2 ? 0.25 : -0.25); send.add(s, t, 0.3); } }
+    if (has("cinemaArp")) { const pat = [0, 2, 3, 1, 4, 2, 3, 1]; for (let q = 0; q < 16; q += 2) { const t = Math.max(0, at(q)); if (!before(t)) break; const note = ch[pat[(q / 2) % pat.length] % ch.length] + (q === 12 ? 12 : 0); const v = pluck(note, spb * 1.35, r, { bright: 0.34, decay: 0.996 }); inst.add(v, t, 0.34 * human(r, 0.18), ((q / 2) % 3 - 1) * 0.28); send.add(v, t, 0.36); } }
     if (has("synthArp") && !intro(b)) for (let q = 0; q < 16; q++) { const t = Math.max(0, at(q)); if (!before(t)) break; const m = ch[[0, 1, 2, 1, 3, 2][q % 6] % ch.length] - 12; const s = softSynth(m < 45 ? m + 12 : m, s16 * 1.6, 1900 + 700 * Math.sin((b * 16 + q) / 10)); inst.add(s, t, 0.22, q % 2 ? 0.25 : -0.25); send.add(s, t, 0.22); }
     // bass
     if (has("bassHouse") && !intro(b)) for (const q of [2, 6, 10, 14]) { const t = at(q); if (before(t)) low.add(bass(q === 14 ? rt + 7 : rt, spb * 0.45), t, 0.55); }
     if (has("bassLong")) for (const q of [0, 8]) { const t = Math.max(0, at(q)); if (before(t)) low.add(bass(rt, spb * 1.9, { a: 0.02, r: 0.2 }), t, 0.45); }
+    if (has("reeseSub")) { low.add(reeseBass(rt, len + 0.3, { cutoff: 220 + (b % 3) * 35 }), t0, 0.46); }
     if (has("bassSwell")) low.add(bass(rt, len + 0.4, { a: 0.6, r: 0.6, drive: 1 }), t0, 0.4);
     if (has("bassBounce") && !intro(b)) for (const [q, d] of [[0, 0], [6, 7], [8, 0], [14, 7]]) { const t = Math.max(0, at(q)); if (before(t)) low.add(bass(rt + d, spb * 0.45, { tone: 0.3 }), t, 0.5); }
     if (has("bass8") && !intro(b)) for (let q = 0; q < 16; q += 2) { const t = Math.max(0, at(q)); if (before(t)) low.add(bass(rt, spb * 0.4), t, 0.34); }
     if (has("bassBoom")) for (const q of [0, 10]) { const t = Math.max(0, at(q)); if (before(t)) low.add(bass(rt, spb * (q ? 1.2 : 1.5), { a: 0.01, r: 0.15 }), t, 0.55); }
   }
   if (has("vinyl")) inst.add(vinyl(duration + 1, r), 0, 0.5);
+  if (Array.isArray(plan.boundaries) && plan.boundaries.length > 1) {
+    plan.boundaries.forEach((bTime, idx) => {
+      if (idx > 0 && bTime > 2.5 && bTime < end - 1.5 && idx % 2 === 0) {
+        const sw = fxRiser(r, 1.15);
+        inst.add(sw, bTime - sw.peak, 0.11);
+        send.add(sw, bTime - sw.peak, 0.14);
+      }
+    });
+  }
   // the end: a low swell, one deep hit, the home chord left ringing
   const home = voicing(P.root, P.scale, 0, P.ext || 4, voices[voices.length - 1]);
   const rs = fxRiser(r, Math.min(1.6, spb * 3));
@@ -566,10 +777,11 @@ export function renderSoundtrack(plan, outFile, { seed = 7 } = {}) {
     else if (kind === "thump") v = fxThump(r, P.root);
     else if (kind === "impact") v = fxImpact(r, P.root);
     else if (kind === "riser") v = fxRiser(r, 1.4);
+    else if (kind === "fluxdBlink") v = fxFluxdBlink(r);
     else if (kind === "key") v = fxKey(r);
     else if (kind === "bell") v = fxTap(scaleNotes[4] + 12, true);
     else v = fxTap(scaleNotes[[0, 2, 4, 5, 4, 2][blipN++ % 6]], c.gain < 0.6);
-    const g = { whoosh: 0.2, swish: 0.13, thump: 0.38, impact: 0.3, riser: 0.18, key: 0.12, bell: 0.12, blip: 0.13 }[kind] * clamp(c.gain ?? 1, 0.3, 1.1);
+    const g = { whoosh: 0.2, swish: 0.13, thump: 0.38, impact: 0.3, riser: 0.18, key: 0.12, bell: 0.12, blip: 0.13, fluxdBlink: 0.95 }[kind] * clamp(c.gain ?? 1, 0.3, 1.1);
     mix.add(v, c.at - (v.peak || 0), g, kind === "blip" ? (blipN % 3 - 1) * 0.25 : 0);
     report.sfx++;
   }

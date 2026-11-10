@@ -31,3 +31,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 - Added `editorial-motion-guidebook.md` (Swiss 12-column open stage, hard cap of 2 text levels, Zone 3 Active-Word Karaoke subtitles, and peak-aligned SFX formula).
 - Updated `my-style` to v2.0.
 
+## `v09-2026.11.10-fluxd-v2-hyperframes-clean` (2026-11-10) — Released clean content-director v3.0 and motion-designer v2.0 (FLUXD Kinetic Editorial)
+- Stripped legacy bloat and unified around deterministic 60fps rendering, two-stage silence trim (`silenceremove` before gentle `atempo`), and 5-source movie/archival footage harvesting.
+

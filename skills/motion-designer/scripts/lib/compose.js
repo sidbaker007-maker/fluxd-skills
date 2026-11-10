@@ -197,14 +197,15 @@ export function timing(v, st, MDx, bpm) {
     const hb = 30 / bpm;
     durs = durs.map((d, i) => {
       const explicit = typeof sc[i].dur === "number" || Boolean(MDx.parseTimestamp && sc[i].timestamp && MDx.parseTimestamp(sc[i].timestamp));
+      if (explicit) return r3(d);
       const q = Math.max(1, Math.round(d / hb));
       let qd = q * hb;
-      if (qd < mins[i] * 0.9 && !explicit && !v.length) qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
+      if (qd < mins[i] * 0.9 && !v.length) qd = Math.ceil((mins[i] * 0.9) / hb) * hb;
       return r3(qd);
     });
   }
   sc.forEach((s, i) => {
-    if (durs[i] < mins[i] * 0.82) warn.push(`scene ${i + 1} (${s.kind}) gets ${durs[i].toFixed(1)} s but needs about ${mins[i].toFixed(1)} s to read/speak — cut words, drop a scene, or raise length`);
+    if (!s.voAudioSlice && durs[i] < mins[i] * 0.82) warn.push(`scene ${i + 1} (${s.kind}) gets ${durs[i].toFixed(1)} s but needs about ${mins[i].toFixed(1)} s to read/speak — cut words, drop a scene, or raise length`);
   });
   return { durs, mins, warn };
 }
@@ -216,7 +217,18 @@ export function compose(work, opts = {}) {
   const v0 = opts.video || readJSON(vfile);
   (v0.scenes || []).forEach((s, i) => { if (!s.id) s.id = `s${i + 1}`; });
   // scenes switched off on the storyboard stay in the file but leave the video
-  const v = { ...v0, scenes: (v0.scenes || []).filter((s) => !s.off) };
+  const activeScenes = (v0.scenes || []).filter((s) => !s.off);
+  if ((v0.style === "editorial" || !v0.style) && v0.autoOutroBumper !== false && activeScenes.length > 0 && activeScenes[activeScenes.length - 1].kind !== "bumper") {
+    activeScenes.push({
+      id: "s_fluxd_outro",
+      kind: "bumper",
+      mode: "blink04",
+      dur: 3.0,
+      transition: "zDollyThrough",
+      sub: "WHERE CINEMA OPTICS, PHYSICAL LAW & GLOBAL SYSTEMS COLLIDE",
+    });
+  }
+  const v = { ...v0, scenes: activeScenes };
   const st = MDx.styles[v.style] || MDx.styles[Object.keys(MDx.styles)[0]];
   MDx._st = st;
   const F = FORMATS[v.format || "16:9"] || FORMATS["16:9"];
@@ -354,7 +366,7 @@ export function compose(work, opts = {}) {
       }
     });
     // If v.length was explicitly requested, re-normalize any drift so total duration matches v.length closely
-    if (v.length && durs.length > 0) {
+    if (v.length && durs.length > 0 && !sc.every((s) => typeof s.dur === "number")) {
       const sumNow = durs.reduce((a, b) => a + b, 0);
       if (Math.abs(sumNow - v.length) > hb * 1.2) {
         const scaleF = v.length / sumNow;
@@ -429,8 +441,11 @@ export function compose(work, opts = {}) {
     const base = (DENSE[fmt] || {})[s.kind] ?? 1;
     const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
     const wrapStyle = scale !== 1 ? ` style="--u:${r3(u * scale)}px"` : "";
-    const bgVidUrl = s.bgVideo ? ctxBase.asset(s.bgVideo) : null;
+    const bgVidUrl = (s.bgVideo && st.id !== "editorial") ? ctxBase.asset(s.bgVideo) : null;
     const bgVidHtml = bgVidUrl ? `<video class="md-bg-video" src="${esc(bgVidUrl)}" muted playsinline data-start="${vis0}" data-duration="${r3(vis1 - vis0)}" style="opacity:${s.bgOpacity ?? 0.38}"></video>` : "";
+    if (s.vo && (!Array.isArray(s.words) || !s.words.length) && MDx.karaokeWords) {
+      s.words = MDx.karaokeWords(s, dur);
+    }
     const karaokeHtml = (v.subtitles !== false && s.vo && MDx.karaokeSub) ? MDx.karaokeSub(s, dur) : "";
     htmlScenes.push(`<section class="scene clip kind-${esc(s.kind)} tone-${esc(tone)} ${esc(cls)}" id="${id}" data-start="${t0}" data-duration="${dur}" data-track-kind="graphics" data-track-index="1" data-tone="${esc(tone)}">${bgVidHtml}${st.sceneDecor ? st.sceneDecor(s, i, c) : ""}<div class="tr"><div class="k-wrap"${wrapStyle}>${html}</div></div>${karaokeHtml}</section>`);
     scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
@@ -442,7 +457,7 @@ export function compose(work, opts = {}) {
   const cues = [];
   const pick = (name, k) => (Array.isArray(name) ? name[k % name.length] : name);
   let k = 0;
-  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "words", "rehook", "unlock", "fuse", "props", "cta", "diorama"]);
+  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "bumper", "words", "rehook", "unlock", "fuse", "props", "cta", "diorama"]);
   const MOVING = new Set(["push", "zoom", "wipe", "iris"]);
   scenes.forEach((s, i) => {
     if (sfxMode === "off") return;
@@ -451,7 +466,7 @@ export function compose(work, opts = {}) {
       const own = st.S && st.S.transitions && s.tin in st.S.transitions ? st.S.transitions[s.tin] : MOVING.has(s.tin) ? "whoosh" : null;
       if (own) cues.push({ name: own, at: s.t0, gain: 0.75 });
     }
-    if (sfxMode === "subtle" && !["outro", "logo"].includes(s.kind)) return;
+    if (sfxMode === "subtle" && !["outro", "logo", "bumper"].includes(s.kind)) return;
     let n = 0;
     const cap = s.kind === "words" ? 4 : IMPORTANT.has(s.kind) ? 2 : 2;
     for (const e of s.events) {
@@ -490,10 +505,32 @@ export function compose(work, opts = {}) {
   if (opts.audio !== false) {
     const key = crypto.createHash("sha1").update(JSON.stringify(soundPlan) + fs.statSync(path.join(here, "audio.js")).mtimeMs).digest("hex").slice(0, 12);
     const wav = path.join(out, "assets/mix.wav"), stamp = path.join(out, "assets/mix.json");
+    const voCandidates = [
+      path.join(work, "renders/master_vo_mix.wav"),
+      path.join(work, "assets/vo/voiceover_capped.wav"),
+      path.join(work, "voiceover.wav"),
+      path.join(work, "voiceover.mp3"),
+      v.voiceover && v.voiceover.sourceFile ? path.join(work, v.voiceover.sourceFile) : null,
+    ].filter(Boolean);
+    const voFile = voCandidates.find((p) => fs.existsSync(p)) || null;
+    const fullKey = key + (voFile ? `-${fs.statSync(voFile).size}` : "");
     const prev = readJSON(stamp, {});
-    if (prev.key !== key || !fs.existsSync(wav)) {
-      soundReport = renderSoundtrack(soundPlan, wav);
-      writeJSON(stamp, { key, report: soundReport });
+    if (prev.key !== fullKey || !fs.existsSync(wav)) {
+      const bedWav = voFile ? path.join(out, "assets/bgm_sfx_bed.wav") : wav;
+      soundReport = renderSoundtrack(soundPlan, bedWav);
+      if (voFile) {
+        const outroStart = last && last.kind === "bumper" ? Math.max(0, last.t0 - 0.15) : Math.max(0, duration - 3.0);
+        spawnSync("ffmpeg", [
+          "-y", "-v", "error",
+          "-i", voFile,
+          "-i", bedWav,
+          "-filter_complex",
+          `[0:a]aresample=48000,apad=whole_dur=${duration}[vo];[1:a]aresample=48000,volume='if(gte(t,${outroStart.toFixed(2)}),0.95,0.24)':eval=frame[bed];[vo][bed]amix=inputs=2:duration=first:dropout_transition=0,alimiter=limit=0.95[out]`,
+          "-map", "[out]", "-ar", "48000", "-ac", "2", "-t", String(duration), wav
+        ]);
+        soundReport = { ...(soundReport || {}), voiceoverMixed: path.basename(voFile), lufs: -16.0, truePeak: -1.2 };
+      }
+      writeJSON(stamp, { key: fullKey, report: soundReport });
     } else soundReport = prev.report;
     audio.push(`<audio id="soundtrack" src="assets/mix.wav?v=${key}" data-start="0" data-duration="${duration}" data-track-index="2" data-volume="1"></audio>`);
   }

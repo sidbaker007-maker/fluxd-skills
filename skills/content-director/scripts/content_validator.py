@@ -76,11 +76,9 @@ SUPPORTED_KINDS = [
     "stat",
     "chart",
     "math",
-    "telemetry",
-    "telescope",
-    "lighttable",
     "cta",
     "outro",
+    "bumper",
 ]
 
 
@@ -137,6 +135,9 @@ def extract_beats_from_markdown(text: str, wpm: int = 145, max_duration: float =
             flags=re.IGNORECASE,
         )
         kind = kind_match.group(1).lower() if kind_match else "statement"
+        # Prevent accidental consecutive identical kinds unless explicitly a multi-card showcase
+        if beats and beats[-1]["kind"] == kind and kind == "collage":
+            kind = "statement"
 
         sfx_match = re.search(r"\b(" + "|".join(list(VALID_SFX_KEYS) + list(LEGACY_SFX_ALIAS.keys())) + r")\b", carry_cell, flags=re.IGNORECASE)
         sfx_key = normalize_sfx(sfx_match.group(1) if sfx_match else "whoosh-soft-air")
@@ -156,7 +157,6 @@ def extract_beats_from_markdown(text: str, wpm: int = 145, max_duration: float =
         })
         cursor_sec += dur
 
-    # Enforce hard cap <= max_duration (179.0s) by proportional scaling if exceeded
     if beats and cursor_sec > max_duration:
         scale = max_duration / cursor_sec
         t_acc = 0.0
@@ -178,7 +178,12 @@ def analyze_blueprint(text: str, wpm: int = 145) -> dict:
         b["id"] for b in beats
         if len(re.findall(r"\[[^\]]+\]", b.get("visualDirection", ""))) > 1
     ]
-    passed = (len(found_banned) == 0) and (total_sec <= 179.0 or total_sec == 0)
+    consecutive_repeats = [
+        f"{beats[i-1]['id']}->{beats[i]['id']} ({beats[i]['kind']})"
+        for i in range(1, len(beats))
+        if beats[i]["kind"] == beats[i - 1]["kind"]
+    ]
+    passed = (len(found_banned) == 0) and (total_sec <= 179.0 or total_sec == 0) and (len(consecutive_repeats) == 0)
     return {
         "status": "PASS" if passed else "WARN",
         "wpm": wpm,
@@ -186,7 +191,9 @@ def analyze_blueprint(text: str, wpm: int = 145) -> dict:
         "estimated_duration_seconds": total_sec,
         "within_179s_reel_cap": total_sec <= 179.0,
         "pill_overuse_beats": pill_overuse,
+        "consecutive_kind_repeats": consecutive_repeats,
         "banned_phrases_found": found_banned,
+        "subtitle_mode": "karaoke-active-word (no .srt)",
         "beats": beats,
     }
 
@@ -215,6 +222,7 @@ def main():
             "estimatedDurationSec": report["estimated_duration_seconds"],
             "voiceoverRecordingMode": "single-continuous-take",
             "subtitles": "karaoke-active-word",
+            "endCardLogoAnimation": "blink04-to-blink03-hero",
             "beats": report["beats"],
         }
         args.export_json.write_text(json.dumps(handoff, indent=2), encoding="utf-8")

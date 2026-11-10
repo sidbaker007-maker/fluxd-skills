@@ -87,7 +87,7 @@
     drift: 0.022,
     grain: 0.05,
     listIcon: "check",
-    transitionFor: (s, i) => (s.transition ? s.transition : i % 2 === 1 ? "carryMorph" : "matchCut"),
+    transitionFor: (s, i) => (s.transition ? s.transition : ["carryMorph", "zDollyThrough", "whipPanMatch", "matchCut"][i % 4]),
     tone: (s) => (s.tone ? s.tone : "base"),
 
     background: {
@@ -103,16 +103,82 @@
       },
     },
 
+    scene: {
+      run: (tl, el, s, c) => {
+        const dur = Math.max(2.0, s.dur || 5.0);
+        const t0 = s.t0 || 0;
+        // 1. Continuous 2.5D Ken Burns & Counter-Float on all cards, cutouts & PiP monitors (zero dead frames)
+        const mediaImgs = el.querySelectorAll(".ed-seq-thumb img, .ed-hero-img-wrap img, .ed-pip-vid");
+        mediaImgs.forEach((im, idx) => {
+          const dir = idx % 2 === 0 ? 1 : -1;
+          tl.fromTo(
+            im,
+            { scale: 1.01, rotation: -0.9 * dir, yPercent: 1.5 * dir },
+            { scale: 1.095, rotation: 0.9 * dir, yPercent: -1.8 * dir, duration: dur, ease: "sine.inOut" },
+            t0
+          );
+        });
+        // 2. Active-Card Spotlight Shift & Camera Impulse whenever a new sequential card pops in
+        const seqCards = Array.from(el.querySelectorAll(".ed-seq-card"));
+        if (seqCards.length >= 2) {
+          const mTimes = Array.isArray(s.mediaTimes) && s.mediaTimes.length === seqCards.length
+            ? s.mediaTimes.map((x) => Math.min(dur - 0.6, Math.max(0.15, +x)))
+            : seqCards.map((_, idx) => 0.35 + idx * Math.min(1.4, (dur - 1.2) / seqCards.length));
+          mTimes.forEach((mt, idx) => {
+            if (idx > 0) {
+              // Causal Chain Momentum Transfer: Incoming card's arrival physically pushes earlier cards with elastic spring settle
+              const prevCards = seqCards.slice(0, idx);
+              const pushDir = idx % 2 === 1 ? -1 : 1;
+              tl.to(prevCards, {
+                keyframes: [
+                  { x: 14 * pushDir, scale: 0.93, rotationZ: 1.4 * pushDir, y: -8, opacity: 0.88, duration: 0.18, ease: "power2.out" },
+                  { x: 0, scale: 0.96, rotationZ: 0.4 * pushDir, y: -4, opacity: 0.88, duration: 0.48, ease: "elastic.out(1, 0.42)" },
+                ],
+              }, t0 + mt);
+              // Subtle camera kinetic nudge on the stage box when the new element lands
+              const box = el.querySelector(".box");
+              if (box) {
+                tl.to(box, {
+                  keyframes: [
+                    { scale: 1.016, y: -3, duration: 0.16, ease: "power2.out" },
+                    { scale: 1.0, y: 0, duration: 0.34, ease: "expo.out" },
+                  ],
+                }, t0 + mt);
+              }
+            }
+          });
+        }
+        // 3. Sub-Beat Micro-Impulses every 2.2s on long beats so single-card & index scenes stay kinetically alive
+        const heroCard = el.querySelector(".ed-hero-card, .ul-board, .an-card, .ed-outro-card");
+        if (heroCard && dur > 4.5) {
+          for (let beatT = 2.2; beatT < dur - 0.9; beatT += 2.2) {
+            tl.to(heroCard, {
+              keyframes: [
+                { y: -5, scale: 1.018, rotationZ: (Math.round(beatT) % 2 === 0 ? 0.45 : -0.45), duration: 0.32, ease: "power2.out" },
+                { y: 0, scale: 1.0, rotationZ: 0, duration: 0.55, ease: "sine.inOut" },
+              ],
+            }, t0 + beatT);
+          }
+        }
+        // 4. Corner Seal & Top Header kinetic pulse
+        const seal = el.querySelector(".ed-corner-seal");
+        if (seal) {
+          tl.fromTo(seal, { rotation: -8, scale: 0.92 }, { rotation: 8, scale: 1.04, duration: dur, ease: "sine.inOut" }, t0);
+        }
+      },
+    },
+
     sceneDecor: (s, i, c) => {
-      const num = String((i || 0) + 1).padStart(2, "0");
-      const chap = esc(s.chapter || s.kicker || `BEAT ${num}`);
+      if (s.kind === "bumper") return "";
+      const rawChap = String(s.chapter || s.kicker || "").replace(/^BEAT\s*\d+\s*[·:\-\/]*\s*/i, "").trim();
+      const chap = esc(rawChap);
       const src = s.source ? `<div class="ed-source-line" data-layout-ignore><span class="ed-src-dot"></span><span>${esc(s.source)}</span></div>` : "";
       const lockupSvg = MD.fluxdLockup ? MD.fluxdLockup("ed-brand-lockup") : "";
       const sealSvg = MD.fluxdSeal ? MD.fluxdSeal("ed-brand-seal") : "";
       return `
         <div class="ed-top-bar" data-layout-ignore>
           <span class="ed-chap">${chap}</span>
-          <span class="ed-brand-hdr">${lockupSvg}<span class="ed-idx">// ${num}</span></span>
+          <span class="ed-brand-hdr">${lockupSvg}</span>
         </div>
         ${src}
         <div class="ed-corner-seal" data-layout-ignore>${sealSvg}</div>

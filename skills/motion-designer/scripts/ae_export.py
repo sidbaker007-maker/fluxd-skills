@@ -10,7 +10,7 @@ Why this solves the After Effects Vector (.svg) Problem 100%:
   `ADBE Vector Shape - Group`, `new Shape()` vertices)** inside `build_after_effects.jsx`!
 - That means inside After Effects (and EffectCraft), your logos and brackets are **true, infinitely scalable, editable
   After Effects Vector Shape Layers** with zero plugins required — AND it also bundles the original `.svg` files plus
-  `captions.srt` and timed `[EN CAPTION]` text layers!
+  timed active-word `[KARAOKE CAPTION]` text layers (zero external .srt needed)!
 
 Usage:
     python3 scripts/ae_export.py <work_dir> [--out <output_dir>]
@@ -37,14 +37,6 @@ def hex_to_rgb01(hex_str: str):
     return [round(int(h[i:i+2], 16) / 255.0, 4) for i in (0, 2, 4)]
 
 
-def format_srt_time(seconds: float) -> str:
-    ms = int(round((seconds - int(seconds)) * 1000))
-    s = int(seconds) % 60
-    m = (int(seconds) // 60) % 60
-    h = int(seconds) // 3600
-    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
-
-
 def build_ae_and_effectcraft_bundle(work_dir: Path, out_dir: Path = None) -> dict:
     vfile = work_dir / "video.json"
     if not vfile.exists():
@@ -67,7 +59,7 @@ def build_ae_and_effectcraft_bundle(work_dir: Path, out_dir: Path = None) -> dic
         src_folder = work_dir / folder_name
         if src_folder.exists():
             for f in sorted(src_folder.rglob("*")):
-                if f.is_file() and f.suffix.lower() in {".png", ".jpg", ".jpeg", ".mp4", ".wav", ".mp3", ".svg", ".srt"}:
+                if f.is_file() and f.suffix.lower() in {".png", ".jpg", ".jpeg", ".mp4", ".wav", ".mp3", ".svg"}:
                     rel = f.relative_to(work_dir)
                     dst = bundle_dir / rel
                     dst.parent.mkdir(parents=True, exist_ok=True)
@@ -91,21 +83,6 @@ def build_ae_and_effectcraft_bundle(work_dir: Path, out_dir: Path = None) -> dic
     bg_rgb = hex_to_rgb01(bg_hex)
     ink_rgb = [0.9647, 0.9529, 0.9255] if bg_hex in {"#111315", "#1B3A6B"} else [0.0667, 0.0745, 0.0824]
     verm_rgb = [0.8784, 0.2824, 0.1490]  # #E04826 FLUXD Kodak Halation Vermilion
-
-    # Generate English .srt file alongside the bundle
-    srt_lines = []
-    srt_cursor = 0.0
-    for idx, s in enumerate(scenes):
-        dur = float(s.get("duration") or s.get("dur") or 3.5)
-        t0 = round(srt_cursor, 3)
-        t1 = round(srt_cursor + dur, 3)
-        vo_raw = str(s.get("vo") or s.get("title") or s.get("text") or "").strip()
-        vo_clean = re.sub(r"\[(?:AUDIO\s+)?PAUSE:[^\]]+\]", "", vo_raw).replace("*", "").replace("[", "").replace("]", "").strip()
-        if vo_clean:
-            srt_lines.append(f"{idx+1}\n{format_srt_time(t0)} --> {format_srt_time(t1)}\n{vo_clean}\n")
-        srt_cursor = t1
-    srt_file = bundle_dir / "captions_en.srt"
-    srt_file.write_text("\n".join(srt_lines), encoding="utf-8")
 
     # Build After Effects .jsx script with NATIVE VECTOR SHAPE LAYERS + TIMED ENGLISH CAPTIONS
     jsx_lines = [
@@ -353,7 +330,7 @@ def build_ae_and_effectcraft_bundle(work_dir: Path, out_dir: Path = None) -> dic
     return {
         "status": "exported",
         "afterEffectsJsx": str(jsx_file),
-        "englishCaptionsSrt": str(srt_file),
+        "subtitleMode": "karaoke-active-word",
         "effectcraftCliSteps": str(ec_steps_file),
         "bundleDir": str(bundle_dir),
         "copiedAssetCount": len(copied_files),

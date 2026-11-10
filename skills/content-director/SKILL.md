@@ -1,76 +1,82 @@
 ---
 name: content-director
-description: End-to-end content generation engine, investigative research director, and script-to-storyboard architect for YouTube (16:9 long-form video essays, 9:16 Shorts, packaging/thumbnails) and Instagram (9:16 Reels with loop hooks, 4:5 Carousels). Tailored to the creator's core pillars—Cinema & TV craft (daily watcher lens), Physics & Astrophysics (M.Sc. Physics rigor), Geopolitics, and Socio-Economic issues in India and around the world—with a unified FLUXD Kinetic Editorial design system and native HyperFrames handoff (script.json + SFX catalog keys + active-word karaoke sync) into motion-designer. Use whenever the user asks to brainstorm, research, script, storyboard, package, or repurpose YouTube or Instagram content, or mentions "content director", "content generation model", or "polymathic investigative director".
+description: End-to-end content generation engine, cross-niche investigative research director, and script-to-storyboard architect for YouTube (16:9 long-form video essays, 9:16 Shorts, packaging/thumbnails) and Instagram (9:16 Reels, 4:5 Carousels, SEO captions with [...] keyword brackets, and Canva-editable 4:5 grid-safe Reel covers). Tailored to the creator's 4 core polymathic pillars—Physics & Astrophysics (M.Sc. Physics rigor), Geopolitics & Supply Chains, Socio-Economic Systems in India & the World, and Cinema/Cultural Craft—with the FLUXD Kinetic Editorial v3 system: untouched 1.00x natural voiceover sync, zero robotic panel numbers, Causal Chain spring choreography, multi-stem Dorian cinema score, framed In-Grid PiP video monitors, and a 3.0s post-VO FLUXD Logo Blink Outro synced to fxFluxdBlink.
 ---
-# Content Director (Phase 1 of the FLUXD Production Relay)
+# Content Director (Phase 1 of the FLUXD v3 Production Relay)
 
-## 1. Operating Philosophy & The 2-Skill Relay (`@content-director` -> `@motion-designer`)
+## 1. Operating Philosophy & Cross-Niche Polymathic Identity
 
-This skill acts as **Phase 1 of your 2-Skill Production Relay** for **FLUXD** across **YouTube (`16:9` features & `9:16` Shorts)** and **Instagram (`9:16` Reels & `4:5` Carousels)**, locked to one cohesive, non-boxy visual system: **FLUXD Kinetic Editorial (`editorial`)**.
+This skill acts as **Phase 1 of your 2-Skill Production Relay** (`@content-director` $ightarrow$ `@motion-designer`) for **FLUXD** across **YouTube (`16:9` essays & `9:16` Shorts)** and **Instagram (`9:16` Reels & `4:5` Carousels)**, locked to the **FLUXD Kinetic Editorial v3 (`editorial`)** design system.
+
+### Cross-Niche Polymathic Balance (Do Not Default Everything to Cinema)
+While cinema & cultural craft is one of your four pillars, **not every video should revolve around movies**. Your signature voice comes from colliding **2 to 3 distinct pillars** in unexpected ways:
+1. **Physics & Astrophysics (M.Sc. Physics Rigor)**: Thermodynamics (wet-bulb limits, Carnot efficiency), optics & wave physics ($13.5\text{ nm}$ EUV lithography, Rayleigh criterion), electromagnetism & synchronous AC grids ($50\text{ Hz}$ phase lock), orbital mechanics ($\Delta v$, Kessler cascade, GRACE gravity anomalies), fluid dynamics (Coriolis force, Somali Jet), and partial differential equations (heat diffusion / Black-Scholes).
+2. **Geopolitics & Strategic Chokepoints**: Subsea fiber-optic cables (Bab el-Mandeb, Mumbai landing stations), semiconductor supply chains (ASML, TSMC's Silicon Shield), transboundary hydro-politics (Indus Waters Treaty, Brahmaputra), rare-earth refining, and maritime corridors.
+3. **India & Global Socio-Economic Systems**: Urban network paradoxes (Braess's paradox, induced demand), agrarian & groundwater economics (Green Revolution aquifers, monsoon-GDP coupling), fiscal & energy transitions (Homi Bhabha's 3-stage Thorium cycle, UPI/digital public infrastructure), and quantitative macro data (RBI DBIE, MOSPI, Survey of India compliant maps).
+4. **Cinema, Literature, Architecture & Cultural History**: Used selectively when a cultural text, historical archive, or visual craft illuminates a deeper civilizational or scientific truth.
 
 ```
-[@content-director: Phase 1 — Research, Script & Beat Architecture]
-   1. Pick Topic, Pillar & Format (9:16 Reel <= 179s, 16:9 Essay, or 4:5 Carousel)
-   2. Generate Anti-Slop Research Checklist (primary datasets, papers, archival/film sources)
-   3. Write Beat-by-Beat Spoken Script (3-5s visual beat cadence, zero consecutive archetype repeats)
-   4. Output Pre-Flight Asset & SFX Manifest + validated `script.json` Handoff
+[@content-director: Phase 1 — Cross-Niche Ideation, Research, Script & Packaging]
+   1. Curate Cross-Niche Collisions (Physics × Geopolitics, Math × Indian Socio-Economics, etc.)
+   2. Generate Anti-Slop Research Checklist (primary papers, NASA/RBI/CSIS datasets, verified archival sources)
+   3. Write Beat-by-Beat Spoken Script with exact sub-card `mediaTimes` & zero robotic panel numbers
+   4. Output validated `script.json` + Instagram Story One-Liners + 2026 SEO Caption (`[...]` keywords)
+      + Zero-AI-Slop `1080×1920` (4:5 Grid-Safe) FLUXD Reel Cover & Layer-Editable Canva `.pptx`
           |
-          v  (Creator refines script & records ONE continuous `voiceover.wav` / `.mp3`)
-[@motion-designer: Phase 2 — HyperFrames Composition, Karaoke Sync & Render]
-   5. Auto-trim dead air & enforce <= 179s (2m59s) cap via pitch-preserved speed-up + word timestamps
-   6. Build open-stage `editorial` HyperFrames composition with 3-5 word active-word karaoke captions
-   7. Sync local `assets/sfx/` cues via `peakOffsetSec` and render 1080p/4K 60fps H.264 MP4 + Canvas Storyboard
+          v  (Creator records ONE continuous `voiceover.mp3` / `.wav` at natural cadence)
+[@motion-designer: Phase 2 — Web-Curated Composition, 1.00x Acoustic Sync & GPU Local Render]
+   5. Preserve 100% Untouched `1.00x` Voiceover (Read-only `silencedetect` maps exact clause pauses P01..PNN;
+      NEVER apply aggressive `silenceremove` that clips voiceless plosives like "perspectives" or "walking")
+   6. Lock explicit `s.dur` & `s.mediaTimes` to `0.001s` precision (never quantize VO scenes to musical half-beats)
+   7. Pre-bundle all curated In-Grid Visual Cards & Framed PiP Video Monitors (`.ed-pip-video-card`) on Gemini Web
+      (NEVER use full-screen `.md-bg-video` overlays; NEVER run unverified `--auto` downloads on local machine)
+   8. Append 3.0s Post-VO FLUXD Logo Blink Outro (`s_fluxd_outro`) synced to `fxFluxdBlink` sonic signature
 ```
 
-### Core Calibration Rules
-1. **M.Sc. Physics Calibration**: Name the real physical mechanism (Lagrangians, phase space, radiative transfer, Rayleigh diffraction limits, orbital $\Delta v$, thermodynamics) and pair it with a clean geometric intuition (`"kind": "math"` or `"kind": "stat"`).
-2. **Daily Cinephile & Cultural Formalism**: Treat cinema, literature, and folklore both as primary craft subjects and as narrative entry points into deeper historical, scientific, or socio-economic realities.
-3. **India & Global Socio-Economic Grounding**: Anchor macro claims (RBI DBIE, MOSPI PLFS/CPI, Economic Survey of India, NPCI/UPI metrics, WID.world, UN Comtrade, GDELT) in tangible human realities, strictly enforcing **Survey of India** official external boundaries on every map.
-4. **One Cohesive Visual System (`editorial`)**: Never mix incompatible motion styles or growth-hacker widgets (no blurred padlock checklists, no `2s FUSE` bomb bars, no fake comment boxes). Every project uses the **FLUXD Kinetic Editorial** system defined in `references/editorial-motion-guidebook.md`.
+## 2. Hard v3 Architectural Learnings & Guardrails (Mandatory)
 
-## 2. Bundled References & Validation Tools
+1. **Untouched `1.00x` Natural Voiceover Default (No Syllable Chopping or Musical Drift)**:
+   - Never force a recording over 3 minutes down to `<179s` using `ffmpeg silenceremove` or `atempo` by default. `silenceremove` mistakes the brief acoustic dip before voiceless plosives (`p`, `t`, `k`) inside words like *"perspectives"* and *"walking"* for silence and chops them out.
+   - Always keep the creator's natural `1.00x` voiceover untouched, use `silencedetect` purely as a read-only timestamp scanner to map clause boundaries, and preserve explicit `s.dur` to `0.001s` precision without rounding to musical half-beats.
+2. **Zero Robotic Panel or Slide Numbers (`01 // FEATURED`, `// 01`, `BEAT 01`, `01 |` Are Banned)**:
+   - Never write numbered prefixes like `"BEAT 01"`, `"01 // FEATURED"`, or `"01 | PERSPECTIVE"` in `chapter`, `kicker`, `callouts`, or `items`.
+   - Use clean thematic chapter titles (e.g., `"THE THERMODYNAMIC WALL"`, `"THE 13.5 NM BOTTLENECK"`) and unnumbered editorial callout labels.
+3. **100% Web-Curated In-Grid Media & Framed PiP Video Monitors (`.ed-pip-video-card`)**:
+   - **Never set `bgVideo` (full-screen background video overlays are banned in `editorial` mode)**.
+   - All visual artifacts—cutouts, bespoke SVG data cards, posters, and verified short `.mp4` clips—must be placed in `s.media` so they mount strictly inside framed 12-column Swiss-grid cards (`.ed-seq-card`, `.ed-hero-img-wrap`, or `.ed-pip-video-card` with a `REC ● // ARCHIVE FEED` header).
+   - Never trigger blind `--auto` footage downloads during local rendering; curate and pre-bundle all assets inside the web workspace.
+4. **Causal Chain Choreography & 4-Transition Camera Rotation**:
+   - Whenever a scene has 2 or 3 visual cards in `s.media`, always provide exact `s.mediaTimes: [t1, t2, ...]` aligned to the spoken nouns in `s.vo`. When Card #2 or #3 whips in via `cardWhipIn` (3D tilt + velocity skew + spring overshoot), its arrival physically pushes earlier cards back in Z-space (`elastic.out(1, 0.42)`).
+   - Rotate `s.transition` across the 4 camera-space transitions so consecutive cuts never repeat:
+     - `"carryMorph"` $ightarrow$ `"zDollyThrough"` $ightarrow$ `"whipPanMatch"` $ightarrow$ `"matchCut"`.
+5. **Multi-Stem `editorial` Score (`lib/audio.js`)**:
+   - Default to `"preset": "editorial"` (`92 BPM` Dorian/Minor multi-stem score featuring bowed cello/sarangi dual-formant swells, warm analog Reese sub-bass, taiko frame-drum transients, felt plucks, and pre-cut tension risers).
+6. **Mandatory 3.0-Second Extended Post-VO FLUXD Logo Blink Outro (`s_fluxd_outro`)**:
+   - Every `script.json` must end (after the final spoken scene finishes) with a dedicated **3.0-second post-voiceover `bumper` scene** where the voiceover is silent, the audio bed rises to `0.95` full studio gain, and `fxFluxdBlink` plays frame-locked to the optical shutter blinks (`+0.18s`, `+0.38s`), binary wordmark strobe (`+0.56s`, `+0.72s`), `60ms` blackout gate (`+0.88s`), and `D1 (36.7 Hz)` sub-bass + D-Dorian 9th chord bloom (`+0.94s..+3.00s`):
+     ```json
+     {
+       "id": "s_fluxd_outro",
+       "kind": "bumper",
+       "mode": "blink04",
+       "dur": 3.0,
+       "transition": "zDollyThrough",
+       "sub": "WHERE CINEMA OPTICS, PHYSICAL LAW & GLOBAL SYSTEMS COLLIDE"
+     }
+     ```
 
-Read these bundled files at the stage they apply:
+## 3. Post-Production & Distribution Packaging Protocol (Instagram & YouTube)
 
-- **`references/editorial-motion-guidebook.md`**: Read FIRST on every run. Defines the locked **FLUXD Kinetic Editorial** design tokens (`#0E0E10` Carbon / `#F4EFE6` Paper dual-surface alternation, `Instrument Serif` + `Plus Jakarta Sans` + `Space Grotesk` + `JetBrains Mono`), the **Max 2 Text Levels on Stage** rule, the **6 Non-Boxy Scene Archetypes**, the **3-5 Word Active-Word Karaoke Subtitle spec**, the **$\le 179\text{s}$ (`2:59`) Reel Cap**, and the **6-Category Local SFX Catalog**.
-- **`references/creator-profile.md`**: Read during **Step 1 & Step 2** to select the right interdisciplinary angle across your 4 core pillars and open-access datasets, or expand your saved interest profile.
-- **`references/platform-playbooks.md`**: Read during **Step 3 & Step 4** for YouTube `16:9` 6-Movement structure, Instagram `9:16` Reel retention spine, and `4:5` Carousel slide architecture.
-- **`references/fluxd-brand-tokens.json` & `references/fluxd-brand-guidelines.md`**: Canonical brand colors, typography ratios, and logo usage.
-- **`scripts/content_validator.py`**: Run after drafting any blueprint (`python3 scripts/content_validator.py <output.md> --export-json script.json`) to verify spoken duration ($\le 179\text{s}$ for Reels), beat cadence, anti-repetition of scene kinds, max 1 `[phrase]` underline per headline, and valid SFX catalog keys.
+Whenever delivering a finished Reel or Video Essay package (or when asked for captions/covers), always include:
 
-## 3. The 6 Non-Boxy Editorial Scene Archetypes & Scripting Laws
-
-When mapping spoken sentences to visuals, rotate through these **6 clean `editorial` archetypes** (never repeating the same `kind` on two consecutive beats unless `collage` uses `subBeatPopups` to fan out sequential items):
-
-1. **`statement` / `hook` (Swiss Grid Kinetic Typography)**: Full-width typographic thesis on the 12-column grid for philosophical points, discussion turns, or hooks. Mark 1-2 emotional pivot words with `*italic*` (`#FACC15` italic serif) and **at most 1 key phrase per headline** with `[phrase]` (rendered as a continuous `#E04826` underline sweep—never separate per-word boxes).
-2. **`collage` (Open-Stage Floating Artifact & Sequential Showcase)**: Displays 1 hero cutout/poster/manuscript on an open stage with zero `#01 / #02` bullet-bar clutter. When a beat introduces 2-3 distinct items (e.g., an English audiobook, Hindi audiobook, and print book), populate `subBeatPopups` / `mediaTimes` so each card fans out at its exact spoken second.
-3. **`anomaly` (Premise Inversion)**: Crosses out the conventional assumption at top-left with a `#E04826` vermilion strike and reveals the empirical truth + optional oversized `Space Grotesk` figure below.
-4. **`pivot` / `compare` (Asymmetric Hairline Split)**: Divides the stage with a `1px` architectural hairline to contrast two traditions, timelines, or perspectives side by side.
-5. **`unlock` / `steps` (Clean Swiss Numbered Index)**: Displays a fully legible 3-4 row numbered index (`01`..`04`) where rows illuminate sequentially (zero padlocks or blur gimmicks).
-6. **`cta` / `outro` (Editorial Sign-Off & Loop Handoff)**: Clean closing frame with the recommendation badge, discussion question for the comments, and a visual carry that loops back into Beat 01.
-
-### Hard Pacing & Audio Rules
-- **Hard Cap $\le 179\text{s}$ (`2m 59s`) for Reels**: Keep total spoken Reel scripts between **240 and 380 words** (`90s - 175s` at `135 - 160 WPM`). If a continuous recording exceeds `179s`, `@motion-designer` automatically applies pitch-preserved speed-up (`1.12x - 1.18x`) and silence truncation (`< 180ms`) before word-level captioning.
-- **Visual Activity Every `3 - 5 Seconds`**: Never leave a static screen for `15 - 20 seconds`. Break long paragraphs into `4 - 8 second` beats, or specify `subBeatPopups` timestamps inside longer beats.
-- **Catalog-Only SFX Keys**: Pick `sfx` strictly from the 15 standard keys in `sfx-catalog.json`:
-  - *Whooshes*: `whoosh-soft-air`, `whoosh-fast-whip`, `whoosh-paper-turn`
-  - *Impacts*: `hit-sub-boom`, `hit-cinematic-thud`, `hit-stamp-slam`
-  - *Risers*: `riser-warm-swell`, `riser-tension-suck`
-  - *Tactile/Foley*: `foley-pen-highlight`, `foley-chalk-draw`, `foley-card-place`, `foley-camera-shutter`
-  - *Data/UI*: `tick-soft-counter`, `chime-subtle-lock`
-  - *Ambience*: `drone-dark-investigative`, `drone-warm-editorial`
-
-## 4. Standardized Output Deliverable Structure
-
-Organize every content blueprint into these 5 sections:
-
-1. **Packaging, Titles & Editorial Direction**: Pillar synthesis, 3 working titles, thumbnail/cover spec, 1-sentence central contradiction, and `style: "editorial"`.
-2. **Empirical Data, Formalism & Primary Sources**: Verified datasets, literary/historical citations, or physical equations.
-3. **Pre-Flight Asset & SFX Manifest Table**: Exact filenames in `assets/` (`User Drop` vs `Nano Banana Cutout` vs `SFX Catalog Key`).
-4. **Beat-by-Beat Spoken Script & Continuity Storyboard**: Markdown table with columns `Beat & Window | Spoken Voiceover Script | Editorial Kind & On-Screen Headline (<= 8 words, max 1 [underline]) | Carry-Across-the-Cut & SFX Key`.
-5. **Single-Take Recording Note & `@motion-designer` Handoff (`script.json`)**: Export `script.json` with `"style": "editorial"` and `"maxDurationSec": 179`.
-
-## 5. Moving Image Archive Public-Domain Footage & Official FLUXD Brand Kit
-
-- **Public-Domain Archival Video Shots (`archiveQuery`)**: Whenever a beat benefits from real historical/archival B-roll (e.g., film projectors, animated maps, oscilloscopes, cameras, space flight, typography), include `"archiveQuery": "<visual description>"` in that beat of `script.json`. `@motion-designer` (`scripts/fetch_archive_footage.py`) automatically queries `https://www.movingimagearchive.com/api/search` and downloads the matching public-domain `.mp4` clip into `assets/`.
-- **Locked FLUXD Brand Identity (`references/brand-kit/`)**: Every blueprint and storyboard automatically carries the official **Chamfered-Bracket `Φ-2` Symbol** and **Framed `[ FLUXD ]` Wordmark** (`#E04826` Kodak Halation Vermilion + `#F6F3EC` Silver-Halide Paper + `#111315` Anamorphic Carbon Ink).
+1. **Instagram Story Share One-Liners (3 Angles)**:
+   - *Curiosity Hook*: Poses an immediate paradox or question in under 15 words.
+   - *Cross-Niche Collision*: Connects the two colliding disciplines (e.g., Physics + Geopolitics).
+   - *Provocative Counter-Intuition*: States the most surprising empirical fact from the reel.
+2. **2026 SEO-Optimized Instagram Reel Caption**:
+   - **Above-the-Fold Hook (`<125 characters`)**: Lands before the `...more` truncation.
+   - **Detailed Narrative Body**: Keyword-rich breakdown of the core physical mechanisms, historical records, or socio-economic data points (indexed by both Instagram in-app search and Google Search).
+   - **5 Ultra-Targeted Hashtags**: Adheres to Instagram's 5-hashtag cap (2 niche topic tags + 2 discipline tags + 1 series/brand tag).
+   - **Bottom Third-Bracket `[...]` Search Keyword Block**: A comma-separated list of 12–18 high-intent search terms enclosed in `[...]` at the very bottom of the caption for algorithmic indexing.
+3. **Zero-AI-Slop `1080×1920` FLUXD Editorial Reel Cover + Layer-Editable Canva `.pptx`**:
+   - Never use generic plastic AI art. Compose covers using real archival photography/posters, woodcut/halftone cutouts, Swiss 12-column hairlines, `[ Φ2 [ FLUXD ] ]` top branding, and `Instrument Serif` + `JetBrains Mono` display typography.
+   - Keep all essential elements strictly inside the center `1080×1350` (`4:5`) and `1080×1080` (`1:1`) profile-grid safe zone, and export a companion `.pptx` file (`9.0 × 16.0 in`) so every text box, badge, and cutout is independently editable in Canva.

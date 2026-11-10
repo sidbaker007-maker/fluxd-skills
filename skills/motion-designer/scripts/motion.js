@@ -49,12 +49,12 @@ function printReport(r) {
 
 function hf(argv, opts = {}) {
   const localPy = path.join(SKILL, "scripts/local_renderer.py");
-  const major = +process.versions.node.split(".")[0];
-  if (major >= 22 && !process.env.MD_FORCE_LOCAL_RENDERER) {
-    const r = spawnSync(npx, ["--yes", "hyperframes", ...argv], { encoding: "utf8", maxBuffer: 1 << 28, timeout: 45000, ...opts });
+  // Use our zero-dependency stdlib CDP local_renderer.py by default (supports RTX NVENC, zero npm/pip install, live progress)
+  if (!process.env.MD_USE_NPX_HYPERFRAMES) {
+    const r = spawnSync("python3", [localPy, ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
     if (r.status === 0) return r;
   }
-  return spawnSync("python3", [localPy, ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
+  return spawnSync(npx, ["--yes", "hyperframes", ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
 }
 
 // one frame per scene at its "everything has landed" moment, plus a contact sheet
@@ -130,7 +130,7 @@ switch (cmd) {
       title: flags.title || path.basename(work),
       brief: flags.brief || "",
       purpose: flags.purpose || "",
-      style: flags.style || "polymath",
+      style: flags.style || "editorial",
       wpm: flags.wpm ? +flags.wpm : 135,
       alternates: [],
       format: flags.format || "16:9",
@@ -229,7 +229,7 @@ switch (cmd) {
     const resFlag = flags.res ? ["--res", String(flags.res)] : (flags["4k"] ? ["--res", "4k"] : (flags["1080p"] ? ["--res", "1080p"] : []));
     const fpsFlag = flags.fps ? ["--fps", String(flags.fps)] : [];
     const q = [...(flags.draft ? ["--quality", "draft"] : ["--quality", "looks", "--video-bitrate", flags.bitrate || "10M"]), ...(useAlpha ? ["--alpha"] : []), ...resFlag, ...fpsFlag];
-    const res = hf(["render", build, "--output", out, ...q], { stdio: ["ignore", "pipe", "pipe"] });
+    const res = hf(["render", build, "--output", out, ...q], { stdio: ["ignore", "pipe", "inherit"] });
     if (res.status !== 0 || !fs.existsSync(out)) die(`Render failed (exit ${res.status}).\n${(res.stderr || res.stdout || "").slice(-3000)}\nTry: npx hyperframes check ${build}`);
     // the soundtrack goes in exactly as mastered (the renderer's own mix changes its level)
     const mix = path.join(build, "assets/mix.wav");

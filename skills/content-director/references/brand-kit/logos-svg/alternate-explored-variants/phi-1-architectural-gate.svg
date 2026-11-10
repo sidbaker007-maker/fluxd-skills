@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
-  <!-- Left Gate Bracket -->
-  <path class="mark-body" fill="#111315" d="M 36 60 L 100 60 L 100 92 L 68 92 L 68 164 L 100 164 L 100 196 L 36 196 Z"/>
-  <!-- Central Vertical Flux Pillar (Pure, no forced F bars) -->
-  <rect class="mark-accent" x="114" y="20" width="28" height="216" fill="#E04826"/>
-  <!-- Right Gate Bracket -->
-  <path class="mark-body" fill="#111315" d="M 156 60 L 220 60 L 220 196 L 156 196 L 156 164 L 188 164 L 188 92 L 156 92 Z"/>
-</svg>

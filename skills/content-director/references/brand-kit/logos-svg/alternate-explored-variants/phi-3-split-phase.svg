@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
-  <!-- Left Shifted Bracket (Upper-weighted) -->
-  <path class="mark-body" fill="#111315" d="M 40 44 L 100 44 L 100 76 L 72 76 L 72 140 L 100 140 L 100 172 L 40 172 Z"/>
-  <!-- Central Vertical Flux Axis with 45-deg terminal cuts -->
-  <path class="mark-accent" fill="#E04826" d="M 114 36 L 142 8 L 142 220 L 114 248 Z"/>
-  <!-- Right Shifted Bracket (Lower-weighted) -->
-  <path class="mark-body" fill="#111315" d="M 156 84 L 216 84 L 216 212 L 156 212 L 156 180 L 184 180 L 184 116 L 156 116 Z"/>
-</svg>

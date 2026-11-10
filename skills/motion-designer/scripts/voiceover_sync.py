@@ -1,24 +1,33 @@
-import shutil
 #!/usr/bin/env python3
 """
-Single Continuous Voiceover Auto-Slicer & Sidechain Audio Mixer for Motion Designer.
+Single Continuous Voiceover Auto-Slicer, Two-Stage <=179s Reel Cap & Karaoke Word Aligner
+for FLUXD Motion Designer (`voiceover_sync.py`).
 
-Supports your exact recording workflow:
-1. You record ONE single continuous audio file (`voiceover.wav` or `voiceover.mp3`) for the entire script.
-   (If you stumble on a line, pause >= 1.0s and repeat the line.)
-2. In Local Gemini CLI, uses `faster-whisper` (if installed) for word-level timestamps and automatic retake removal.
-   In Cloud Sandbox or zero-dependency environments, falls back to `ffmpeg silencedetect` energy segmentation.
-3. Aligns every spoken segment to the scenes in `video.json` (or imports `script.json` from `@content-director`),
-   updates each scene's exact `duration`, `startSec`, and `endSec`, slices per-beat audio into `assets/vo/beat-XX.wav`,
-   and mixes a full master audio track with `-14 dB` sidechain-ducked background music (`renders/master_audio.wav`).
+Key Capabilities:
+1. Two-Stage Pitch-Preserved Duration Cap (`<= 179.0s` / target `174.0s` for Reels):
+   - Stage A (Breath & Dead-Air Trim First): Runs `ffmpeg silenceremove` to trim inter-sentence
+     breath pauses (`> 0.35s`) down to a natural `0.15s` hold first. On a ~205s recording with 50
+     breath pauses, this shaves ~15-18s automatically with ZERO speech speed-up.
+   - Stage B (Gentle Pitch-Preserved `atempo` Only If Needed): Only if the silence-trimmed audio
+     still exceeds `max_duration` (default `174.0s`, hard ceiling `179.0s`), applies the minimum
+     required `atempo` (`1.04x - 1.12x`) so human speech never sounds rushed.
+2. Active-Word Karaoke Alignment (`s["words"]` in `video.json` — Zero `.srt` Files):
+   - Uses `faster-whisper` (`word_timestamps=True`, CUDA `int8_float16` on RTX GPUs) when available,
+     or deterministic character-weighted word interpolation when running in zero-dependency mode.
+   - Populates `s["words"] = [{"text": "Right", "start": 0.0, "end": 0.28}, ...]` (relative to scene
+     start `0.0s`) directly inside `video.json` for `MD.karaokeSub` (`karaoke-active-word`).
+   - External `.srt` (`subtitle.srt` / `captions.srt`) files are intentionally omitted—on-canvas
+     3-5 word Active-Word Karaoke Subtitles are the sole subtitle system.
+3. `-14 dB` Sidechain-Ducked Master Audio Mix (`renders/master_vo_mix.wav`).
 
 Usage:
-    python3 scripts/voiceover_sync.py <work_dir> --audio <path/to/voiceover.wav> [--bgm <path/to/bgm.mp3>] [--model base]
+    python3 scripts/voiceover_sync.py <work_dir> --audio <path/to/voiceover.mp3> [--bgm <path/to/bgm.mp3>] [--max-dur 174.0]
 """
 
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -27,7 +36,7 @@ from pathlib import Path
 def probe_duration(audio_path: Path) -> float:
     cmd = [
         "ffprobe", "-v", "error", "-show_entries", "format=duration",
-        "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path)
+        "-of", "default=noprint_wrappers=1:nokey=1", str(audio_path),
     ]
     res = subprocess.run(cmd, capture_output=True, text=True)
     try:
@@ -36,13 +45,67 @@ def probe_duration(audio_path: Path) -> float:
         return 0.0
 
 
-def detect_speech_chunks_ffmpeg(audio_path: Path, noise_db: float = -35.0, min_silence: float = 0.32) -> list:
+def prepare_capped_voiceover(
+    raw_audio: Path,
+    out_audio: Path,
+    target_max_sec: float = 174.0,
+    hard_cap_sec: float = 179.0,
+) -> dict:
+    """
+    Two-stage pre-pass:
+      1. Trim breath pauses > 0.35s down to 0.15s via `silenceremove`.
+      2. Only if duration still exceeds `hard_cap_sec` (or `target_max_sec`), apply gentle `atempo`.
+    """
+    out_audio.parent.mkdir(parents=True, exist_ok=True)
+    raw_dur = probe_duration(raw_audio)
+    if raw_dur <= 0:
+        shutil.copy2(raw_audio, out_audio)
+        return {"rawDurationSec": 0.0, "trimmedDurationSec": 0.0, "finalDurationSec": 0.0, "atempoApplied": 1.0}
+
+    # Stage 1: Trim excess silence (>0.32s pauses capped at 0.15s)
+    trimmed_tmp = out_audio.with_name(out_audio.stem + "_trimmed.wav")
+    subprocess.run([
+        "ffmpeg", "-y", "-v", "error", "-i", str(raw_audio),
+        "-af", "silenceremove=start_periods=1:start_silence=0.10:start_threshold=-38dB:stop_periods=-1:stop_duration=0.32:stop_threshold=-38dB:stop_silence=0.15",
+        "-ar", "48000", "-ac", "2", str(trimmed_tmp),
+    ], check=False)
+
+    trimmed_dur = probe_duration(trimmed_tmp) if trimmed_tmp.exists() else raw_dur
+    if trimmed_dur <= 0:
+        shutil.copy2(raw_audio, trimmed_tmp)
+        trimmed_dur = raw_dur
+
+    # Stage 2: Check if gentle atempo is still needed to land <= target_max_sec (174s) / hard_cap_sec (179s)
+    atempo = 1.0
+    if trimmed_dur > hard_cap_sec or (raw_dur > hard_cap_sec and trimmed_dur > target_max_sec):
+        needed = trimmed_dur / target_max_sec
+        atempo = round(min(1.18, max(1.02, needed)), 4)
+        subprocess.run([
+            "ffmpeg", "-y", "-v", "error", "-i", str(trimmed_tmp),
+            "-af", f"atempo={atempo}",
+            "-ar", "48000", "-ac", "2", str(out_audio),
+        ], check=False)
+        trimmed_tmp.unlink(missing_ok=True)
+    else:
+        shutil.move(str(trimmed_tmp), str(out_audio))
+
+    final_dur = probe_duration(out_audio)
+    return {
+        "rawDurationSec": raw_dur,
+        "trimmedDurationSec": trimmed_dur,
+        "finalDurationSec": final_dur,
+        "secondsSavedBySilenceTrim": round(max(0.0, raw_dur - trimmed_dur), 2),
+        "atempoApplied": atempo,
+    }
+
+
+def detect_speech_chunks_ffmpeg(audio_path: Path, noise_db: float = -35.0, min_silence: float = 0.28) -> list:
     """Zero-dependency speech segmenter using ffmpeg silencedetect."""
     total_dur = probe_duration(audio_path)
     cmd = [
         "ffmpeg", "-hide_banner", "-nostats", "-i", str(audio_path),
         "-af", f"silencedetect=noise={noise_db}dB:d={min_silence}",
-        "-f", "null", "-"
+        "-f", "null", "-",
     ]
     res = subprocess.run(cmd, capture_output=True, text=True)
     log = res.stderr or ""
@@ -74,7 +137,6 @@ def transcribe_faster_whisper(audio_path: Path, model_size: str = "base"):
 
     has_cuda = shutil.which("nvidia-smi") is not None
     try:
-        # On NVIDIA RTX 3050 (4GB-8GB VRAM), cuda + int8_float16 uses <1.2GB VRAM and runs ~6x faster via Ampere Tensor Cores
         model = WhisperModel(model_size, device="cuda" if has_cuda else "cpu", compute_type="int8_float16" if has_cuda else "int8")
     except Exception:
         model = WhisperModel(model_size, device="cpu", compute_type="int8")
@@ -82,8 +144,8 @@ def transcribe_faster_whisper(audio_path: Path, model_size: str = "base"):
     seg_list = []
     for seg in segments:
         words = [
-            {"word": w.word.strip(), "start": round(w.start, 3), "end": round(w.end, 3)}
-            for w in (seg.words or [])
+            {"text": w.word.strip(), "start": round(w.start, 3), "end": round(w.end, 3)}
+            for w in (seg.words or []) if w.word and w.word.strip()
         ]
         seg_list.append({
             "start": round(seg.start, 3),
@@ -92,7 +154,6 @@ def transcribe_faster_whisper(audio_path: Path, model_size: str = "base"):
             "text": seg.text.strip(),
             "words": words,
         })
-    # Automatic retake filter: if two consecutive segments have >70% identical opening words after a pause, drop the first stumble
     cleaned = []
     for seg in seg_list:
         if cleaned:
@@ -106,30 +167,54 @@ def transcribe_faster_whisper(audio_path: Path, model_size: str = "base"):
     return cleaned
 
 
+def build_scene_words(vo_text: str, scene_dur: float, whisper_words: list = None, scene_t0: float = 0.0) -> list:
+    """
+    Build the scene-relative `words: [{text, start, end}, ...]` array for `MD.karaokeSub`.
+    Uses faster-whisper timestamps (shifted relative to `scene_t0`) when available,
+    otherwise interpolates word timings from character length and punctuation pauses.
+    """
+    if whisper_words:
+        rel_words = []
+        for w in whisper_words:
+            txt = re.sub(r"[\*\[\]`]", "", str(w.get("text") or w.get("word") or "")).strip()
+            if not txt:
+                continue
+            st = round(max(0.0, float(w["start"]) - scene_t0), 3)
+            en = round(min(scene_dur, max(st + 0.08, float(w["end"]) - scene_t0)), 3)
+            rel_words.append({"text": txt, "start": st, "end": en})
+        if rel_words:
+            return rel_words
 
-def format_srt_time(seconds: float) -> str:
-    ms = int(round((seconds - int(seconds)) * 1000))
-    s = int(seconds) % 60
-    m = (int(seconds) // 60) % 60
-    h = int(seconds) // 3600
-    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+    clean = re.sub(r"\[(?:AUDIO\s+)?PAUSE:[^\]]+\]", "", str(vo_text or ""), flags=re.IGNORECASE)
+    clean = re.sub(r"[\*\[\]`]", "", clean)
+    raw_tokens = [t for t in re.split(r"\s+", clean.strip()) if t]
+    if not raw_tokens:
+        return []
 
-def write_english_srt(scenes: list, srt_path: Path):
-    lines = []
-    idx = 1
-    for s in scenes:
-        vo = str(s.get("vo") or s.get("title") or s.get("text") or "").strip()
-        vo = re.sub(r"\[(?:AUDIO\s+)?PAUSE:[^\]]+\]", "", vo).replace("*", "").replace("[", "").replace("]", "").strip()
-        if not vo:
-            continue
-        t0 = float(s.get("voStartSec", 0.0))
-        t1 = float(s.get("voEndSec", t0 + float(s.get("duration", 3.0))))
-        lines.append(f"{idx}\n{format_srt_time(t0)} --> {format_srt_time(t1)}\n{vo}\n")
-        idx += 1
-    srt_path.parent.mkdir(parents=True, exist_ok=True)
-    srt_path.write_text("\n".join(lines), encoding="utf-8")
+    speak_win = max(1.0, scene_dur - 0.18)
+    weights = [
+        max(2, len(t)) + (2.2 if re.search(r"[,;:\u2014\-]$", t) else (3.0 if re.search(r"[\.\?!]$", t) else 0.0))
+        for t in raw_tokens
+    ]
+    total_w = sum(weights) or 1.0
+    cursor = 0.06
+    out = []
+    for t, w in zip(raw_tokens, weights):
+        wdur = (w / total_w) * speak_win
+        st = round(cursor, 3)
+        en = round(min(scene_dur - 0.04, max(st + 0.08, cursor + wdur)), 3)
+        out.append({"text": t, "start": st, "end": en})
+        cursor += wdur
+    return out
 
-def slice_and_align(work_dir: Path, audio_path: Path, bgm_path: Path = None, model_size: str = "base") -> dict:
+
+def slice_and_align(
+    work_dir: Path,
+    audio_path: Path,
+    bgm_path: Path = None,
+    model_size: str = "base",
+    target_max_sec: float = 174.0,
+) -> dict:
     vfile = work_dir / "video.json"
     if not vfile.exists():
         raise FileNotFoundError(f"No video.json found in {work_dir}")
@@ -142,28 +227,33 @@ def slice_and_align(work_dir: Path, audio_path: Path, bgm_path: Path = None, mod
     vo_dir = work_dir / "assets" / "vo"
     vo_dir.mkdir(parents=True, exist_ok=True)
 
-    whisper_segs = transcribe_faster_whisper(audio_path, model_size=model_size)
-    mode = "faster-whisper" if whisper_segs else "ffmpeg-silencedetect"
-    chunks = whisper_segs if whisper_segs else detect_speech_chunks_ffmpeg(audio_path)
+    # Pre-pass: silence trim first, then gentle atempo only if > 179s cap
+    processed_vo = vo_dir / "voiceover_capped.wav"
+    prepass = prepare_capped_voiceover(audio_path, processed_vo, target_max_sec=target_max_sec, hard_cap_sec=179.0)
 
-    total_audio_dur = probe_duration(audio_path)
+    whisper_segs = transcribe_faster_whisper(processed_vo, model_size=model_size)
+    mode = "faster-whisper" if whisper_segs else "ffmpeg-silencedetect"
+    chunks = whisper_segs if whisper_segs else detect_speech_chunks_ffmpeg(processed_vo)
+
+    total_audio_dur = probe_duration(processed_vo)
     n_scenes = len(scenes)
 
-    # Map chunks onto scenes proportionally by expected VO word count if chunk count != scene count
-    word_weights = [max(1, len(re.findall(r"\b\w+\b", str(s.get("vo") or s.get("text") or s.get("title") or "beat")))) for s in scenes]
-    total_weight = sum(word_weights)
+    word_weights = [
+        max(1, len(re.findall(r"\b\w+\b", str(s.get("vo") or s.get("text") or s.get("title") or "beat"))))
+        for s in scenes
+    ]
+    total_weight = sum(word_weights) or 1
 
-    aligned_Windows = []
+    aligned_windows = []
     if len(chunks) == n_scenes:
         for ch in chunks:
-            aligned_Windows.append((ch["start"], ch["end"], ch.get("words", [])))
+            aligned_windows.append((ch["start"], ch["end"], ch.get("words", [])))
     else:
         cursor = 0.0
         for i, w in enumerate(word_weights):
             share = (w / total_weight) * total_audio_dur
             start_t = round(cursor, 3)
             end_t = round(total_audio_dur if i == n_scenes - 1 else cursor + share, 3)
-            # Snap to nearest detected chunk boundary if within 0.6s
             for ch in chunks:
                 if abs(ch["end"] - end_t) <= 0.6:
                     end_t = ch["end"]
@@ -174,46 +264,50 @@ def slice_and_align(work_dir: Path, audio_path: Path, bgm_path: Path = None, mod
                     for wd in seg.get("words", []):
                         if start_t - 0.1 <= wd["start"] <= end_t + 0.1:
                             words_in_win.append(wd)
-            aligned_Windows.append((start_t, max(start_t + 1.2, end_t), words_in_win))
+            aligned_windows.append((start_t, max(start_t + 1.2, end_t), words_in_win))
             cursor = end_t
 
     timeline_cursor = 0.0
-    for i, (s, (t0, t1, words)) in enumerate(zip(scenes, aligned_Windows)):
-        pause_extra = float(s.get("pause", 0.0) or 0.0)
-        beat_dur = round(max(1.5, (t1 - t0) + pause_extra), 2)
+    for i, (s, (t0, t1, w_words)) in enumerate(zip(scenes, aligned_windows)):
+        pause_extra = min(0.25, float(s.get("pause", 0.0) or 0.0))
+        beat_dur = round(max(1.8, (t1 - t0) + pause_extra), 2)
         slice_file = vo_dir / f"beat-{i+1:02d}.wav"
         subprocess.run([
             "ffmpeg", "-y", "-v", "error",
             "-ss", f"{t0:.3f}", "-to", f"{t1:.3f}",
-            "-i", str(audio_path),
-            "-ar", "48000", "-ac", "2", str(slice_file)
+            "-i", str(processed_vo),
+            "-ar", "48000", "-ac", "2", str(slice_file),
         ], check=False)
 
+        s["dur"] = beat_dur
         s["duration"] = beat_dur
         s["voStartSec"] = round(timeline_cursor, 3)
         s["voEndSec"] = round(timeline_cursor + beat_dur, 3)
         s["voAudioSlice"] = f"assets/vo/beat-{i+1:02d}.wav"
-        if words:
-            s["wordTimestamps"] = words
+        s["words"] = build_scene_words(s.get("vo") or s.get("title") or "", beat_dur, w_words, scene_t0=t0)
         timeline_cursor += beat_dur
 
+    vdata["subtitles"] = True
+    vdata["subtitleMode"] = "karaoke-active-word"
+    vdata["length"] = round(timeline_cursor, 2)
     vdata["voiceover"] = {
         "mode": "single-continuous-recording",
         "engine": mode,
         "sourceFile": str(audio_path.name),
+        "rawDurationSec": prepass["rawDurationSec"],
+        "trimmedDurationSec": prepass["trimmedDurationSec"],
+        "atempoMultiplier": prepass["atempoApplied"],
         "totalDurationSec": round(timeline_cursor, 2),
         "sidechainDuckingDb": -14.0,
+        "subtitleFormat": "karaoke-active-word (in-canvas, no .srt)",
     }
     vfile.write_text(json.dumps(vdata, indent=2), encoding="utf-8")
 
-    # Mix master audio with optional -14dB sidechain BGM ducking
+    # Mix master audio with optional -14dB sidechain BGM ducking (no .srt file generated)
     renders_dir = work_dir / "renders"
     renders_dir.mkdir(parents=True, exist_ok=True)
-    srt_file = renders_dir / "captions.srt"
-    write_english_srt(scenes, srt_file)
     master_wav = renders_dir / "master_vo_mix.wav"
     if bgm_path and bgm_path.exists():
-        # Mix voiceover (normalized) + BGM ducked by -14dB during speech with 2s fade-out
         fade_start = max(0.0, timeline_cursor - 2.0)
         filter_complex = (
             f"[0:a]aresample=48000,volume=1.0,asplit=2[vo][sc];"
@@ -223,35 +317,39 @@ def slice_and_align(work_dir: Path, audio_path: Path, bgm_path: Path = None, mod
         )
         subprocess.run([
             "ffmpeg", "-y", "-v", "error",
-            "-i", str(audio_path), "-stream_loop", "-1", "-i", str(bgm_path),
+            "-i", str(processed_vo), "-stream_loop", "-1", "-i", str(bgm_path),
             "-filter_complex", filter_complex,
-            "-map", "[out]", "-t", f"{timeline_cursor:.2f}", str(master_wav)
+            "-map", "[out]", "-t", f"{timeline_cursor:.2f}", str(master_wav),
         ], check=False)
     else:
         subprocess.run([
             "ffmpeg", "-y", "-v", "error",
-            "-i", str(audio_path), "-ar", "48000", "-ac", "2", str(master_wav)
+            "-i", str(processed_vo), "-ar", "48000", "-ac", "2", str(master_wav),
         ], check=False)
 
     return {
         "engine": mode,
         "sceneCount": n_scenes,
+        "rawDurationSec": prepass["rawDurationSec"],
+        "trimmedDurationSec": prepass["trimmedDurationSec"],
+        "atempoApplied": prepass["atempoApplied"],
         "totalDurationSec": round(timeline_cursor, 2),
+        "subtitleMode": "karaoke-active-word",
         "masterAudio": str(master_wav),
-        "englishSubtitlesSrt": str(srt_file),
         "updatedVideoJson": str(vfile),
     }
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Auto-slice a single continuous voiceover recording into Motion Designer scenes.")
+    parser = argparse.ArgumentParser(description="Auto-slice a single continuous voiceover recording into Motion Designer scenes with karaoke word alignment.")
     parser.add_argument("work_dir", type=Path, help="Path to motion-designer project directory")
     parser.add_argument("--audio", type=Path, required=True, help="Path to single continuous voiceover (.wav / .mp3)")
     parser.add_argument("--bgm", type=Path, default=None, help="Optional background music track for -14dB sidechain ducking")
     parser.add_argument("--model", type=str, default="base", help="faster-whisper model size when running locally in CLI")
+    parser.add_argument("--max-dur", type=float, default=174.0, help="Target max duration in seconds before gentle atempo (default 174.0s)")
     args = parser.parse_args()
 
-    report = slice_and_align(args.work_dir, args.audio, bgm_path=args.bgm, model_size=args.model)
+    report = slice_and_align(args.work_dir, args.audio, bgm_path=args.bgm, model_size=args.model, target_max_sec=args.max_dur)
     print(json.dumps(report, indent=2))
 
 
