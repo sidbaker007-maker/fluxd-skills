@@ -34,3 +34,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v09-2026.11.10-fluxd-v2-hyperframes-clean` (2026-11-10) — Released clean content-director v3.0 and motion-designer v2.0 (FLUXD Kinetic Editorial)
 - Stripped legacy bloat and unified around deterministic 60fps rendering, two-stage silence trim (`silenceremove` before gentle `atempo`), and 5-source movie/archival footage harvesting.
 
+## `v10-2026.11.16-bang-motion-v1.19.0` (2026-11-16) — Imported bang-motion v1.19.0 cinematic web motion graphics skill
+- Added `bang-motion` v1.19.0 (anti-PPT structural laws, deterministic GSAP/Three.js camera rigs, collage & cartoon stage explainers, and After Effects Higgsfield bridge).
+
