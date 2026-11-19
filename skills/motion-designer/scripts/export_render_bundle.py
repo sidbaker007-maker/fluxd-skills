@@ -7,6 +7,9 @@ Web-to-Local Render Bundle Exporter (`export_render_bundle.py`) for FLUXD Motion
 2. Packages the ready-to-render project + parallel local renderer into `<slug>_render_bundle.zip`.
 3. On your local Linux PC, `bash render_local.sh` renders the exact verified composition across
    parallel Chromium workers + RTX 3050 NVENC.
+4. Optional On-Demand FilmCraft Export: Pass `--filmcraft` to `export_render_bundle.py` (or run
+   `bash render_local.sh --filmcraft` locally) whenever you want the full multi-track FilmCraft
+   project (`.xml` + `.otio` + isolated A1 Voiceover, A2 Music Score, A3 SFX Cues, and V1/V2 clips).
 """
 
 import argparse
@@ -22,13 +25,26 @@ RENDER_SH_TEMPLATE = """#!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
 
-RES="${1:-1080p}"
-FPS="${2:-30}"
+WANT_FILMCRAFT=0
+POSITIONAL=()
+for arg in "$@"; do
+  if [ "${arg}" = "--filmcraft" ]; then
+    WANT_FILMCRAFT=1
+  else
+    POSITIONAL+=("${arg}")
+  fi
+done
+
+RES="${POSITIONAL[0]:-1080p}"
+FPS="${POSITIONAL[1]:-30}"
 
 echo "================================================================"
 echo "  FLUXD Parallel Local Hardware Renderer (Curated Web Bundle)"
 echo "  Target: ${RES} @ ${FPS}fps (Untouched 1.0x Voiceover + Karaoke)"
-echo "  Tip: Pass 'bash render_local.sh 1080p 60' if you want 60fps"
+echo "  Tips:"
+echo "    - Pass 'bash render_local.sh 1080p 60' for 60fps"
+echo "    - Pass 'bash render_local.sh --filmcraft' to also export the"
+echo "      multi-track FilmCraft timeline (.xml/.otio) + audio stems"
 echo "================================================================"
 
 # 1. Verify pre-bundled untouched voiceover & SFX
@@ -43,13 +59,18 @@ fi
 echo "[2/2] Rendering deterministic ${RES} ${FPS}fps MP4..."
 node scripts/motion.js render . --res "${RES}" --fps "${FPS}" --skip-review
 
+if [ "${WANT_FILMCRAFT}" -eq 1 ]; then
+  echo "[FilmCraft] Exporting multi-track FilmCraft project (.xml + .otio + isolated audio/video stems)..."
+  python3 scripts/filmcraft_export.py .
+fi
+
 echo "================================================================"
 echo "  DONE! Check your rendered MP4 in this folder and renders/v1.mp4"
 echo "================================================================"
 """
 
 
-def build_render_bundle(work_dir: Path, out_zip: Path) -> Path:
+def build_render_bundle(work_dir: Path, out_zip: Path, include_filmcraft: bool = False) -> Path:
     work_dir = work_dir.resolve()
     out_zip = out_zip.resolve()
     if out_zip.suffix.lower() == ".zip":
@@ -61,6 +82,11 @@ def build_render_bundle(work_dir: Path, out_zip: Path) -> Path:
     motion_js = SKILL_DIR / "scripts" / "motion.js"
     if (work_dir / "video.json").exists() and motion_js.exists():
         subprocess.run(["node", str(motion_js), "compose", str(work_dir)], check=False)
+
+    if include_filmcraft:
+        fc_py = SKILL_DIR / "scripts" / "filmcraft_export.py"
+        if fc_py.exists():
+            subprocess.run(["python3", str(fc_py), str(work_dir)], check=False)
 
     with tempfile.TemporaryDirectory(prefix="fluxd_bundle_") as tmp:
         stage = Path(tmp) / "bundle"
@@ -76,6 +102,11 @@ def build_render_bundle(work_dir: Path, out_zip: Path) -> Path:
             if src_dir.exists():
                 shutil.copytree(src_dir, stage / folder, dirs_exist_ok=True)
 
+        if include_filmcraft:
+            for fc_dir in work_dir.glob("*_filmcraft_project"):
+                if fc_dir.is_dir():
+                    shutil.copytree(fc_dir, stage / fc_dir.name, dirs_exist_ok=True)
+
         for skill_sub in ["scripts", "styles", "assets"]:
             s_src = SKILL_DIR / skill_sub
             if s_src.exists():
@@ -84,14 +115,12 @@ def build_render_bundle(work_dir: Path, out_zip: Path) -> Path:
                 else:
                     shutil.copytree(s_src, stage / skill_sub, dirs_exist_ok=True)
 
-        # Remove redundant intermediate WAV copies inside the bundle
-        for p_rm in [stage / "build" / "assets" / "bgm_sfx_bed.wav", stage / "assets" / "vo"]:
+        for p_rm in [stage / "assets" / "vo"]:
             if p_rm.is_dir():
                 shutil.rmtree(p_rm, ignore_errors=True)
             elif p_rm.exists():
                 p_rm.unlink(missing_ok=True)
 
-        # Also remove any old unverified archive-*.mp4 or movie-*.mp4 background overlays
         for old_vid in (stage / "assets").glob("archive-s*.mp4"):
             old_vid.unlink(missing_ok=True)
         for old_vid in (stage / "assets").glob("movie-s*.mp4"):
@@ -111,9 +140,10 @@ def main():
     parser = argparse.ArgumentParser(description="Export a self-contained Web-to-Local Render Bundle (.zip) with render_local.sh")
     parser.add_argument("work_dir", type=Path, help="Path to motion-designer project directory")
     parser.add_argument("out_zip", type=Path, help="Output .zip path")
+    parser.add_argument("--filmcraft", action="store_true", help="Pre-generate the multi-track FilmCraft project folder inside the bundle")
     args = parser.parse_args()
 
-    zpath = build_render_bundle(args.work_dir, args.out_zip)
+    zpath = build_render_bundle(args.work_dir, args.out_zip, include_filmcraft=args.filmcraft)
     print(f"Exported self-contained local render bundle: {zpath} ({zpath.stat().st_size} bytes)")
 
 

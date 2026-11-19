@@ -7,6 +7,7 @@
 //   node motion.js frames <dir>                compose + one real frame per scene (frames/*.jpg + sheet.jpg)
 //   node motion.js board <dir> [--open]        the storyboard page: live preview, edits, Approve
 //   node motion.js render <dir> [--draft]      compose + render → renders/vN.mp4 and <name>.mp4
+//   node motion.js filmcraft <dir> [out]       on-demand multi-track FilmCraft project export (.xml + .otio + isolated stems)
 //   node motion.js set <dir> key=value …       change video.json (style=kinetic length=20 format=9:16 …)
 //   node motion.js grab <dir> <url>            a website → screenshots, logo, colours, its own words
 //   node motion.js restore <dir> vN            go back to the plan behind renders/vN.mp4
@@ -49,7 +50,6 @@ function printReport(r) {
 
 function hf(argv, opts = {}) {
   const localPy = path.join(SKILL, "scripts/local_renderer.py");
-  // Use our zero-dependency stdlib CDP local_renderer.py by default (supports RTX NVENC, zero npm/pip install, live progress)
   if (!process.env.MD_USE_NPX_HYPERFRAMES) {
     const r = spawnSync("python3", [localPy, ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
     if (r.status === 0) return r;
@@ -57,7 +57,6 @@ function hf(argv, opts = {}) {
   return spawnSync(npx, ["--yes", "hyperframes", ...argv], { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
 }
 
-// one frame per scene at its "everything has landed" moment, plus a contact sheet
 function frames(r, dir, outDir, label = "scene") {
   fs.mkdirSync(outDir, { recursive: true });
   const times = r.scenes.map((s) => s.hero);
@@ -73,7 +72,6 @@ function frames(r, dir, outDir, label = "scene") {
     out.push(dst);
   });
   fs.rmSync(tmp, { recursive: true, force: true });
-  // contact sheet
   const cols = Math.min(4, out.length);
   const sheet = path.join(outDir, "sheet.jpg");
   const inputs = out.flatMap((f) => ["-i", f]);
@@ -86,8 +84,6 @@ function frames(r, dir, outDir, label = "scene") {
   return { files: out, sheet };
 }
 
-// HyperFrames' own check, reduced to what matters: errors, unreadable lines, tiny type, contrast that
-// holds outside a transition. Overlaps while two scenes cross are expected and left out.
 function checkBuild(r, build) {
   const res = hf(["check", build, "--json"]);
   fs.rmSync(path.join(build, ".hyperframes"), { recursive: true, force: true });
@@ -179,7 +175,6 @@ switch (cmd) {
     break;
   }
   case "alts": {
-    // the same video in other styles, for the storyboard's style picker
     need();
     const v = readJSON(vfile);
     const ids = (flags.styles ? String(flags.styles).split(",") : v.alternates || []).filter((x) => x && x !== v.style);
@@ -201,6 +196,15 @@ switch (cmd) {
     const py = path.join(SKILL, "scripts/vox_fusion_export.py");
     const res = spawnSync("python3", [py, work, outComp], { encoding: "utf8", stdio: "inherit" });
     if (res.status !== 0) die("Failed to export DaVinci Resolve Fusion (.comp) and cut-out pieces.");
+    break;
+  }
+  case "filmcraft": {
+    need();
+    const outTarget = pos[1] ? path.resolve(pos[1]) : (flags.out ? path.resolve(String(flags.out)) : null);
+    const py = path.join(SKILL, "scripts/filmcraft_export.py");
+    const pyArgs = outTarget ? [py, work, "--out", outTarget] : [py, work];
+    const res = spawnSync("python3", pyArgs, { encoding: "utf8", stdio: "inherit" });
+    if (res.status !== 0) die("Failed to export FilmCraft multi-track project bundle.");
     break;
   }
   case "canvas": {
@@ -231,11 +235,9 @@ switch (cmd) {
     const q = [...(flags.draft ? ["--quality", "draft"] : ["--quality", "looks", "--video-bitrate", flags.bitrate || "10M"]), ...(useAlpha ? ["--alpha"] : []), ...resFlag, ...fpsFlag];
     const res = hf(["render", build, "--output", out, ...q], { stdio: ["ignore", "pipe", "inherit"] });
     if (res.status !== 0 || !fs.existsSync(out)) die(`Render failed (exit ${res.status}).\n${(res.stderr || res.stdout || "").slice(-3000)}\nTry: npx hyperframes check ${build}`);
-    // the soundtrack goes in exactly as mastered (the renderer's own mix changes its level)
     const mix = path.join(build, "assets/mix.wav");
     if (fs.existsSync(mix)) {
       const tp = (f) => { const x = spawnSync("ffmpeg", ["-hide_banner", "-i", f, "-af", "loudnorm=print_format=json", "-f", "null", "-"], { encoding: "utf8" }); const m = (x.stderr || "").match(/"input_tp"\s*:\s*"([-\d.]+)"/); return m ? +m[1] : null; };
-      // AAC can overshoot sharp transients by a few dB: measure the encoded file and trim if it peaks over −1 dBTP
       let gain = 0;
       for (let k = 0; k < 3; k++) {
         const tmp = out.replace(/\.mp4$/, ".mux.mp4");
@@ -252,11 +254,10 @@ switch (cmd) {
       const slug = (v.title || "video").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "video";
       const final = path.join(work, `${slug}.mp4`);
       fs.rmSync(final, { force: true });
-      try { fs.linkSync(out, final); } catch { fs.copyFileSync(out, final); } // same file, no second copy on disk
-      fs.copyFileSync(vfile, out.replace(/\.mp4$/, ".json")); // the plan that made it, to go back to
+      try { fs.linkSync(out, final); } catch { fs.copyFileSync(out, final); }
+      fs.copyFileSync(vfile, out.replace(/\.mp4$/, ".json"));
       v.renders = [...(v.renders || []), { file: path.relative(work, out), at: new Date().toISOString(), style: v.style, format: v.format, duration: r.duration }];
       writeJSON(vfile, v);
-      // a QA sheet from the real video: every scene at its landed moment
       const qa = path.join(work, "qa");
       fs.mkdirSync(qa, { recursive: true });
       const shots = r.scenes.map((s, i) => { const f = path.join(qa, `s${String(i + 1).padStart(2, "0")}.jpg`); spawnSync("ffmpeg", ["-v", "error", "-y", "-ss", s.hero.toFixed(3), "-i", out, "-frames:v", "1", "-vf", "scale=480:-2", "-q:v", "4", f]); return f; });
@@ -268,7 +269,6 @@ switch (cmd) {
     break;
   }
   case "grab": {
-    // a website → screenshots, logo, brand colours and its own words, ready for the scenes
     const url = pos[1];
     if (!work || !url) die("node motion.js grab <dir> <url>");
     const cap = path.join(work, ".capture");
@@ -295,7 +295,7 @@ switch (cmd) {
     if (fs.existsSync(txt)) fs.copyFileSync(txt, path.join(work, "assets/site-text.txt"));
     const site = { url, title: tok.title, description: tok.description, colours, fonts: (Array.isArray(fontsUsed) ? fontsUsed : fontsUsed.fonts || []).map((f) => f.family).filter(Boolean).slice(0, 8), screenshots: got, logos, text: "assets/site-text.txt" };
     writeJSON(path.join(work, "assets/site.json"), site);
-    if (!flags.keep) fs.rmSync(cap, { recursive: true, force: true }); // ~10 MB of capture we no longer need
+    if (!flags.keep) fs.rmSync(cap, { recursive: true, force: true });
     console.log(`screenshots: ${got.join(", ") || "none"}  (look at them: crop away cookie banners)\nlogo candidates: ${logos.join(", ") || "none"}  (look at each: some are a "powered by" mark, not theirs)\ncolours: ${colours.slice(0, 10).join(" ")}\ntitle: ${site.title || ""}\nthe site's own words: ${site.text}\n→ ${path.join(work, "assets/site.json")}`);
     break;
   }
@@ -329,5 +329,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 12).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
+    console.log(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 13).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
 }

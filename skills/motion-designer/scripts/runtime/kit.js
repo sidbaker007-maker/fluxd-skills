@@ -787,81 +787,79 @@ MD.karaokeWords = function (s, dur) {
         });
       },
     },
-    // Frame-Exact 3.0s FLUXD Optical Shutter Blink & Binary Lockup Choreography (Synced to fxFluxdBlink)
     fluxdBlink: {
-      len: () => 2.8,
+      len: () => 2.2,
       run: (tl, els, at, o, c, s) => {
         els.forEach((stage) => {
+          const mode = stage.dataset.mode || "blink04";
           const phi = stage.querySelector(".fb-phi");
           const word = stage.querySelector(".fb-word");
           const odds = stage.querySelectorAll(".w-odd");
-          const evens = stage.querySelectorAll(".w-even");
-          const dots = stage.querySelectorAll(".w-dot");
-          const accents = stage.querySelectorAll(".mark-accent");
-          const sub = stage.parentElement ? stage.parentElement.querySelector(".fb-sub, .ed-outro-handle") : null;
-
-          // Initial state at t = at + 0.00s (Optical Capacitor Charge)
-          gsap.set(stage, { opacity: 0, scale: 0.88, filter: "blur(6px)" });
-          if (phi) gsap.set(phi, { opacity: 1, scaleX: 0.92, scaleY: 1.08 });
-          if (word) gsap.set(word, { opacity: 0, scale: 0.96 });
-          if (sub) gsap.set(sub, { opacity: 0, y: 12 });
-
-          // +0.00s -> +0.16s: Optical Charge & Chamfered Bracket Snap-In
-          tl.to(stage, { opacity: 1, scale: 1.0, filter: "blur(0px)", duration: 0.16, ease: "expo.out" }, at);
-          if (phi) {
-            tl.to(phi, { scaleX: 1.0, scaleY: 1.0, duration: 0.16, ease: "back.out(2.2)" }, at);
-
-            // +0.18s: BLINK #1 — Mechanical Leica Dual-Curtain Shutter Close & Release (+0.24s)
-            tl.to(phi, { scaleY: 0.06, scaleX: 1.12, opacity: 0.25, duration: 0.04, ease: "power4.in" }, at + 0.18);
-            tl.to(phi, { scaleY: 1.06, scaleX: 0.98, opacity: 1.0, duration: 0.06, ease: "expo.out" }, at + 0.24);
-            tl.to(phi, { scaleY: 1.0, scaleX: 1.0, duration: 0.06 }, at + 0.30);
-
-            // +0.38s: BLINK #2 — Anamorphic Vermilion (#E04826) Optical Flash & Shutter Close (+0.50s)
-            tl.to(phi, { scale: 1.14, color: "#E04826", filter: "drop-shadow(0 0 24px rgba(224,72,38,0.85))", duration: 0.05, ease: "power3.out" }, at + 0.38);
-            tl.to(phi, { scaleY: 0.04, scaleX: 1.18, opacity: 0, filter: "drop-shadow(0 0 0px rgba(224,72,38,0))", duration: 0.05, ease: "power4.in" }, at + 0.50);
-          }
-
-          // +0.56s & +0.72s: BLINK #3 — Binary Alternating Wordmark Strobe ([ F_U_D ] <-> [ _L_X_ ])
-          if (word) {
-            tl.set(word, { opacity: 1, scale: 1.0 }, at + 0.56);
-            if (odds.length && evens.length) {
-              // +0.56s: Odd glyphs (F, U, D) + brackets ignite left
-              tl.set(odds, { opacity: 1, y: -2 }, at + 0.56);
-              tl.set(evens, { opacity: 0.10, y: 3 }, at + 0.56);
-              if (dots.length) tl.set(dots, { opacity: 1 }, at + 0.56);
-              // +0.72s: Even glyphs (L, X) ignite right
-              tl.set(odds, { opacity: 0.10, y: 3 }, at + 0.72);
-              tl.set(evens, { opacity: 1, y: -2 }, at + 0.72);
-              // +0.88s: 60ms Vacuum Blackout Anticipation Frame before the Master Drop
-              tl.set([odds, evens, dots], { opacity: 0, y: 0 }, at + 0.88);
-            } else {
-              tl.set(word, { opacity: 0.15 }, at + 0.72);
-              tl.set(word, { opacity: 0 }, at + 0.88);
+          const evens = stage.querySelectorAll(".w-even, .w-dot");
+          const totalDur = s ? Math.max(2.6, s.dur) : 4.0;
+          if (mode === "blink01a" && phi) {
+            gsap.set(phi, { opacity: 0, scale: 0.92 });
+            [0.06, 0.20, 0.36, 0.54].forEach((t, idx) => {
+              tl.set(phi, { opacity: 1, scale: idx === 3 ? 1.06 : 1.0, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
+              if (idx < 3) tl.set(phi, { opacity: 0 }, at + t + 0.08);
+            });
+          } else if (mode === "blink01b" && word) {
+            gsap.set(word, { opacity: 0 });
+            [0.06, 0.20, 0.36, 0.54].forEach((t, idx) => {
+              tl.set(word, { opacity: 1, color: idx === 2 ? "#E04826" : "inherit" }, at + t);
+              if (idx < 3) tl.set(word, { opacity: 0 }, at + t + 0.08);
+            });
+          } else if (mode === "blink03" && word) {
+            gsap.set([odds, evens], { opacity: 0 });
+            tl.set(odds, { opacity: 1 }, at + 0.06);
+            tl.set(odds, { opacity: 0.08 }, at + 0.20);
+            tl.set(evens, { opacity: 1 }, at + 0.20);
+            tl.set(evens, { opacity: 0.08 }, at + 0.34);
+            tl.set(odds, { opacity: 1 }, at + 0.34);
+            tl.set([odds, evens], { opacity: 0 }, at + 0.46);
+            tl.set([odds, evens], { opacity: 1 }, at + 0.54);
+          } else {
+            // Combined Master End-Card Animation (Blink 04 -> Blink 03 Binary Strobe -> Full Lockup Hold, plus re-trigger near end of scene)
+            if (phi && word) {
+              tl.fromTo(stage, { scale: 0.94, opacity: 0 }, { scale: 1.0, opacity: 1, duration: 0.28, ease: "power3.out" }, at);
+              // Phase 1: Chamfered-Bracket Phi-2 Shutter Blink
+              tl.set(phi, { opacity: 1, scale: 1.08 }, at + 0.02);
+              tl.set(word, { opacity: 0 }, at + 0.02);
+              tl.set(phi, { opacity: 0 }, at + 0.14);
+              tl.set(phi, { opacity: 1, color: "#E04826" }, at + 0.24);
+              tl.set(phi, { opacity: 0, color: "inherit" }, at + 0.38);
+              // Phase 2: Cut to Big Framed [ FLUXD ] Lockup + Alternating Binary Phase Strobe ([ F_U_D ] <-> [ _L_X_ ])
+              tl.set(word, { opacity: 1 }, at + 0.42);
+              if (odds.length && evens.length) {
+                tl.set(odds, { opacity: 1 }, at + 0.42);
+                tl.set(evens, { opacity: 0.12 }, at + 0.42);
+                tl.set(odds, { opacity: 0.12 }, at + 0.56);
+                tl.set(evens, { opacity: 1 }, at + 0.56);
+                tl.set([odds, evens], { opacity: 0 }, at + 0.70);
+                tl.set([odds, evens], { opacity: 1 }, at + 0.78);
+              } else {
+                tl.set(word, { opacity: 0 }, at + 0.56);
+                tl.set(word, { opacity: 1 }, at + 0.66);
+              }
+              // Phase 3: Final Hero End-Card Strobe in the last 2.2s of the video so the logo animation is unmistakable at the very end
+              const endTrigger = Math.max(at + 1.4, totalDur - 2.1);
+              if (endTrigger > at + 1.1 && endTrigger < totalDur - 0.5) {
+                tl.set(word, { opacity: 0 }, endTrigger);
+                tl.set(phi, { opacity: 1, scale: 1.12 }, endTrigger);
+                tl.set(phi, { opacity: 0 }, endTrigger + 0.14);
+                tl.set(phi, { opacity: 1, color: "#E04826" }, endTrigger + 0.24);
+                tl.set(phi, { opacity: 0, color: "inherit" }, endTrigger + 0.38);
+                tl.set(word, { opacity: 1 }, endTrigger + 0.40);
+                if (odds.length && evens.length) {
+                  tl.set(odds, { opacity: 1 }, endTrigger + 0.40);
+                  tl.set(evens, { opacity: 0.12 }, endTrigger + 0.40);
+                  tl.set(odds, { opacity: 0.12 }, endTrigger + 0.52);
+                  tl.set(evens, { opacity: 1 }, endTrigger + 0.52);
+                  tl.set([odds, evens], { opacity: 1 }, endTrigger + 0.64);
+                }
+                tl.fromTo(stage, { scale: 1.0 }, { scale: 1.05, duration: 0.45, ease: "back.out(1.8)" }, endTrigger + 0.64);
+              }
             }
-          }
-
-          // +0.94s: MASTER LOCKUP IGNITION & SUB-BASS BLOOM (Phi-2 + [ F L U X D ] Full Lockup with Elastic Spring Settle)
-          if (phi) {
-            tl.set(phi, { color: "inherit", opacity: 1, scaleX: 1.16, scaleY: 0.86 }, at + 0.94);
-            tl.to(phi, { scaleX: 1.0, scaleY: 1.0, duration: 0.62, ease: "elastic.out(1, 0.36)" }, at + 0.94);
-          }
-          if (word) {
-            tl.set(word, { opacity: 1, scale: 1.10 }, at + 0.94);
-            tl.to(word, { scale: 1.0, duration: 0.68, ease: "elastic.out(1, 0.38)" }, at + 0.94);
-            if (odds.length && evens.length) {
-              tl.set([odds, evens, dots], { opacity: 1, y: 0 }, at + 0.94);
-            }
-          }
-          if (accents.length) {
-            tl.fromTo(
-              accents,
-              { filter: "brightness(2.2) drop-shadow(0 0 28px #E04826)" },
-              { filter: "brightness(1.0) drop-shadow(0 0 8px rgba(224,72,38,0.45))", duration: 0.85, ease: "power2.out" },
-              at + 0.94
-            );
-          }
-          if (sub) {
-            tl.to(sub, { opacity: 0.86, y: 0, duration: 0.55, ease: "power3.out" }, at + 1.16);
           }
         });
       },
@@ -1415,9 +1413,8 @@ MD.karaokeWords = function (s, dur) {
         if (isEditorial) {
           if (ms.length >= 2) {
             const cardsHtml = ms.map((m, i) => {
-              const rawCall = (s.callouts && s.callouts[i]) ? String(s.callouts[i]).replace(/^\d+\s*[\|\/\-·:]+\s*/, "").trim() : "";
-              const metaHtml = rawCall ? `<div class="ed-seq-meta"><span class="ed-seq-rule"></span><div class="ed-seq-lbl">${MD.tx(rawCall)}</div></div>` : "";
-              return `<div class="ed-seq-card" data-i="${i}"><div class="ed-seq-thumb">${MD.media(m, c)}</div>${metaHtml}</div>`;
+              const callTxt = (s.callouts && s.callouts[i]) ? s.callouts[i] : `Edition 0${i + 1}`;
+              return `<div class="ed-seq-card" data-i="${i}"><div class="ed-seq-thumb">${MD.media(m, c)}</div><div class="ed-seq-meta"><span class="ed-seq-idx">0${i + 1} // FEATURED</span><div class="ed-seq-lbl">${MD.tx(callTxt)}</div></div></div>`;
             }).join("");
             return `<div class="k k-collage"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}<div class="ed-multi-grid n${ms.length}">${cardsHtml}</div></div></div>`;
           }
@@ -1577,8 +1574,7 @@ MD.karaokeWords = function (s, dur) {
           const rt = parts.length >= 2 ? parts[1] : parts[0];
           const rs = parts.length >= 3 ? parts.slice(2).join(" · ") : "";
           const isUn = isEditorial || ((idx + 1) <= unlockedCount && (s.unlockIndex !== idx + 1));
-          const leadBadge = isEditorial ? `<span class="ul-accent-bar"></span>` : `<span class="ul-no">${esc(no)}</span>`;
-          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}">${leadBadge}<div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isEditorial ? "↗" : (isUn ? "✓" : "🔒")}</span></div>`;
+          return `<div class="ul-row ${isUn ? "is-unlocked" : "is-locked"}" data-i="${idx}" data-idx="${idx + 1}"><span class="ul-no">${esc(no)}</span><div class="ul-body"><span class="ul-rt">${esc(rt)}</span>${rs ? `<span class="ul-rs">${esc(rs)}</span>` : ""}</div><span class="ul-st">${isEditorial ? "→" : (isUn ? "✓" : "🔒")}</span></div>`;
         }).join("");
         if (isEditorial) {
           return `<div class="k k-unlock"><div class="box">${s.title ? `<h2 class="title" data-fit data-maxh="24">${MD.tx(s.title, { split: splitFor(T(c, "title", "maskUp")) })}</h2>` : ""}${s.sub ? `<p class="sub">${MD.tx(s.sub)}</p>` : ""}<div class="ul-board"><div class="ul-rows">${rows}</div></div></div></div>`;
@@ -1697,7 +1693,7 @@ MD.karaokeWords = function (s, dur) {
         if (s.title) e.push(titleEvent(c, s, 0.1, s.title, ".title"));
         if (isEditorial) {
           e.push(ev(0.28, ".ed-outro-card", "rise", 1, { d: 0.52 }, "card-place", "start"));
-          e.push(ev(0.32, ".ed-endcard-hero", "fluxdBlink", 1, {}, "fluxd-blink", "start"));
+          e.push(ev(0.48, ".ed-endcard-hero", "fluxdBlink", 1, {}, "tap", "start"));
           return e;
         }
         e.push(ev(0.2, ".ct-comment-box", "fadeUp", 1, { y: 18, d: 0.45 }));
@@ -2073,7 +2069,7 @@ MD.karaokeWords = function (s, dur) {
         `;
       },
       plan: () => [
-        ev(0.02, ".fb-stage", "fluxdBlink", 1, {}, { name: "fluxd-blink", gain: 1.0 }),
+        ev(0.02, ".fb-stage", "fluxdBlink", 1, {}, { name: "tap", gain: 0.75 }),
         ev(0.72, ".fb-sub", "fadeUp", 1, { d: 0.45 }),
       ],
     },
@@ -2108,47 +2104,6 @@ MD.karaokeWords = function (s, dur) {
           inn,
           { [axis]: 14, scale: 1.08, filter: "blur(6px)", opacity: 0 },
           { [axis]: 0, scale: 1, filter: "blur(0px)", opacity: 1, duration: half * 1.45, ease: "expo.out" },
-          at - half * 0.3
-        );
-      },
-    },
-    // 3D Z-Space Camera Dolly Through (Outgoing flies past camera lens, incoming emerges from depth)
-    zDollyThrough: {
-      ov: 0.42,
-      run: (tl, out, inn, at, ov) => {
-        const half = ov / 2;
-        tl.fromTo(
-          out,
-          { scale: 1, filter: "blur(0px)", opacity: 1 },
-          { scale: 1.38, filter: "blur(9px)", opacity: 0, duration: half * 1.1, ease: "power3.in" },
-          at - half
-        );
-        tl.fromTo(
-          inn,
-          { scale: 0.78, filter: "blur(8px)", opacity: 0 },
-          { scale: 1, filter: "blur(0px)", opacity: 1, duration: half * 1.45, ease: "expo.out" },
-          at - half * 0.35
-        );
-      },
-    },
-    // High-Velocity Directional Whip-Pan Match Cut with Skew & Elastic Landing
-    whipPanMatch: {
-      ov: 0.36,
-      run: (tl, out, inn, at, ov, c) => {
-        const half = ov / 2;
-        const horiz = c && c.fmt !== "portrait";
-        const axis = horiz ? "xPercent" : "yPercent";
-        const skewProp = horiz ? "skewX" : "skewY";
-        tl.fromTo(
-          out,
-          { [axis]: 0, [skewProp]: 0, filter: "blur(0px)", opacity: 1 },
-          { [axis]: -34, [skewProp]: -6, filter: "blur(8px)", opacity: 0, duration: half, ease: "power3.in" },
-          at - half
-        );
-        tl.fromTo(
-          inn,
-          { [axis]: 32, [skewProp]: 5, filter: "blur(7px)", opacity: 0 },
-          { [axis]: 0, [skewProp]: 0, filter: "blur(0px)", opacity: 1, duration: half * 1.5, ease: "expo.out" },
           at - half * 0.3
         );
       },

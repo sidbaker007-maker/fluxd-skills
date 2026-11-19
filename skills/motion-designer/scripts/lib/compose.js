@@ -150,7 +150,6 @@ export function resolveLook(v, st) {
   let pal = typeof v.palette === "number" ? pals[v.palette] : typeof v.palette === "string" ? pals.find((p) => p.name.toLowerCase() === v.palette.toLowerCase()) : null;
   if (v.palette && typeof v.palette === "object") pal = { ...pals[0], ...v.palette, name: "Custom" };
   pal = { ...(pal || pals[0]) };
-  // a brand colour becomes the accent (and the text on it stays readable)
   const brand = v.brand || {};
   if (brand.color && !(v.palette && typeof v.palette === "object" && v.palette.accent)) {
     pal.accent = brand.color;
@@ -168,9 +167,6 @@ function lum(hex) {
 export function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
 function readableOn(bg) { return contrast(bg, "#ffffff") >= contrast(bg, "#0b0b0b") ? "#ffffff" : "#0b0b0b"; }
 
-// scene lengths: written ones win; the rest from reading time; then the whole fitted to `length`
-// cuts on the beat: with a tempo, each scene's length rounds to whole half-beats (never under ~90% of
-// what it needs to be read)
 export function timing(v, st, MDx, bpm) {
   const kinds = (k) => ((MDx.kinds[k] || (st.kinds && st.kinds[k])) ? { ...(MDx.kinds[k] || {}), ...((st.kinds && st.kinds[k]) || {}) } : null);
   const warn = [];
@@ -216,19 +212,7 @@ export function compose(work, opts = {}) {
   const vfile = opts.file || path.join(work, "video.json");
   const v0 = opts.video || readJSON(vfile);
   (v0.scenes || []).forEach((s, i) => { if (!s.id) s.id = `s${i + 1}`; });
-  // scenes switched off on the storyboard stay in the file but leave the video
-  const activeScenes = (v0.scenes || []).filter((s) => !s.off);
-  if ((v0.style === "editorial" || !v0.style) && v0.autoOutroBumper !== false && activeScenes.length > 0 && activeScenes[activeScenes.length - 1].kind !== "bumper") {
-    activeScenes.push({
-      id: "s_fluxd_outro",
-      kind: "bumper",
-      mode: "blink04",
-      dur: 3.0,
-      transition: "zDollyThrough",
-      sub: "WHERE CINEMA OPTICS, PHYSICAL LAW & GLOBAL SYSTEMS COLLIDE",
-    });
-  }
-  const v = { ...v0, scenes: activeScenes };
+  const v = { ...v0, scenes: (v0.scenes || []).filter((s) => !s.off) };
   const st = MDx.styles[v.style] || MDx.styles[Object.keys(MDx.styles)[0]];
   MDx._st = st;
   const F = FORMATS[v.format || "16:9"] || FORMATS["16:9"];
@@ -251,7 +235,6 @@ export function compose(work, opts = {}) {
   copy(path.join(STYLES_DIR, `${st.id}.js`), "assets/style.js");
   copy(path.join(STYLES_DIR, `${st.id}.css`), "assets/style.css");
 
-  // fonts used by this look
   const fams = new Set([font.display, font.text, font.mono, font.num, ...(font.extra || [])].filter(Boolean));
   const faces = [];
   for (const fam of fams) {
@@ -263,7 +246,6 @@ export function compose(work, opts = {}) {
     }
   }
 
-  // media
   const ratios = {};
   const ctxBase = {
     fmt, W, H, u, st, video: v,
@@ -273,7 +255,6 @@ export function compose(work, opts = {}) {
       const abs = path.isAbsolute(src) ? src : path.resolve(work, src);
       if (!fs.existsSync(abs)) { warn.push(`missing file: ${src} — a placeholder shows instead`); return null; }
       const name = `${hash(abs + fs.statSync(abs).size)}-${path.basename(abs).replace(/[^\w.\-]+/g, "_")}`;
-      // an SVG drawn in currentColor would be black inside <img>: give it the palette's ink
       if (/\.svg$/i.test(abs)) {
         const svg = fs.readFileSync(abs, "utf8");
         if (/currentColor/.test(svg)) { const n2 = name.replace(/\.svg$/i, `-${(pal.ink || "#000").replace("#", "")}.svg`); fs.writeFileSync(path.join(out, "assets/media", n2), svg.replace(/currentColor/g, pal.ink || "#000")); return `assets/media/${n2}`; }
@@ -306,8 +287,6 @@ export function compose(work, opts = {}) {
   const { durs, warn: tw } = timing(v, st, MDx, bpmOf);
   warn.push(...tw);
   const sc = v.scenes || [];
-  // reading starts when the words have landed: a scene lasts at least its entrance + a read of
-  // everything on it (~4.5 words a second), rounded up to the beat
   {
     const hb = bpmOf ? 30 / bpmOf : 0.1;
     sc.forEach((s, i) => {
@@ -315,17 +294,13 @@ export function compose(work, opts = {}) {
       const K = { ...(MDx.kinds[s.kind] || {}), ...((st.kinds && st.kinds[s.kind]) || {}) };
       if (!K.plan) return;
       let ev = [];
-      // planned on the tightest readable length, so items that spread over the scene don't stretch it
       const tight = 1.6;
       try { ev = K.plan(s, { ...ctxBase, sceneId: "x", i, n: sc.length, dur: tight }, tight) || []; } catch { return; }
-      // when the headline has landed (items that spread over the scene are read as they arrive)
       const head = ev.find((e) => /\.title|\.num|\.wordmark|\.val/.test(e.sel || ""));
       const landed = head ? head.t + (MDx.moveLen(head.move, head.n, head.o) || 0) * 0.7 : 0.6;
       const words = ["kicker", "text", "sub", "title", "label", "value", "cta", "url", "name"].reduce((n, f) => n + (typeof s[f] === "string" ? MD_count(MDx, s[f]) : 0), 0) + (Array.isArray(s.items) ? s.items.reduce((n, x) => n + MD_count(MDx, typeof x === "string" ? x : `${x.title || ""} ${x.text || ""}`), 0) : 0);
       void words;
       let need = s.kind === "words" ? 0 : landed + 0.5;
-      // and every piece of text stays up long enough to be read once after it lands
-      // (0.3 s + 0.25 s a word — the floor HyperFrames' readability check uses)
       const wordsOf = (sel) => {
         const m = /data-i="(\d+)"/.exec(sel || ""), k = m ? +m[1] : -1;
         const pickItem = (arr) => (Array.isArray(arr) && arr[k] != null ? (typeof arr[k] === "string" ? arr[k] : `${arr[k].title || arr[k].label || ""} ${arr[k].text || ""}`) : "");
@@ -343,17 +318,14 @@ export function compose(work, opts = {}) {
       if (s.kind !== "words") for (const e of ev) {
         const len = MDx.moveLen(e.move, e.n, e.o) || 0;
         if (!len || !e.sel) continue;
-        // read line by line, as people do: about four words a line, each line 0.3 s + 0.25 s a word
         need = Math.max(need, e.t + len * 0.7 + 0.3 + Math.min(5, wordsOf(e.sel)) * 0.25);
       }
-      // the next scene's transition starts before the cut: text has to be read before that
       if (i < sc.length - 1) {
         const nx = sc[i + 1];
         const tn = nx.transition || (st.transitionFor && st.transitionFor(nx, i + 1, sc)) || st.transition || "fade";
         const T = (st.transitions && st.transitions[tn]) || MDx.transitions[tn];
         need += T ? T.ov / 2 : 0;
       }
-      // the film's last line stays up at least 2 s after it lands (a closing line needs it)
       if (i === sc.length - 1) need = Math.max(need, ev.reduce((m, e) => Math.max(m, e.t + (MDx.moveLen(e.move, e.n, e.o) || 0)), 0) + 2.1);
       const voNeed = MDx.voSecs ? MDx.voSecs(s, v.wpm || 135) : 0;
       need = Math.max(need, voNeed);
@@ -365,7 +337,6 @@ export function compose(work, opts = {}) {
         durs[i] = r3(Math.max(Math.ceil(need / hb) * hb, Math.min(durs[i], need + 0.6)));
       }
     });
-    // If v.length was explicitly requested, re-normalize any drift so total duration matches v.length closely
     if (v.length && durs.length > 0 && !sc.every((s) => typeof s.dur === "number")) {
       const sumNow = durs.reduce((a, b) => a + b, 0);
       if (Math.abs(sumNow - v.length) > hb * 1.2) {
@@ -376,7 +347,6 @@ export function compose(work, opts = {}) {
       }
     }
   }
-  // Auto-generate Matplotlib empirical plots for any scene specifying s.plot
   if (sc.some((s) => s.plot || s.cutout)) {
     sc.forEach((s, idx) => {
       if (s.plot && !s.media) s.media = `assets/plot-s${idx + 1}.png`;
@@ -417,26 +387,20 @@ export function compose(work, opts = {}) {
     if (!K) { warn.push(`scene ${i + 1}: unknown kind "${s.kind}"`); return; }
     const c = { ...ctxBase, sceneId: id, i, n: sc.length, dur };
     let html = K.markup(s, c, dur);
-    // posters fill the frame: the style says which kinds grow their type to the box
     const fillMap = { screen: { maxh: fmt === "landscape" ? 44 : 22, max: fmt === "landscape" ? 15 : 11 }, ...(st.fill || {}) };
     if (fillMap[s.kind]) {
       const f = fillMap[s.kind];
       html = html.replace(/data-fit data-maxh="[\d.]+"/g, `data-fit="fill" data-maxh="${f.maxh || 60}" data-maxfs="${f.max || 40}"`);
     }
-    // videos play over the scene's window
     html = html.replace(/data-md-video="1"/g, `data-start="${vis0}" data-duration="${r3(vis1 - vis0)}"`);
     let events = (K.plan ? K.plan(s, c, dur) : []).filter((e) => e && e.move);
-    // trim anything that would start after the scene has left
     events = events.filter((e) => e.t < dur - 0.05);
     const lens = events.map((e) => (MDx.moveLen(e.move, e.n, e.o) || 0));
     const settled = events.reduce((m, e, j) => (lens[j] > 0 ? Math.max(m, e.t + lens[j]) : m), 0);
-    // the storyboard frame: after everything lands, before the next transition starts
     const hero = r3(Math.min(dur - Math.max(0.12, ovNext / 2 + 0.1), K.hero ? K.hero(s, c, dur) : Math.max(settled + 0.25, Math.min(dur * 0.6, 1.2))));
     if (settled > dur + 0.01) warn.push(`scene ${i + 1} (${s.kind}): its animation needs ${settled.toFixed(1)} s and it has ${dur.toFixed(1)} s — it'll be cut short`);
     const tone = s.tone || (st.tone ? st.tone(s, i, c) : "base");
     const cls = st.sceneClass ? st.sceneClass(s, i, c) : "";
-    // a style can scale its units per format (and per kind) — e.g. bigger content on a tall frame
-    // dense kinds are drawn bigger by default (they read small otherwise); a style's unitScale wins
     const us = st.unitScale && st.unitScale[fmt];
     const base = (DENSE[fmt] || {})[s.kind] ?? 1;
     const scale = us == null ? base : typeof us === "number" ? us : us[s.kind] ?? us.default ?? base;
@@ -451,29 +415,25 @@ export function compose(work, opts = {}) {
     scenes.push({ id, kind: s.kind, t0, dur, vis0, vis1, tin, ov, hero: r3(t0 + hero), events: events.map((e, j) => ({ ...e, len: r3(lens[j]) })), tone });
   });
 
-  // sound: a soundtrack composed for this video (music in the style's genre, cuts on the beat) with
-  // designed effects only on the moments that matter, mixed to one file at −16 LUFS (audio.js)
   const sfxMode = (v.sound && v.sound.sfx) || "on";
   const cues = [];
   const pick = (name, k) => (Array.isArray(name) ? name[k % name.length] : name);
   let k = 0;
-  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "bumper", "words", "rehook", "unlock", "fuse", "props", "cta", "diorama"]);
+  const IMPORTANT = new Set(["hook", "stat", "outro", "logo", "words", "rehook", "unlock", "fuse", "props", "cta", "diorama"]);
   const MOVING = new Set(["push", "zoom", "wipe", "iris"]);
   scenes.forEach((s, i) => {
     if (sfxMode === "off") return;
-    // air only where the picture moves across the frame (the style can name its own, or none)
     if (i > 0) {
       const own = st.S && st.S.transitions && s.tin in st.S.transitions ? st.S.transitions[s.tin] : MOVING.has(s.tin) ? "whoosh" : null;
       if (own) cues.push({ name: own, at: s.t0, gain: 0.75 });
     }
-    if (sfxMode === "subtle" && !["outro", "logo", "bumper"].includes(s.kind)) return;
+    if (sfxMode === "subtle" && !["outro", "logo"].includes(s.kind)) return;
     let n = 0;
     const cap = s.kind === "words" ? 4 : IMPORTANT.has(s.kind) ? 2 : 2;
     for (const e of s.events) {
       if (!e.sfx || n >= cap) continue;
       const spec = typeof e.sfx === "string" || Array.isArray(e.sfx) ? { name: e.sfx } : e.sfx;
       const hitAt = (e.hit === "end" ? e.len : typeof e.hit === "number" ? e.hit : 0) + (spec.offset || 0);
-      // a title gets one accent, not one per word
       const each = spec.each && e.n > 1 && s.kind === "words";
       const times = each ? Array.from({ length: e.n }, (_, j) => hitAt + j * ((e.o && e.o.st) ?? 0.1)) : [hitAt];
       for (const tt of times) { if (n >= cap) break; cues.push({ name: pick(spec.name, k++), at: r3(s.t0 + e.t + tt), gain: (spec.gain || 1) * (st.sfxGain || 0.8) }); n++; }
@@ -519,13 +479,17 @@ export function compose(work, opts = {}) {
       const bedWav = voFile ? path.join(out, "assets/bgm_sfx_bed.wav") : wav;
       soundReport = renderSoundtrack(soundPlan, bedWav);
       if (voFile) {
-        const outroStart = last && last.kind === "bumper" ? Math.max(0, last.t0 - 0.15) : Math.max(0, duration - 3.0);
+        const stemVo = path.join(out, "assets/stem_voiceover.wav");
+        spawnSync("ffmpeg", [
+          "-y", "-v", "error", "-i", voFile,
+          "-ar", "48000", "-ac", "2", "-c:a", "pcm_s16le", "-t", String(duration), stemVo,
+        ]);
         spawnSync("ffmpeg", [
           "-y", "-v", "error",
           "-i", voFile,
           "-i", bedWav,
           "-filter_complex",
-          `[0:a]aresample=48000,apad=whole_dur=${duration}[vo];[1:a]aresample=48000,volume='if(gte(t,${outroStart.toFixed(2)}),0.95,0.24)':eval=frame[bed];[vo][bed]amix=inputs=2:duration=first:dropout_transition=0,alimiter=limit=0.95[out]`,
+          `[0:a]aresample=48000,volume=1.0[vo];[1:a]aresample=48000,volume=0.22[bed];[vo][bed]amix=inputs=2:duration=first:dropout_transition=2,alimiter=limit=0.92[out]`,
           "-map", "[out]", "-ar", "48000", "-ac", "2", "-t", String(duration), wav
         ]);
         soundReport = { ...(soundReport || {}), voiceoverMixed: path.basename(voFile), lufs: -16.0, truePeak: -1.2 };
@@ -535,9 +499,7 @@ export function compose(work, opts = {}) {
     audio.push(`<audio id="soundtrack" src="assets/mix.wav?v=${key}" data-start="0" data-duration="${duration}" data-track-index="2" data-volume="1"></audio>`);
   }
 
-  // emphasised words are drawn in the accent on the background: say so when that can't be read
   if (st.id !== "vox" && pal.accent && pal.bg && contrast(pal.accent, pal.bg) < 2.6) warn.push(`the accent ${pal.accent} is too pale on the background ${pal.bg} (${contrast(pal.accent, pal.bg).toFixed(1)}:1) — *emphasis* won't read; use a deeper shade of the brand colour or another palette`);
-  // tokens
   const vars = {
     "--u": `${u}px`, "--W": `${W}px`, "--H": `${H}px`,
     "--bg": pal.bg, "--ink": pal.ink, "--accent": pal.accent, "--accent-ink": pal.accentInk || readableOn(pal.accent),

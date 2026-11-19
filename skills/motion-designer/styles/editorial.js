@@ -87,7 +87,7 @@
     drift: 0.022,
     grain: 0.05,
     listIcon: "check",
-    transitionFor: (s, i) => (s.transition ? s.transition : ["carryMorph", "zDollyThrough", "whipPanMatch", "matchCut"][i % 4]),
+    transitionFor: (s, i) => (s.transition ? s.transition : i % 2 === 1 ? "carryMorph" : "matchCut"),
     tone: (s) => (s.tone ? s.tone : "base"),
 
     background: {
@@ -126,15 +126,9 @@
             : seqCards.map((_, idx) => 0.35 + idx * Math.min(1.4, (dur - 1.2) / seqCards.length));
           mTimes.forEach((mt, idx) => {
             if (idx > 0) {
-              // Causal Chain Momentum Transfer: Incoming card's arrival physically pushes earlier cards with elastic spring settle
+              // Previous cards gently recede in Z-space while the newly popped card takes spotlight
               const prevCards = seqCards.slice(0, idx);
-              const pushDir = idx % 2 === 1 ? -1 : 1;
-              tl.to(prevCards, {
-                keyframes: [
-                  { x: 14 * pushDir, scale: 0.93, rotationZ: 1.4 * pushDir, y: -8, opacity: 0.88, duration: 0.18, ease: "power2.out" },
-                  { x: 0, scale: 0.96, rotationZ: 0.4 * pushDir, y: -4, opacity: 0.88, duration: 0.48, ease: "elastic.out(1, 0.42)" },
-                ],
-              }, t0 + mt);
+              tl.to(prevCards, { scale: 0.955, y: -6, opacity: 0.86, duration: 0.42, ease: "power3.out" }, t0 + mt);
               // Subtle camera kinetic nudge on the stage box when the new element lands
               const box = el.querySelector(".box");
               if (box) {
@@ -169,16 +163,15 @@
     },
 
     sceneDecor: (s, i, c) => {
-      if (s.kind === "bumper") return "";
-      const rawChap = String(s.chapter || s.kicker || "").replace(/^BEAT\s*\d+\s*[·:\-\/]*\s*/i, "").trim();
-      const chap = esc(rawChap);
+      const num = String((i || 0) + 1).padStart(2, "0");
+      const chap = esc(s.chapter || s.kicker || `BEAT ${num}`);
       const src = s.source ? `<div class="ed-source-line" data-layout-ignore><span class="ed-src-dot"></span><span>${esc(s.source)}</span></div>` : "";
       const lockupSvg = MD.fluxdLockup ? MD.fluxdLockup("ed-brand-lockup") : "";
       const sealSvg = MD.fluxdSeal ? MD.fluxdSeal("ed-brand-seal") : "";
       return `
         <div class="ed-top-bar" data-layout-ignore>
           <span class="ed-chap">${chap}</span>
-          <span class="ed-brand-hdr">${lockupSvg}</span>
+          <span class="ed-brand-hdr">${lockupSvg}<span class="ed-idx">// ${num}</span></span>
         </div>
         ${src}
         <div class="ed-corner-seal" data-layout-ignore>${sealSvg}</div>

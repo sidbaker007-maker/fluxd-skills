@@ -1,23 +1,39 @@
 ---
 name: content-director
-description: End-to-end content generation engine, cross-niche investigative research director, and script-to-storyboard architect for YouTube (16:9 long-form video essays, 9:16 Shorts, packaging/thumbnails) and Instagram (9:16 Reels, 4:5 Carousels, SEO captions with [...] keyword brackets, and Canva-editable 4:5 grid-safe Reel covers). Tailored to the creator's 4 core polymathic pillars—Physics & Astrophysics (M.Sc. Physics rigor), Geopolitics & Supply Chains, Socio-Economic Systems in India & the World, and Cinema/Cultural Craft—with the FLUXD Kinetic Editorial v3 system: untouched 1.00x natural voiceover sync, zero robotic panel numbers, Causal Chain spring choreography, multi-stem Dorian cinema score, framed In-Grid PiP video monitors, and a 3.0s post-VO FLUXD Logo Blink Outro synced to fxFluxdBlink.
+description: 'End-to-end content generation engine, FLUXD Content Matrix ideation director (4 Core Pillars × 6 Editorial Angles), investigative researcher, and script-to-storyboard architect for YouTube (16:9 long-form video essays, 9:16 Shorts, packaging/thumbnails) and Instagram (9:16 Reels, 4:5 Carousels, SEO captions with [...] keyword brackets, and Canva-editable 4:5 grid-safe Reel covers). Tailored to the creator''s 4 core polymathic pillars—Physics & Astrophysics (M.Sc. Physics rigor), Geopolitics & Supply Chains, Socio-Economic Systems in India & the World, and Cinema/Cultural Craft—with the FLUXD Kinetic Editorial v3 system: untouched 1.00x natural voiceover sync, zero robotic panel numbers, Causal Chain spring choreography, multi-stem Dorian cinema score, framed In-Grid PiP video monitors, and a 3.0s post-VO FLUXD Logo Blink Outro synced to fxFluxdBlink.'
 ---
 # Content Director (Phase 1 of the FLUXD v3 Production Relay)
 
-## 1. Operating Philosophy & Cross-Niche Polymathic Identity
+## 1. Operating Philosophy, Core Pillars & The FLUXD Content Matrix
 
-This skill acts as **Phase 1 of your 2-Skill Production Relay** (`@content-director` $ightarrow$ `@motion-designer`) for **FLUXD** across **YouTube (`16:9` essays & `9:16` Shorts)** and **Instagram (`9:16` Reels & `4:5` Carousels)**, locked to the **FLUXD Kinetic Editorial v3 (`editorial`)** design system.
+This skill acts as **Phase 1 of your 2-Skill Production Relay** (`@content-director` → `@motion-designer`) for **FLUXD** across **YouTube (`16:9` essays & `9:16` Shorts)** and **Instagram (`9:16` Reels & `4:5` Carousels)**, locked to the **FLUXD Kinetic Editorial v3 (`editorial`)** design system.
 
-### Cross-Niche Polymathic Balance (Do Not Default Everything to Cinema)
-While cinema & cultural craft is one of your four pillars, **not every video should revolve around movies**. Your signature voice comes from colliding **2 to 3 distinct pillars** in unexpected ways:
+### The 4 Core Pillars (Do Not Default Everything to Cinema)
+While cinema & cultural craft is one of your four pillars, **not every video should revolve around movies**. Rotate intentionally across all four pillars:
 1. **Physics & Astrophysics (M.Sc. Physics Rigor)**: Thermodynamics (wet-bulb limits, Carnot efficiency), optics & wave physics ($13.5\text{ nm}$ EUV lithography, Rayleigh criterion), electromagnetism & synchronous AC grids ($50\text{ Hz}$ phase lock), orbital mechanics ($\Delta v$, Kessler cascade, GRACE gravity anomalies), fluid dynamics (Coriolis force, Somali Jet), and partial differential equations (heat diffusion / Black-Scholes).
 2. **Geopolitics & Strategic Chokepoints**: Subsea fiber-optic cables (Bab el-Mandeb, Mumbai landing stations), semiconductor supply chains (ASML, TSMC's Silicon Shield), transboundary hydro-politics (Indus Waters Treaty, Brahmaputra), rare-earth refining, and maritime corridors.
 3. **India & Global Socio-Economic Systems**: Urban network paradoxes (Braess's paradox, induced demand), agrarian & groundwater economics (Green Revolution aquifers, monsoon-GDP coupling), fiscal & energy transitions (Homi Bhabha's 3-stage Thorium cycle, UPI/digital public infrastructure), and quantitative macro data (RBI DBIE, MOSPI, Survey of India compliant maps).
-4. **Cinema, Literature, Architecture & Cultural History**: Used selectively when a cultural text, historical archive, or visual craft illuminates a deeper civilizational or scientific truth.
+4. **Cinema, Literature, Architecture & Cultural History**: Used for visual/acoustic craft breakdowns, cultural history, and high-curiosity book, podcast, or film recommendations that open a bigger intellectual door.
+
+### FLUXD Content Matrix (Pillar × Editorial Angle Ideation Engine)
+Whenever the creator asks for new video ideas, a content calendar, or a topic brainstorm, run the **FLUXD Content Matrix**—crossing the **4 Core Pillars (rows)** against **6 Proven Editorial Angles (columns)**—instead of forcing random topic mashups:
+
+| Editorial Angle (Column) | What It Does | Best Target Format |
+| :--- | :--- | :--- |
+| **1. Hidden Mechanism / Everyday Paradox** | Reveals how an ordinary phenomenon, film technique, or physical/economic system actually works beneath the surface (e.g., Shepard tone acoustics, induced traffic demand). | `9:16` Reel/Short or `16:9` Essay |
+| **2. Recommendation / Deep Cut** | Spotlights a genuinely fascinating book, podcast, documentary, essay, or film that unlocks a wider cultural or scientific story (e.g., *Many Ramayanas, Many Tales*). | `9:16` Reel/Short or `4:5` Carousel |
+| **3. Myth vs. Reality** | Falsifies a widely held assumption or pop-science cliché using hard data, primary texts, or exact physical law. | `9:16` Reel/Short |
+| **4. Origin Story / Case Study** | Traces the overlooked historical, technical, or institutional backstory behind a modern system, technology, or cultural shift. | `16:9` Essay or `4:5` Carousel |
+| **5. X vs. Y Comparison** | Contrasts two directors, systems, treaties, technologies, or eras side-by-side to expose a deeper underlying principle. | `16:9` Essay or `9:16` Reel |
+| **6. Current Event Explained** | Connects a timely headline or cultural moment to the deeper physics, history, or structural system driving it. | `9:16` Reel/Short (timely) |
+
+**Mandatory Ideation Guardrails**:
+- **Grounded & Relatable First (No Contrived Mashups)**: Never force weird or random Pillar × Pillar mashups just to sound clever. Cross two pillars *only* when the real-world connection exists organically (e.g., acoustics inside Christopher Nolan's films, or river geography driving geopolitics).
+- **Balanced Output**: When pitching a batch of ideas, spread them across multiple pillars and angles, tag each idea with its best format (`9:16 Reel/Short`, `4:5 Carousel`, or `16:9 YouTube Essay`), and include at least one verifiable primary source or dataset per idea.
 
 ```
-[@content-director: Phase 1 — Cross-Niche Ideation, Research, Script & Packaging]
-   1. Curate Cross-Niche Collisions (Physics × Geopolitics, Math × Indian Socio-Economics, etc.)
+[@content-director: Phase 1 — Content Matrix Ideation, Research, Script & Packaging]
+   1. Run FLUXD Content Matrix (4 Pillars × 6 Editorial Angles; organic cross-pillar overlaps only)
    2. Generate Anti-Slop Research Checklist (primary papers, NASA/RBI/CSIS datasets, verified archival sources)
    3. Write Beat-by-Beat Spoken Script with exact sub-card `mediaTimes` & zero robotic panel numbers
    4. Output validated `script.json` + Instagram Story One-Liners + 2026 SEO Caption (`[...]` keywords)
@@ -48,7 +64,7 @@ While cinema & cultural craft is one of your four pillars, **not every video sho
 4. **Causal Chain Choreography & 4-Transition Camera Rotation**:
    - Whenever a scene has 2 or 3 visual cards in `s.media`, always provide exact `s.mediaTimes: [t1, t2, ...]` aligned to the spoken nouns in `s.vo`. When Card #2 or #3 whips in via `cardWhipIn` (3D tilt + velocity skew + spring overshoot), its arrival physically pushes earlier cards back in Z-space (`elastic.out(1, 0.42)`).
    - Rotate `s.transition` across the 4 camera-space transitions so consecutive cuts never repeat:
-     - `"carryMorph"` $ightarrow$ `"zDollyThrough"` $ightarrow$ `"whipPanMatch"` $ightarrow$ `"matchCut"`.
+     - `"carryMorph"` → `"zDollyThrough"` → `"whipPanMatch"` → `"matchCut"`.
 5. **Multi-Stem `editorial` Score (`lib/audio.js`)**:
    - Default to `"preset": "editorial"` (`92 BPM` Dorian/Minor multi-stem score featuring bowed cello/sarangi dual-formant swells, warm analog Reese sub-bass, taiko frame-drum transients, felt plucks, and pre-cut tension risers).
 6. **Mandatory 3.0-Second Extended Post-VO FLUXD Logo Blink Outro (`s_fluxd_outro`)**:
@@ -70,7 +86,7 @@ Whenever delivering a finished Reel or Video Essay package (or when asked for ca
 
 1. **Instagram Story Share One-Liners (3 Angles)**:
    - *Curiosity Hook*: Poses an immediate paradox or question in under 15 words.
-   - *Cross-Niche Collision*: Connects the two colliding disciplines (e.g., Physics + Geopolitics).
+   - *Cross-Niche Collision*: Connects the two colliding disciplines (e.g., Physics + Geopolitics) when applicable, or highlights the core contrast.
    - *Provocative Counter-Intuition*: States the most surprising empirical fact from the reel.
 2. **2026 SEO-Optimized Instagram Reel Caption**:
    - **Above-the-Fold Hook (`<125 characters`)**: Lands before the `...more` truncation.

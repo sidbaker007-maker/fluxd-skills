@@ -37,3 +37,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v10-2026.11.16-bang-motion-v1.19.0` (2026-11-16) — Imported bang-motion v1.19.0 cinematic web motion graphics skill
 - Added `bang-motion` v1.19.0 (anti-PPT structural laws, deterministic GSAP/Three.js camera rigs, collage & cartoon stage explainers, and After Effects Higgsfield bridge).
 
+## `v11-2026.11.19-content-director-v4.0-fluxd-matrix` (2026-11-19) — Upgraded content-director v4.0 with FLUXD Content Matrix (4 Core Pillars x 6 Editorial Angles)
+- Added the 4 Core Pillars x 6 Editorial Angles ideation matrix, plain continuous top spoken script format (100% English, zero em-dashes), and 2026 SEO caption structure.
+

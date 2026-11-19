@@ -1,10 +1,10 @@
 ---
 name: motion-designer
-description: Generates open-stage FLUXD Kinetic Editorial motion graphics videos, native HeyGen HyperFrames HTML/GSAP compositions (with .clip timing, data-motion-blur, and .motion.json assertions), 3-5 word active-word karaoke subtitles (in-canvas, zero .srt files), prominent animated FLUXD logo end-cards (Blink 01A/01B/03/04), 5-source movie & archival footage grabbing (Moving Image Archive, GetYarn/PlayPhrase/Clip.Cafe/QuoDB movie clips, Internet Archive/Prelinger stream-slicing, yt-dlp scene slicing, Wikimedia), two-stage voiceover auto-slicing (silence trim first + gentle atempo <= 179s), self-indexing local SFX sync (peakOffsetSec alignment), Style-Anchored Nano Banana cutouts, and 1080p/4K 60fps MP4 + interactive Canvas Storyboard exports.
+description: Generates open-stage FLUXD Kinetic Editorial motion graphics videos, native HeyGen HyperFrames HTML/GSAP compositions (with .clip timing, data-motion-blur, and .motion.json assertions), 3-5 word active-word karaoke subtitles (in-canvas, zero .srt files), prominent animated FLUXD logo end-cards (Blink 01A/01B/03/04), 5-source movie & archival footage grabbing (Moving Image Archive, GetYarn/PlayPhrase/Clip.Cafe/QuoDB movie clips, Internet Archive/Prelinger stream-slicing, yt-dlp scene slicing, Wikimedia), two-stage voiceover auto-slicing (silence trim first + gentle atempo <= 179s), self-indexing local SFX sync (peakOffsetSec alignment), Style-Anchored Nano Banana cutouts, 1080p/4K 60fps MP4 + interactive Canvas Storyboard exports, and on-demand FilmCraft multi-track project exports (.xml + .otio + isolated voiceover, music, and SFX stems).
 ---
 # Motion Designer (Phase 2 of the FLUXD Production Relay — Native HyperFrames Engine)
 
-Turn a `@content-director` `script.json` handoff + your **single continuous voiceover recording (`voiceover.wav` / `.mp3`)**, raw `.jpg`/`.png` assets, movie/archival footage queries, and your local `assets/sfx/` folder into a deterministic **HyperFrames** composition (`build/index.html` + `build/main.motion.json`), an interactive Storyboard (`HTML` in Gemini Canvas or `localhost` in CLI), and a locked `60 fps` H.264 `.mp4`.
+Turn a `@content-director` `script.json` handoff + your **single continuous voiceover recording (`voiceover.wav` / `.mp3`)**, raw `.jpg`/`.png` assets, movie/archival footage queries, and your local `assets/sfx/` folder into a deterministic **HyperFrames** composition (`build/index.html` + `build/main.motion.json`), an interactive Storyboard (`HTML` in Gemini Canvas or `localhost` in CLI), a locked `60 fps` H.264 `.mp4`, and (whenever requested) an on-demand **FilmCraft multi-track editable project bundle**.
 
 ```
 [@content-director: Phase 1] -> script.json + Movie/Archival & SFX Manifest + Single Continuous voiceover.wav
@@ -18,6 +18,7 @@ Turn a `@content-director` `script.json` handoff + your **single continuous voic
   3. index_sfx.py             -> Indexes assets/sfx/ across 6 folders & computes peakOffsetSec for frame-exact sync
   4. motion.js frames         -> Compiles `editorial` HyperFrames HTML + active-word karaoke + big FLUXD animated end-card
   5. motion.js render         -> Deterministic 1080p/4K MP4 (RTX NVENC / CPU libx264) + Canvas Storyboard HTML
+  6. filmcraft_export.py      -> [ON-DEMAND ONLY] Multi-track FilmCraft timeline (.xml + .otio) + isolated VO/Music/SFX stems
 ```
 
 ## 1. Unified Visual System: FLUXD Kinetic Editorial (`--style editorial`)
@@ -91,6 +92,21 @@ python3 <SKILL_DIR>/scripts/export_render_bundle.py "$WORK" <output-dir>/<slug>_
 ```
 The creator simply unzips `<slug>_local_render_bundle.zip` on Linux and runs `bash render_local.sh` (zero Gemini API key or billing needed).
 
+### Step 6 (On-Demand Only): Export Editable Multi-Track FilmCraft Project (`filmcraft_export.py`)
+Do **NOT** export a separate FilmCraft project bundle unless the creator asks for the editable project / whole file (e.g., *"give me the whole file"*, *"export for FilmCraft"*, or *"let me edit the audio/elements in FilmCraft"*). When requested:
+```bash
+# Export standalone FilmCraft project (.zip or folder) with FCP7 XML + OpenTimelineIO + isolated audio/video stems:
+python3 <SKILL_DIR>/scripts/filmcraft_export.py "$WORK" --out <output-dir>/<slug>_filmcraft_project.zip
+# Or bundle it directly inside the local render bundle:
+python3 <SKILL_DIR>/scripts/export_render_bundle.py "$WORK" <output-dir>/<slug>_local_render_bundle.zip --filmcraft
+```
+Inside FilmCraft on Linux (**File ▸ Import** $\rightarrow$ `<slug>_filmcraft_timeline.xml` or `<slug>_filmcraft_timeline.otio`), the creator gets:
+- **V1**: Per-beat sliced scene clips (`scenes/beat_01_s1.mp4`, ...)
+- **V2**: Raw cutouts, empirical plots, and visual cards aligned to each beat (`assets/cutout-s1.png`, ...)
+- **A1**: Untouched `1.00x` Voiceover broken into per-beat clips (`stems/vo_beats/beat_01_s1_vo.wav`, ...) + master voiceover (`stems/A1_voiceover_master.wav`)
+- **A2**: Isolated Background Music Score stem (`stems/A2_music_score.wav` — zero VO, zero SFX)
+- **A3 / A4**: Individual timestamped SFX cue WAVs (`stems/sfx_cues/sfx_01_whoosh_1.40s.wav`, ...) + consolidated SFX stem (`stems/A3_sfx_master.wav`)
+
 ### Untouched 1.00x Natural Voiceover Default & Web-Curated In-Grid Media Rule
 - **Preserve Natural Speech Cadence (`1.00x` Default)**: Do NOT apply aggressive `silenceremove` or `atempo` speed-ups by default, as `silenceremove` can clip voiceless plosives (`p`, `t`, `k`) inside words like *"perspectives"* or *"walking"*. Always use `ffmpeg silencedetect` as a **read-only acoustic pause detector** to map exact clause boundaries and lock `s.dur` and `s.words` (`[word, startSec, endSec]`) to the untouched `1.00x` master recording.
 - **Exact Scene Duration Fidelity (`compose.js` & `build_canvas.py`)**: Never quantize explicit `s.dur` values to musical half-beats when a voiceover track is present; preserve exact `0.001s` scene durations so cumulative karaoke and scene transitions never drift.
@@ -108,20 +124,3 @@ The creator simply unzips `<slug>_local_render_bundle.zip` on Linux and runs `ba
 4. **Framed In-Grid PiP Video Monitor Cards (`.ed-pip-video-card`) & Verified Footage Slicing**:
    - Video clips (`.mp4`/`.webm`) are NEVER used as full-screen `.md-bg-video` overlays. In `editorial` mode, `MD.media()` mounts any video clip inside a framed `.ed-pip-video-card` monitor window (`REC ● // ARCHIVE FEED`) inside the 12-column Swiss grid.
    - `fetch_archive_footage.py` enforces `BLACKLIST_TERMS` filtering, semantic token matching (`is_safe_relevant_item`), and skips opening title/credit cards so only verified content frames are sliced.
-
-### v3.2 Choreography, Zero Panel Numbers & 3.0s Frame-Synced FLUXD Blink Sonic Identity
-1. **Zero Robotic Panel Numbers (`editorial.js` & `kit.js`)**:
-   - Never display robotic slide/card numbers (`01 // FEATURED`, `// 01`, `BEAT 01`, `01 |`) on headers, sequential cards, or perspective index rows. Cards display only clean visual artifacts, accent rules, and editorial callouts.
-2. **Causal Chain Choreography & 4-Transition Camera Rotation (Learned from `cinetic`, `claude-remotion-skill`, `LottieFiles/motion-design-skill`, and Vox/Johnny Harris)**:
-   - **Causal Momentum Transfer**: When sequential card `#2` or `#3` whips in (`cardWhipIn` with 3D tilt + velocity skew), its arrival physically pushes earlier cards in Z-space (`scale: 0.93 -> 0.96`, `rotationZ`, `elastic.out(1, 0.42)`) while triggering a camera impulse on the stage box.
-   - **4-Stage Overlapping Action**: Inside every card, child layers (Frame -> Image/Cutout -> Accent Rule -> Caption Label) stagger by `50ms–100ms` so no two elements start or stop on the same frame.
-   - **4-Transition Camera Rotation**: Automatically rotates between `carryMorph`, `zDollyThrough` (3D Z-axis lens punch), `whipPanMatch` (directional velocity skew + motion blur), and `matchCut` across scene boundaries so two consecutive cuts never repeat the same transition.
-3. **Automatic 3.0-Second Extended Post-VO FLUXD Logo Blink Outro (`s_fluxd_outro`) + `fxFluxdBlink` Sonic Signature**:
-   - After the voiceover ends, `compose.js` automatically appends a dedicated `3.0s` full-stage `bumper` scene (`s_fluxd_outro`, `mode: "blink04"`) and boosts the soundtrack bed envelope from `0.24` (under VO) to `0.95` (full studio gain).
-   - `fxFluxdBlink` (`lib/audio.js`) synthesizes a frame-exact 48kHz stereo sonic logo synced to every optical shutter blink:
-     - `+0.00s..+0.16s`: Optical capacitor charge riser (`180Hz -> 980Hz`) as brackets snap in.
-     - `+0.18s & +0.24s`: Blink #1 — Leica dual-curtain mechanical shutter close (`2.65kHz` blade + `118Hz` body) & release (`3.35kHz`).
-     - `+0.38s & +0.50s`: Blink #2 — Anamorphic Vermilion (`#E04826`) high-voltage optical flash (`92Hz` thump + `D5` ping + filament spark) & shutter close (`+0.50s`).
-     - `+0.56s & +0.72s`: Blink #3 — Binary wordmark strobe relays (`[ F_U_D ]` @ `+0.56s` A4 left pan `-0.42`, `[ _L_X_ ]` @ `+0.72s` E5 right pan `+0.42`).
-     - `+0.88s..+0.94s`: `60ms` vacuum blackout silence dip before the drop.
-     - `+0.94s..+3.00s`: Master Lockup Ignition — Deep `D2 -> D1` (`36.7Hz`) chest-hitting sub-bass drop + bowed D-Dorian 9th cinema chord (`D3-A3-C4-E4-F4`) + stereo glass glint shimmer (`D5-E5-G5-A5-D6`) tracking the light sweep across `[ F L U X D ]`.

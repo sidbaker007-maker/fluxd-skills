@@ -45,8 +45,7 @@ mix_data_uri = "data:audio/mpeg;base64," + b64_file(mix_mp3)
 
 # Collect media assets as data URIs
 media_uris = {}
-assets_dir = os.path.join(WORK_DIR, "assets")
-for fn in (os.listdir(assets_dir) if os.path.exists(assets_dir) else []):
+for fn in os.listdir(os.path.join(WORK_DIR, "assets")):
     p = os.path.join(WORK_DIR, "assets", fn)
     if fn.endswith(".jpg"):
         media_uris[f"assets/{fn}"] = "data:image/jpeg;base64," + b64_file(p)
