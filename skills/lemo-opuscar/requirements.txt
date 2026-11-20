@@ -1,0 +1,8 @@
+# Core tier: rendering, audio mixing, image processing, font subsetting
+numpy
+scipy
+soundfile
+soxr
+Pillow
+fonttools
+brotli

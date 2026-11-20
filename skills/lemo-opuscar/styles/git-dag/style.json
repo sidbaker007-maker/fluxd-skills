@@ -1,0 +1,8 @@
+{
+  "slug": "git-dag",
+  "title": "Git Commit DAG & Diff",
+  "station": "Line 5 \u2014 Code, Terminals & OS",
+  "summary": "Animated commit graph branching, rebasing, and highlighting exact line diffs inside a dark IDE canvas.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

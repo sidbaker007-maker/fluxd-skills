@@ -1,0 +1,8 @@
+{
+  "slug": "satellite-briefing",
+  "title": "Satellite Briefing",
+  "station": "Line 1 \u2014 Real Material & the Newsroom",
+  "summary": "Orbital recon photograph pan-and-zoom with lat/lon reticles, distance scale bars, and target bounding boxes.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

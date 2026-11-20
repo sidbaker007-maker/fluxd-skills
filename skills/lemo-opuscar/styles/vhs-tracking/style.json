@@ -1,0 +1,8 @@
+{
+  "slug": "vhs-tracking",
+  "title": "Magnetic VHS & CRT Tracking",
+  "station": "Line 10 \u2014 Analog Film, Tape & Optics",
+  "summary": "1991 camcorder OSD timestamp, chroma bleed, head-switching noise bar, and pause/rewind shuttle scanlines.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

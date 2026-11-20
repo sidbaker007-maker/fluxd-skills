@@ -40,3 +40,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v11-2026.11.19-content-director-v4.0-fluxd-matrix` (2026-11-19) — Upgraded content-director v4.0 with FLUXD Content Matrix (4 Core Pillars x 6 Editorial Angles)
 - Added the 4 Core Pillars x 6 Editorial Angles ideation matrix, plain continuous top spoken script format (100% English, zero em-dashes), and 2026 SEO caption structure.
 
+## `v12-2026.11.20-lemo-opuscar-v1.0-99-styles` (2026-11-20) — Added lemo-opuscar v1.0 code-driven filmmaking toolkit with all 99 styles across 15 stations
+- Added complete `lemo-opuscar` toolkit (`AGENTS.md`, `DIRECTOR.md`, `TECHNIQUE.md`, `MY-STYLES.md`, `core/` deterministic renderer + 48kHz procedural foley/Karplus-Strong audio mixer, `tools/footage.py`, and all 99 unpacked `styles/<slug>/STYLE.md` specifications).
+

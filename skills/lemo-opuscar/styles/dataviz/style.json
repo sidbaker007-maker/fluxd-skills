@@ -1,0 +1,8 @@
+{
+  "slug": "dataviz",
+  "title": "Data Storytelling",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "Hans Rosling / Our World in Data / Economist animated scatter plots, slope charts, and annotated trend lines.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

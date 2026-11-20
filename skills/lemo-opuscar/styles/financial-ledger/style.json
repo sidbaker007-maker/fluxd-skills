@@ -1,0 +1,8 @@
+{
+  "slug": "financial-ledger",
+  "title": "Financial Terminal & Ledger",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "Bloomberg / FT dark financial desk with tabular-numeral tickers, candlestick zooms, and yield-curve spreads.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

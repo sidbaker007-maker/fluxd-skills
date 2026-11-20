@@ -1,0 +1,8 @@
+{
+  "slug": "film-leader",
+  "title": "16mm Film Leader & Splice",
+  "station": "Line 2 \u2014 Cut & Rhythm",
+  "summary": "SMPTE countdown leader, grease-pencil frame marks, sprocket holes, and cement-splice flash transitions.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

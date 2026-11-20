@@ -1,0 +1,8 @@
+{
+  "slug": "sankey-flow",
+  "title": "Sankey & Supply Flow",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "Animated proportional flow ribbons tracking money, energy, or supply-chain bottlenecks from source to sink.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

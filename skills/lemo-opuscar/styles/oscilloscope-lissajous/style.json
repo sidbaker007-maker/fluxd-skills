@@ -1,0 +1,8 @@
+{
+  "slug": "oscilloscope-lissajous",
+  "title": "Analog Tektronix Oscilloscope",
+  "station": "Line 10 \u2014 Analog Film, Tape & Optics",
+  "summary": "Phosphor-green CRT graticule plotting live waveforms, Lissajous phase figures, and frequency harmonics.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

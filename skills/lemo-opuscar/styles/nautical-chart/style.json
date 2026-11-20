@@ -1,0 +1,8 @@
+{
+  "slug": "nautical-chart",
+  "title": "Admiralty Nautical Chart",
+  "station": "Line 7 \u2014 Maps & Wayfinding",
+  "summary": "Parchment hydrographic chart with bathymetric depth contours, compass rose, rhumb lines, and shipping lanes.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

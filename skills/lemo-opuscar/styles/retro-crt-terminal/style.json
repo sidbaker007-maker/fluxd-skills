@@ -1,0 +1,8 @@
+{
+  "slug": "retro-crt-terminal",
+  "title": "Amber/Green CRT Terminal",
+  "station": "Line 5 \u2014 Code, Terminals & OS",
+  "summary": "1980s P3 amber or P1 green phosphor command console with WebGL barrel curvature, scanlines, and block cursor.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

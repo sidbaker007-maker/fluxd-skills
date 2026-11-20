@@ -1,0 +1,8 @@
+{
+  "slug": "countdown",
+  "title": "Live Countdown Split-screen",
+  "station": "Line 1 \u2014 Real Material & the Newsroom",
+  "summary": "24 / Apollo mission-control multi-panel split screen with synchronized ticking digital mission clock.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

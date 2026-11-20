@@ -1,0 +1,8 @@
+{
+  "slug": "election-desk",
+  "title": "Choropleth & Precinct Desk",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "High-contrast cartographic county/state swing board with margin bars and demographic breakdown drawers.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

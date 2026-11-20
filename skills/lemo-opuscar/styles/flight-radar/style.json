@@ -1,0 +1,8 @@
+{
+  "slug": "flight-radar",
+  "title": "Air Traffic & Radar Scope",
+  "station": "Line 7 \u2014 Maps & Wayfinding",
+  "summary": "Polar radar sweep with aircraft transponder vectors, altitude flight-level tags, and holding-pattern arcs.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

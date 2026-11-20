@@ -1,0 +1,8 @@
+{
+  "slug": "topographic-contour",
+  "title": "USGS Topographic Contour",
+  "station": "Line 7 \u2014 Maps & Wayfinding",
+  "summary": "Elevation contour lines in sepia and forest green with ridge profiles, benchmark triangles, and route trace.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

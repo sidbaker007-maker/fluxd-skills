@@ -1,0 +1,8 @@
+{
+  "slug": "wealth-scale",
+  "title": "Logarithmic Scale Scroll",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "Continuous horizontal or vertical ruler zooming across orders of magnitude from \u20b9500 to \u20b950,000 crore.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "hologram-hud",
+  "title": "Sci-Fi Hologram HUD",
+  "station": "Line 6 \u2014 3D Stage & Spatial",
+  "summary": "Additive cyan/amber wireframe telemetry projection with rotating 3D meshes, range rings, and reticle locks.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

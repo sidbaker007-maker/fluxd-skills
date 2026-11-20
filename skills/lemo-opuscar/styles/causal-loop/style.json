@@ -1,0 +1,8 @@
+{
+  "slug": "causal-loop",
+  "title": "Systems Causal Loop",
+  "station": "Line 4 \u2014 Diagrams & Whiteboards",
+  "summary": "Donella Meadows feedback-loop graph with reinforcing (+) and balancing (-) arcs and stock-and-flow tanks.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

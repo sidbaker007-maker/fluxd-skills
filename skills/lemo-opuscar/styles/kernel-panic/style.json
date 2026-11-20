@@ -1,0 +1,8 @@
+{
+  "slug": "kernel-panic",
+  "title": "Hex Dump & Memory Map",
+  "station": "Line 5 \u2014 Code, Terminals & OS",
+  "summary": "Live hexadecimal memory address grid, stack frames, and register pointers stepping through an exploit or bug.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

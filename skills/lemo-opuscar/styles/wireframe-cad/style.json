@@ -1,0 +1,8 @@
+{
+  "slug": "wireframe-cad",
+  "title": "Vector CAD Orthographic",
+  "station": "Line 6 \u2014 3D Stage & Spatial",
+  "summary": "Four-viewport CAD workstation (Top, Front, Side, Iso) with live dimension callouts and section cuts.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "teardown",
+  "title": "Exploded Hardware Teardown",
+  "station": "Line 6 \u2014 3D Stage & Spatial",
+  "summary": "3D hardware assembly separating along an axis into floating PCB, optics, and chassis layers with leader lines.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

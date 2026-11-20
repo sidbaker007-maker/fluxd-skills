@@ -1,0 +1,8 @@
+{
+  "slug": "packet-trace",
+  "title": "Network Packet & Protocol Trace",
+  "station": "Line 5 \u2014 Code, Terminals & OS",
+  "summary": "Wireshark / BGP routing topology view where ASN nodes, TCP handshakes, and outage cascades pulse across links.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "flowchart-engine",
+  "title": "State Machine & Flowchart",
+  "station": "Line 4 \u2014 Diagrams & Whiteboards",
+  "summary": "Decision-tree nodes and logic gates lighting up as a signal packet traverses branches in real time.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "desktop-flythrough",
+  "title": "3D Desktop Flythrough",
+  "station": "Line 6 \u2014 3D Stage & Spatial",
+  "summary": "Three.js camera gliding across floating glass windows, terminal panes, and code cards in 3D depth.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

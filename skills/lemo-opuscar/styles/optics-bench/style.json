@@ -1,0 +1,8 @@
+{
+  "slug": "optics-bench",
+  "title": "Ray-Tracing Optics Bench",
+  "station": "Line 12 \u2014 Science, Medicine & Nature",
+  "summary": "Prism, lens, and mirror optical bench splitting collimated light beams into spectral wavelengths.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

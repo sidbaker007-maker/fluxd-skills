@@ -1,0 +1,8 @@
+{
+  "slug": "census-mosaic",
+  "title": "Unit Chart & Dot Census",
+  "station": "Line 3 \u2014 Numbers & Charts",
+  "summary": "1,000-dot population grid where individual icons regroup, color-shift, and filter to dramatize proportions.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

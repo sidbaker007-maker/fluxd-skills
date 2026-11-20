@@ -1,0 +1,8 @@
+{
+  "slug": "chat-transcript",
+  "title": "Encrypted Messenger Forensics",
+  "station": "Line 15 \u2014 Social, Mobile & Interactive Feeds",
+  "summary": "Timestamped message bubbles, typing indicators, voice-note waveform scrubs, and leaked attachment previews.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

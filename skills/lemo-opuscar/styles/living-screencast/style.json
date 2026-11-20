@@ -1,0 +1,8 @@
+{
+  "slug": "living-screencast",
+  "title": "Living Screencast",
+  "station": "Line 5 \u2014 Code, Terminals & OS",
+  "summary": "Automated code editor and terminal session with keystroke-cadence typing, diff highlights, and zoom callouts.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

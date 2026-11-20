@@ -1,0 +1,8 @@
+{
+  "slug": "transit-map",
+  "title": "Vignelli Transit Map",
+  "station": "Line 7 \u2014 Maps & Wayfinding",
+  "summary": "Harry Beck / Massimo Vignelli octilinear 45-degree transit diagram with station pills and moving line pulses.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

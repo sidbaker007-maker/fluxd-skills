@@ -1,0 +1,8 @@
+{
+  "name": "lemo-opuscar",
+  "version": "2.0.0",
+  "description": "99 film styles made entirely in code: canvas/WebGL rendering, sampled/synthesized scores, TTS narration, and ffmpeg loudnorm mastering.",
+  "author": "Lemomo (LemoLab)",
+  "repository": "https://github.com/lemomo-ai/lemo-opuscar",
+  "license": "MIT"
+}

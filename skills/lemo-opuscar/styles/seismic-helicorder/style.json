@@ -1,0 +1,8 @@
+{
+  "slug": "seismic-helicorder",
+  "title": "Seismograph & Wavefront Drum",
+  "station": "Line 12 \u2014 Science, Medicine & Nature",
+  "summary": "Rotating paper helicorder drum tracing P-wave and S-wave arrivals with epicenter triangulation arcs.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

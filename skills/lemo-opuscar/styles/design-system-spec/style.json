@@ -1,0 +1,8 @@
+{
+  "slug": "design-system-spec",
+  "title": "UI Design Tokens & Spec Sheet",
+  "station": "Line 11 \u2014 Keynote, Brand & Product",
+  "summary": "Figma-style component anatomy canvas with redline pixel spacing measurements, token pills, and state matrix.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}

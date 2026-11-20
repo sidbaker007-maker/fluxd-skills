@@ -1,0 +1,8 @@
+{
+  "slug": "clinical-mri-hud",
+  "title": "Diagnostic Radiology & ECG",
+  "station": "Line 12 \u2014 Science, Medicine & Nature",
+  "summary": "DICOM axial/sagittal slice viewer with anatomical crosshairs, vital waveforms, and pathology callout tags.",
+  "fps": 24,
+  "defaultSize": "1920x1080"
+}
