@@ -18,18 +18,26 @@ description: 'Phase 1 FLUXD Content Matrix ideation director (4 Core Pillars × 
    - **NEVER build HTML storyboards (`*_storyboard.html`)**. Instead, when Phase 2 video production runs, output:
      1. A **low-resolution preview MP4** so the creator can watch the actual pacing, motion, and clips immediately.
      2. The **portable local render bundle `.zip`** (`SCRIPT_DIR` relative paths, root `requirements.txt`, `--1080p` / `--4k` / `--both` @ 60fps with NVIDIA RTX 3050 Ti NVENC auto-detection) so the creator can render full 1080p60 / 4K60 locally on Linux.
-   - **Incorporate Manim Python (`manim`) Clips & Real Dynamic Footage**: For physics, mathematics, or systems mechanisms, integrate 60fps **Manim Community Edition (`manim`)** animations alongside real archival/documentary video clips so every beat has genuine motion.
+   - **Visual Composition, Real Footage & Progressive Manim Animation Laws**:
+     1. **One Clear Focal Subject Per Screen (Zero Multi-Panel Clutter)**: Never juxtapose multiple competing boxes, cards, telemetry grids, and text overlays on one 9:16 screen. Keep one primary focal visual on stage with clean breathing room, supported by at most one crisp label/icon and the lower-third active-word karaoke caption strip.
+     2. **Real Archival Footage, Real Creator/YouTuber Clips & Rich Visual Assets**: Never rely solely on generated cards or synthetic code screens. Always weave in **real archival video footage**, **actual clips from relevant YouTubers/documentaries** (e.g., 3Blue1Brown, Veritasium, Numberphile, interviews, lectures), **real photographs/portraits** of the people involved, **official logos/icons** (Anthropic, Claude, Lean 4, Stanford, MIT, Clay Institute), and **high-res archival posters/manuscripts**. When YouTube downloads are restricted in the cloud VM, include a local `yt-dlp` fetch step in `render_local.sh` (or ask the user for local clip files) AND fetch real Wikimedia/Internet Archive video clips via `tools/footage.py`.
+     3. **No Looping Short Function Animations — Progressive Evidence-Driven Math Animations**: Never render a short 4–5s Manim loop and play it repeatedly while the voiceover explains a multi-step concept. Borrow choreography from top explainers (3Blue1Brown, Veritasium): each Manim scene must match the exact duration of the spoken beat and unfold progressively step-by-step (introducing the axis/formula -> plotting real values -> zooming into the critical evidence/proof mechanism -> highlighting the exact failure or breakthrough as the voice speaks each phrase).
 
 ### Cumulative Production Feedback & Learning Log (Update After Every Video)
 Whenever the creator gives positive or negative feedback on a script or video output, log it here and update this skill via `skills:update_skill`:
 - **[GOOD BENCHMARK — Follow This] FLUXD Reel 10: *The Police Glitch That Saved GTA* (Nov 2026)**:
-  - *What worked*: Built in **`@lemo-opuscar`** (`visual-investigation` + `caption-news`), driven by real moving archival gameplay/documentary clips, dynamic multi-shot pacing (22 shots across 9 beats synced to untouched `1.00x` voiceover), delivered as a watchable low-res preview MP4 + portable RTX 3050 Ti local render bundle `.zip`.
+  - *What worked*: Built in **`@lemo-opuscar`** (`visual-investigation` + `caption-news`), driven by real moving archival gameplay/documentary clips, clean single-subject staging, dynamic multi-shot pacing (22 shots across 9 beats synced to untouched `1.00x` voiceover), delivered as a watchable low-res preview MP4 + portable RTX 3050 Ti local render bundle `.zip`.
 - **[BAD OUTPUT — Never Repeat] FLUXD Reel 11 v1: *Anthropic Researcher & The Riemann Hypothesis* (Nov 2026)**:
   - *What failed*:
     1. Auto-built the entire video package on an initial idea prompt before the creator fact-checked the script or recorded a voiceover (wasting tokens).
     2. Used `@motion-designer` (`editorial` style), which produced flat, static card slides with no joy or dynamic video clips, plus an unwanted HTML storyboard (`*_storyboard.html`).
     3. Recommended a generic prime-number video mid-script instead of placing **3Blue1Brown's** specific Riemann zeta function visualization ([*"But what is the Riemann zeta function? Visualizing analytic continuation"*](http://www.youtube.com/watch?v=sD0NjbwqlYw)) at the very end of the script.
-  - *Fix applied*: Disabled `@motion-designer` and `@my-style`; locked in the Phase 1 (Research + Script only) gate; routed all Phase 2 video builds to `@lemo-opuscar` with dynamic video clips + pre-rendered 60fps **Manim Python** animations + low-res preview MP4 + local render bundle; moved the 3Blue1Brown recommendation to the closing lines.
+- **[BAD OUTPUT — Never Repeat] FLUXD Reel 11 v2: *Anthropic Researcher & The Riemann Hypothesis (`@lemo-opuscar` v2 Build)* (Nov 2026)**:
+  - *What failed*:
+    1. **Overcrowded Screen Juxtaposition**: Too many panels, cards, counters, and text blocks were juxtaposed on one 9:16 screen at the same time.
+    2. **No Real Video Clips or Visual Variety**: Lacked real archival footage, real clips from other YouTubers/explainers, real portraits, icons, images, and posters.
+    3. **Looped Function Animations Instead of Progressive Evidence**: The Manim function animations were too short and played on loop while the narrator explained deeper points, instead of progressively unfolding step-by-step mathematical evidence like 3Blue1Brown or Veritasium explainers.
+  - *Fix applied*: Enforced single-focus uncluttered staging; required real archival/YouTuber footage + portraits, icons, images, and posters; required full-duration, non-looping, step-by-step evidence-driven Manim animations inspired by 3Blue1Brown/Veritasium.
 
 ---
 
@@ -70,8 +78,8 @@ When the creator brings an idea or asks for research and a script, deliver a cle
    - Every external claim, date, quote, theorem, or dataset grounded with clickable primary-source URLs so the creator can verify every fact before recording.
 3. **Dynamic `@lemo-opuscar` + Manim Python Shot & Clip Plan**:
    - A compact beat-by-beat table mapping each section of the script to:
-     - **Real Dynamic Video Clips / Archival B-Roll** (e.g., lecture footage, coding/terminal captures, archival film, documentary clips).
-     - **60fps Manim Python (`manim`) Mathematical / Mechanism Clips** (listing the exact mathematical visual or already-rendered `.mp4` clip to composite into each beat).
-     - **Lemo-Opuscar Visual Investigation / Caption-News Layering** (kinetic headlines, 3–5 word Active-Word Karaoke subtitles, clean `SOURCES:` footer, and the 3.0s post-VO `[ Φ-2 ] [ FLUXD ]` Blink 04 -> Blink 03 outro).
+     - **Real Dynamic Video Clips / Archival B-Roll / YouTuber Clips** (e.g., lecture footage, YouTuber explainer clips, documentary clips, portraits, official icons, and posters).
+     - **Progressive, Non-Looping 60fps Manim Python (`manim`) Mathematical / Mechanism Clips** (listing the exact step-by-step evidence animation that unfolds across the beat without looping).
+     - **Uncluttered Lemo-Opuscar Single-Focus Layering** (one focal visual per shot, 3–5 word Active-Word Karaoke subtitles, clean `SOURCES:` footer, and the 3.0s post-VO `[ Φ-2 ] [ FLUXD ]` Blink 04 -> Blink 03 outro).
 4. **Instagram Story Share One-Liners (3 Angles) & 2026 SEO Reel Caption**:
    - Above-the-fold hook (`<125 characters`), narrative body (zero em-dashes), 5-hashtag cap, and bottom `[...]` search keyword block.

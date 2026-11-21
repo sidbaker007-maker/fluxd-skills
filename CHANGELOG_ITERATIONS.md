@@ -46,3 +46,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v13-2026.11.21-content-director-v5.0-strict-phase1-gate` (2026-11-21) — Updated content-director v5.0 with Strict Phase 1 Trigger Gate & @lemo-opuscar handoff
 - Enforced Strict Two-Phase Trigger Gate: Phase 1 outputs verified research + plain continuous spoken script only; Phase 2 hands off exclusively to `@lemo-opuscar` + 60fps Manim after voiceover upload (retiring flat `@motion-designer` card templates and HTML storyboards).
 
+## `v14-2026.11.21-content-director-v6.0-progressive-manim` (2026-11-21) — Updated content-director v6.0 with Single-Focus Staging & Non-Looping L1->L2->L3 Manim Laws
+- Logged Reel 11 v2 -> v3 learnings: one clear focal subject per screen (zero multi-panel clutter), real archival/YouTuber video clips with creator attribution pills, and full-duration non-looping 60fps Manim visual proofs.
+
