@@ -43,3 +43,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v12-2026.11.20-lemo-opuscar-v1.0-99-styles` (2026-11-20) — Added lemo-opuscar v1.0 code-driven filmmaking toolkit with all 99 styles across 15 stations
 - Added complete `lemo-opuscar` toolkit (`AGENTS.md`, `DIRECTOR.md`, `TECHNIQUE.md`, `MY-STYLES.md`, `core/` deterministic renderer + 48kHz procedural foley/Karplus-Strong audio mixer, `tools/footage.py`, and all 99 unpacked `styles/<slug>/STYLE.md` specifications).
 
+## `v13-2026.11.21-content-director-v5.0-strict-phase1-gate` (2026-11-21) — Updated content-director v5.0 with Strict Phase 1 Trigger Gate & @lemo-opuscar handoff
+- Enforced Strict Two-Phase Trigger Gate: Phase 1 outputs verified research + plain continuous spoken script only; Phase 2 hands off exclusively to `@lemo-opuscar` + 60fps Manim after voiceover upload (retiring flat `@motion-designer` card templates and HTML storyboards).
+
