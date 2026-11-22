@@ -22,6 +22,11 @@ description: 'Phase 1 FLUXD Content Matrix ideation director (4 Core Pillars × 
      1. **One Clear Focal Subject Per Screen (Zero Multi-Panel Clutter)**: Never juxtapose multiple competing boxes, cards, telemetry grids, and text overlays on one 9:16 screen. Keep one primary focal visual on stage with clean breathing room, supported by at most one crisp label/icon and the lower-third active-word karaoke caption strip.
      2. **Real Archival Footage, Real Creator/YouTuber Clips & Rich Visual Assets**: Never rely solely on generated cards or synthetic code screens. Always weave in **real archival video footage**, **actual clips from relevant YouTubers/documentaries** (e.g., 3Blue1Brown, Veritasium, Numberphile, interviews, lectures), **real photographs/portraits** of the people involved, **official logos/icons** (Anthropic, Claude, Lean 4, Stanford, MIT, Clay Institute), and **high-res archival posters/manuscripts**. When YouTube downloads are restricted in the cloud VM, include a local `yt-dlp` fetch step in `render_local.sh` (or ask the user for local clip files) AND fetch real Wikimedia/Internet Archive video clips via `tools/footage.py`.
      3. **No Looping Short Function Animations — Progressive Evidence-Driven Math Animations**: Never render a short 4–5s Manim loop and play it repeatedly while the voiceover explains a multi-step concept. Borrow choreography from top explainers (3Blue1Brown, Veritasium): each Manim scene must match the exact duration of the spoken beat and unfold progressively step-by-step (introducing the axis/formula -> plotting real values -> zooming into the critical evidence/proof mechanism -> highlighting the exact failure or breakthrough as the voice speaks each phrase).
+     4. **Motion Design & Visual Journalism Choreography Standards**:
+        - **Speed/Value Graph Easing & Anticipation/Overshoot**: Use asymmetric cubic/quintic Bezier curves (`ease_out_cubic` / `ease_out_expo`), precede major movements with a 2–4 frame counter-movement (`0.94x` anticipation), and settle with subtle overshoot (`1.04x–1.06x` via `ease_out_back`).
+        - **Follow-Through & Staggered Overlap**: Stagger child elements by 2–5 frames (`0.04s–0.08s` / `LaggedStart`) and maintain eye-trace match-cuts across shot boundaries.
+        - **3D Z-Space Parallax, 12fps Tactile Collage & Forensic Document Highlighting**: Separate foreground cutouts (`12fps` posterize time) from smooth `60fps` camera pushes, sweep normalized full-width sentence highlights (`x = 0.05..0.95`) over dimmed archival papers, and lead cuts by 2–4 frames with peak-aligned J-cut foley.
+        - **Progressive L1 → L2 → L3 Mathematical Pedagogy**: Allocate a `900×900` (`1:1`) center-stage canvas (`y = 430..1330` in `9:16`) moving from **L1 Data Perception** (clean axes) to **L2 Temporal Reasoning** (`ReplacementTransform` / `ValueTracker` state morphing with explicit `FadeOut` clearance) to **L3 Counterfactual Proof** (showing what physically breaks when an assumption fails).
 
 ### Cumulative Production Feedback & Learning Log (Update After Every Video)
 Whenever the creator gives positive or negative feedback on a script or video output, log it here and update this skill via `skills:update_skill`:
@@ -37,7 +42,7 @@ Whenever the creator gives positive or negative feedback on a script or video ou
     1. **Overcrowded Screen Juxtaposition**: Too many panels, cards, counters, and text blocks were juxtaposed on one 9:16 screen at the same time.
     2. **No Real Video Clips or Visual Variety**: Lacked real archival footage, real clips from other YouTubers/explainers, real portraits, icons, images, and posters.
     3. **Looped Function Animations Instead of Progressive Evidence**: The Manim function animations were too short and played on loop while the narrator explained deeper points, instead of progressively unfolding step-by-step mathematical evidence like 3Blue1Brown or Veritasium explainers.
-  - *Fix applied*: Enforced single-focus uncluttered staging; required real archival/YouTuber footage + portraits, icons, images, and posters; required full-duration, non-looping, step-by-step evidence-driven Manim animations inspired by 3Blue1Brown/Veritasium.
+  - *Fix applied in FLUXD Reel 11 v3 (Nov 2026 — GOOD BENCHMARK)*: Rebuilt into 29 uncluttered single-focus shots across `182.73s` (`rh.wav`) with real 3Blue1Brown, Veritasium, Numberphile, Terence Tao, and CIRM video clips, real portraits/icons/posters, subtle bottom-right creator attribution pills, and 5 full-duration (`15.63s–21.46s`) non-looping 60fps Manim visual proofs following L1 → L2 → L3 pedagogy.
 
 ---
 
@@ -79,7 +84,7 @@ When the creator brings an idea or asks for research and a script, deliver a cle
 3. **Dynamic `@lemo-opuscar` + Manim Python Shot & Clip Plan**:
    - A compact beat-by-beat table mapping each section of the script to:
      - **Real Dynamic Video Clips / Archival B-Roll / YouTuber Clips** (e.g., lecture footage, YouTuber explainer clips, documentary clips, portraits, official icons, and posters).
-     - **Progressive, Non-Looping 60fps Manim Python (`manim`) Mathematical / Mechanism Clips** (listing the exact step-by-step evidence animation that unfolds across the beat without looping).
-     - **Uncluttered Lemo-Opuscar Single-Focus Layering** (one focal visual per shot, 3–5 word Active-Word Karaoke subtitles, clean `SOURCES:` footer, and the 3.0s post-VO `[ Φ-2 ] [ FLUXD ]` Blink 04 -> Blink 03 outro).
+     - **Progressive, Non-Looping 60fps Manim Python (`manim`) Mathematical / Mechanism Clips** (listing the exact step-by-step L1 → L2 → L3 evidence animation that unfolds across the beat without looping).
+     - **Uncluttered Lemo-Opuscar Single-Focus Layering** (one focal visual per shot, 3–5 word Active-Word Karaoke subtitles in `Bricolage Grotesque Bold`, clean `SOURCES:` footer, subtle creator attribution pills, and the 3.0s post-VO `[ Φ-2 ] [ FLUXD ]` Blink 04 -> Blink 03 outro).
 4. **Instagram Story Share One-Liners (3 Angles) & 2026 SEO Reel Caption**:
    - Above-the-fold hook (`<125 characters`), narrative body (zero em-dashes), 5-hashtag cap, and bottom `[...]` search keyword block.

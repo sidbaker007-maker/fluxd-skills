@@ -49,3 +49,7 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 ## `v14-2026.11.21-content-director-v6.0-progressive-manim` (2026-11-21) — Updated content-director v6.0 with Single-Focus Staging & Non-Looping L1->L2->L3 Manim Laws
 - Logged Reel 11 v2 -> v3 learnings: one clear focal subject per screen (zero multi-panel clutter), real archival/YouTuber video clips with creator attribution pills, and full-duration non-looping 60fps Manim visual proofs.
 
+## `v15-2026.11.22-pixabay-fetcher-and-skill-creator-v2.0` (2026-11-22) — Added fluxd_pixabay_fetch.py to content-director v7.0 and upgraded skill-creator v2.0 for Claude Code 2.1+
+- Bundled `scripts/fluxd_pixabay_fetch.py` (1080p/4K non-AI video B-roll, high-res images, and 48kHz peak-offset-aligned audio/SFX).
+- Upgraded `skill-creator` v2.0 `run_eval.py` for Claude Code 2.1+ `.claude/skills/` and streaming `thinking` blocks.
+
