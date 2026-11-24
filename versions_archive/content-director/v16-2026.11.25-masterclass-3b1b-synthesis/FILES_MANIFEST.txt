@@ -1,0 +1,17 @@
+Tag: v16-2026.11.25-masterclass-3b1b-synthesis
+Tree Hash: 690ea3470f219cd18c7cfe1c01ba29fc95fb72e3
+Total Files: 13
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site-webmanifest.json
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py
+skills/content-director/scripts/fluxd_pixabay_fetch.py

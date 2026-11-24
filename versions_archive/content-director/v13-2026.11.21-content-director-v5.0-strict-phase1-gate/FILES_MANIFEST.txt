@@ -1,0 +1,16 @@
+Tag: v13-2026.11.21-content-director-v5.0-strict-phase1-gate
+Tree Hash: 028a2a8da30e8f2676a125a555fe2703a5f5dfde
+Total Files: 12
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site-webmanifest.json
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py

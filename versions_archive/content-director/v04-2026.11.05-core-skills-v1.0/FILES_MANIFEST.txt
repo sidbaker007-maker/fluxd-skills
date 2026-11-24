@@ -1,0 +1,5 @@
+Tag: v04-2026.11.05-core-skills-v1.0
+Tree Hash: b525908e0f8eb89d18eedf7adee7d995a1cc46b8
+Total Files: 1
+
+skills/content-director/SKILL.md

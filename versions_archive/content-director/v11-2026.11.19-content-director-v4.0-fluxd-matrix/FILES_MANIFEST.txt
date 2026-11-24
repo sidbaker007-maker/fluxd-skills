@@ -1,0 +1,16 @@
+Tag: v11-2026.11.19-content-director-v4.0-fluxd-matrix
+Tree Hash: 8731ca9272def5099b6c6a17f6e9443f4395a4fb
+Total Files: 12
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site-webmanifest.json
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py

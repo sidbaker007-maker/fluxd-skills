@@ -53,3 +53,9 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 - Bundled `scripts/fluxd_pixabay_fetch.py` (1080p/4K non-AI video B-roll, high-res images, and 48kHz peak-offset-aligned audio/SFX).
 - Upgraded `skill-creator` v2.0 `run_eval.py` for Claude Code 2.1+ `.claude/skills/` and streaming `thinking` blocks.
 
+## `v16-2026.11.25-masterclass-3b1b-synthesis` (2026-11-25) — Synthesized MKBHD Studio, Varun Grover, AniThing, and 3Blue1Brown (3b1b/manim & 3b1b/videos) into content-director v8.0
+- Added Varun Grover screenwriting laws (granular micro-texture research, Operation Makhdoom unexplained intrigue nuggets, multi-disciplinary stress-testing, setup+punchline compression, and cutting the pre-climax speech per the *Masaan* edit rule).
+- Added AniThing spoken-flow laws (banning over-poetic cold opens, emulation over imitation, zero pushed jokes or cliché connectors, and the speak-while-writing test).
+- Added MKBHD Studio editing, motion design, and sound design laws (radical vector simplification, zero-delay syllable-locked spotlights, 1-thing-at-a-time staging, asymmetric easing, mass-scaled whooshes, and spatial reverb tails / ambience over silences).
+- Added 3Blue1Brown (`3b1b/manim` & `3b1b/videos`) code architecture laws (`NumberPlane`/`ComplexPlane` transformations, persistent `t2c` variable colors with `isolate`, `TransformMatchingStrings` with curved `path_arc`, reactive `ValueTracker` + `always_redraw` + `f_always` + `make_number_changeable`, declarative `VGroup`s, and `LaggedStart`).
+

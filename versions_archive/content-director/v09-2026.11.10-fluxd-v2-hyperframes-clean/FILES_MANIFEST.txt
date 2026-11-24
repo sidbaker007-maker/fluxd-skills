@@ -1,0 +1,16 @@
+Tag: v09-2026.11.10-fluxd-v2-hyperframes-clean
+Tree Hash: 220b41782036a64465a9104dc99f4246446bda5d
+Total Files: 12
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site-webmanifest.json
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py

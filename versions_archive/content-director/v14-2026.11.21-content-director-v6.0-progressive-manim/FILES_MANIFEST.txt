@@ -1,0 +1,16 @@
+Tag: v14-2026.11.21-content-director-v6.0-progressive-manim
+Tree Hash: 43f5e1724880c0e64936292c307dfd99e6c97083
+Total Files: 12
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site-webmanifest.json
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py

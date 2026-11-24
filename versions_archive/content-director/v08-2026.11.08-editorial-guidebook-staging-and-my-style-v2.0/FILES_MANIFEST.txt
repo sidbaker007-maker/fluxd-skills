@@ -1,0 +1,31 @@
+Tag: v08-2026.11.08-editorial-guidebook-staging-and-my-style-v2.0
+Tree Hash: a585452ffdabd0e511c79507a5aace0d0d58d61d
+Total Files: 27
+
+skills/content-director/SKILL.md
+skills/content-director/evals/evals.json
+skills/content-director/references/brand-kit/logos-svg/alternate-explored-variants/phi-1-architectural-gate.svg
+skills/content-director/references/brand-kit/logos-svg/alternate-explored-variants/phi-3-split-phase.svg
+skills/content-director/references/brand-kit/logos-svg/alternate-explored-variants/word-1-fluxd-uppercase-dot.svg
+skills/content-director/references/brand-kit/logos-svg/alternate-explored-variants/word-2-fluxd-lowercase-dot.svg
+skills/content-director/references/brand-kit/logos-svg/alternate-explored-variants/word-3-fluxd-shutter-split.svg
+skills/content-director/references/brand-kit/logos-svg/favicon.svg
+skills/content-director/references/brand-kit/logos-svg/logo-mark-phi2-dark-bg.svg
+skills/content-director/references/brand-kit/logos-svg/logo-mark-phi2-light-bg.svg
+skills/content-director/references/brand-kit/logos-svg/logo-mark-phi2-monochrome-ink.svg
+skills/content-director/references/brand-kit/logos-svg/logo-mark-phi2-monochrome-paper.svg
+skills/content-director/references/brand-kit/logos-svg/logo-primary-lockup-dark-bg.svg
+skills/content-director/references/brand-kit/logos-svg/logo-primary-lockup-light-bg.svg
+skills/content-director/references/brand-kit/logos-svg/logo-seal-badge.svg
+skills/content-director/references/brand-kit/logos-svg/logo-wordmark-framed-dark-bg.svg
+skills/content-director/references/brand-kit/logos-svg/logo-wordmark-framed-light-bg.svg
+skills/content-director/references/brand-kit/tokens/BRAND-GUIDELINES.md
+skills/content-director/references/brand-kit/tokens/brand-tokens.json
+skills/content-director/references/brand-kit/tokens/fluxd-brand-variables.css
+skills/content-director/references/brand-kit/tokens/site.webmanifest
+skills/content-director/references/creator-profile.md
+skills/content-director/references/editorial-motion-guidebook.md
+skills/content-director/references/fluxd-brand-guidelines.md
+skills/content-director/references/fluxd-brand-tokens.json
+skills/content-director/references/platform-playbooks.md
+skills/content-director/scripts/content_validator.py

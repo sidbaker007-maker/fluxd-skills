@@ -1,0 +1,9 @@
+Tag: v05-2026.11.06-learn-style-v1.0-cli-rtx
+Tree Hash: e3eb66ca88ae9f2ce200d0693d2c967de5a61ec8
+Total Files: 5
+
+skills/learn-style/SKILL.md
+skills/learn-style/references/my-style-template.md
+skills/learn-style/scripts/analyze_reference.py
+skills/learn-style/scripts/compile_my_style.py
+skills/learn-style/scripts/setup_check.py

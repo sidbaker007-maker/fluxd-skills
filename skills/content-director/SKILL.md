@@ -16,44 +16,74 @@ description: 'Phase 1 FLUXD Content Matrix ideation director (4 Core Pillars × 
    - **Exclusively use `@lemo-opuscar`** (`visual-investigation` + `caption-news` or topic-matched dynamic Lemo-Opuscar styles).
    - **NEVER use `@motion-designer` or `my-style` (`editorial` flat card templates)**—they are retired because static cards feel flat and lifeless compared to real moving video clips. Keep only the official **FLUXD brand identity assets** (`[ Φ-2 ] [ FLUXD ]` vector marks, palette tokens, clean `SOURCES` line, and the clean 3.0s `Blink 04 -> Blink 03` logo outro with zero debug labels or taglines).
    - **NEVER build HTML storyboards (`*_storyboard.html`)**. Instead, when Phase 2 video production runs, output:
-     1. A **low-resolution preview MP4** so the creator can watch the actual pacing, motion, and clips immediately.
-     2. The **portable local render bundle `.zip`** (`SCRIPT_DIR` relative paths, root `requirements.txt`, `--1080p` / `--4k` / `--both` @ 60fps with NVIDIA RTX 3050 Ti NVENC auto-detection) so the creator can render full 1080p60 / 4K60 locally on Linux.
-   - **Visual Composition, Real Footage & Progressive Manim Animation Laws**:
-     1. **One Clear Focal Subject Per Screen (Zero Multi-Panel Clutter)**: Never juxtapose multiple competing boxes, cards, telemetry grids, and text overlays on one 9:16 screen. Keep one primary focal visual on stage with clean breathing room, supported by at most one crisp label/icon and the lower-third active-word karaoke caption strip.
-     2. **Real Archival Footage, Real Creator/YouTuber Clips & Rich Visual Assets**: Never rely solely on generated cards or synthetic code screens. Always weave in **real archival video footage**, **actual clips from relevant YouTubers/documentaries** (e.g., 3Blue1Brown, Veritasium, Numberphile, interviews, lectures), **real photographs/portraits** of the people involved, **official logos/icons** (Anthropic, Claude, Lean 4, Stanford, MIT, Clay Institute), and **high-res archival posters/manuscripts**. When YouTube downloads are restricted in the cloud VM, include a local `yt-dlp` fetch step in `render_local.sh` (or ask the user for local clip files) AND fetch real Wikimedia/Internet Archive video clips via `tools/footage.py`.
-     3. **No Looping Short Function Animations — Progressive Evidence-Driven Math Animations**: Never render a short 4–5s Manim loop and play it repeatedly while the voiceover explains a multi-step concept. Borrow choreography from top explainers (3Blue1Brown, Veritasium): each Manim scene must match the exact duration of the spoken beat and unfold progressively step-by-step (introducing the axis/formula -> plotting real values -> zooming into the critical evidence/proof mechanism -> highlighting the exact failure or breakthrough as the voice speaks each phrase).
-     4. **Motion Design & Visual Journalism Choreography Standards**:
-        - **Speed/Value Graph Easing & Anticipation/Overshoot**: Use asymmetric cubic/quintic Bezier curves (`ease_out_cubic` / `ease_out_expo`), precede major movements with a 2–4 frame counter-movement (`0.94x` anticipation), and settle with subtle overshoot (`1.04x–1.06x` via `ease_out_back`).
-        - **Follow-Through & Staggered Overlap**: Stagger child elements by 2–5 frames (`0.04s–0.08s` / `LaggedStart`) and maintain eye-trace match-cuts across shot boundaries.
-        - **3D Z-Space Parallax, 12fps Tactile Collage & Forensic Document Highlighting**: Separate foreground cutouts (`12fps` posterize time) from smooth `60fps` camera pushes, sweep normalized full-width sentence highlights (`x = 0.05..0.95`) over dimmed archival papers, and lead cuts by 2–4 frames with peak-aligned J-cut foley.
-        - **Progressive L1 → L2 → L3 Mathematical Pedagogy**: Allocate a `900×900` (`1:1`) center-stage canvas (`y = 430..1330` in `9:16`) moving from **L1 Data Perception** (clean axes) to **L2 Temporal Reasoning** (`ReplacementTransform` / `ValueTracker` state morphing with explicit `FadeOut` clearance) to **L3 Counterfactual Proof** (showing what physically breaks when an assumption fails).
-
-### Cumulative Production Feedback & Learning Log (Update After Every Video)
-Whenever the creator gives positive or negative feedback on a script or video output, log it here and update this skill via `skills:update_skill`:
-- **[GOOD BENCHMARK — Follow This] FLUXD Reel 10: *The Police Glitch That Saved GTA* (Nov 2026)**:
-  - *What worked*: Built in **`@lemo-opuscar`** (`visual-investigation` + `caption-news`), driven by real moving archival gameplay/documentary clips, clean single-subject staging, dynamic multi-shot pacing (22 shots across 9 beats synced to untouched `1.00x` voiceover), delivered as a watchable low-res preview MP4 + portable RTX 3050 Ti local render bundle `.zip`.
-- **[BAD OUTPUT — Never Repeat] FLUXD Reel 11 v1: *Anthropic Researcher & The Riemann Hypothesis* (Nov 2026)**:
-  - *What failed*:
-    1. Auto-built the entire video package on an initial idea prompt before the creator fact-checked the script or recorded a voiceover (wasting tokens).
-    2. Used `@motion-designer` (`editorial` style), which produced flat, static card slides with no joy or dynamic video clips, plus an unwanted HTML storyboard (`*_storyboard.html`).
-    3. Recommended a generic prime-number video mid-script instead of placing **3Blue1Brown's** specific Riemann zeta function visualization ([*"But what is the Riemann zeta function? Visualizing analytic continuation"*](http://www.youtube.com/watch?v=sD0NjbwqlYw)) at the very end of the script.
-- **[BAD OUTPUT — Never Repeat] FLUXD Reel 11 v2: *Anthropic Researcher & The Riemann Hypothesis (`@lemo-opuscar` v2 Build)* (Nov 2026)**:
-  - *What failed*:
-    1. **Overcrowded Screen Juxtaposition**: Too many panels, cards, counters, and text blocks were juxtaposed on one 9:16 screen at the same time.
-    2. **No Real Video Clips or Visual Variety**: Lacked real archival footage, real clips from other YouTubers/explainers, real portraits, icons, images, and posters.
-    3. **Looped Function Animations Instead of Progressive Evidence**: The Manim function animations were too short and played on loop while the narrator explained deeper points, instead of progressively unfolding step-by-step mathematical evidence like 3Blue1Brown or Veritasium explainers.
-  - *Fix applied in FLUXD Reel 11 v3 (Nov 2026 — GOOD BENCHMARK)*: Rebuilt into 29 uncluttered single-focus shots across `182.73s` (`rh.wav`) with real 3Blue1Brown, Veritasium, Numberphile, Terence Tao, and CIRM video clips, real portraits/icons/posters, subtle bottom-right creator attribution pills, and 5 full-duration (`15.63s–21.46s`) non-looping 60fps Manim visual proofs following L1 → L2 → L3 pedagogy.
+     1. A **watchable preview MP4** so the creator can watch the actual pacing, motion, and clips immediately.
+     2. The **uncompressed, full-quality portable local render bundle `.zip`** uploaded directly to **Google Drive** via `drive:create_file` (`SCRIPT_DIR` relative paths, root `requirements.txt`, `--1080p` / `--4k` / `--both` @ 60fps with NVIDIA RTX 3050 Ti NVENC auto-detection).
 
 ---
 
-## 1. Operating Philosophy, Core Pillars & The FLUXD Content Matrix
+## 1. Screenwriting, Editing, Motion, Sound & 3Blue1Brown Manim Mastery Laws
+
+### A. Screenwriting & Spoken-Flow Laws (Varun Grover + AniThing + MKBHD Studio)
+1. **Granular World-Building & Unexplained Intrigue Nuggets (Varun Grover — *Masaan* & *Sacred Games*)**:
+   - **Authenticity is Cinema's Highest Aesthetic**: Never write from surface assumptions. Research the micro-texture of the subject—historical archives, domain specialists (like the Mumbai Police map-reader in *Sacred Games*), and physical details.
+   - **The "Operation Makhdoom" Intrigue Law**: Drop hyper-specific, authentic domain facts into the narrative without pedantically over-explaining them. Let concrete specificity create intrigue and authority.
+   - **Multi-Disciplinary & Cross-Form Stress-Testing**: Approach every script simultaneously from three angles:
+     1. **The Mathematician / Physicist**: What is the structural mechanism, invariance, or counterfactual proof?
+     2. **The *New Yorker* Investigative Reporter**: State cold, objective empirical facts with zero melodrama so the facts themselves generate the emotional punch.
+     3. **The Lyricist / Poet**: Control syllable cadence, phonetic weight, and musical meter.
+   - **Classical Setup + Punchline Compression**: Every short-form script must build a tight setup that resolves in an earned intellectual or narrative twist/punchline.
+   - **Cut the Pre-Climax Speech (*Masaan* "Yeh Dukh Kaahe Khatam Nahi Hota" Rule)**: Never pad an emotional or intellectual climax with a warm-up monologue. Strip the preamble and cut straight to the decisive proof or revelation. Never output a raw "first draft"—internally revise to a tight 4th-draft standard before presenting.
+   - **Oral Memory Cadence Over Written Essay Prose**: Write the script as if recounting a vivid personal memory to a smart friend in the room, never like a textbook or school paper.
+2. **Spoken-Tone, Emulation & Pre-Visualized Scripting (AniThing — *100+ Video Scripts*)**:
+   - **No Over-Poetic Cold Opens**: Never open with heavy, flowery literary poetry that kills retention in the first 3 seconds. Open with simple, concrete, high-curiosity clarity.
+   - **Emulation Over Imitation**: Understand *why* masters (3Blue1Brown, Veritasium, MKBHD) structure a sequence a certain way, then solve it in FLUXD's own voice.
+   - **Never "Push to Fit" Forced Jokes or Cliché Transitions**: Never force a joke, metaphor, or physics analogy where it doesn't belong naturally. Ban hackneyed filler connectors (*"Speaking of which..."*, *"Now let's talk about..."*)—use clean structural pauses and stem transitions instead.
+   - **The Speak-While-Writing Test**: Every line must be spoken aloud in flow while drafting. If a phrase trips the tongue or uses words nobody says in real conversation, rewrite it immediately.
+   - **Director's Script Pre-Visualization**: Design the visual shot changes, camera movements, color shifts, and musical stem intensity curves (low-stem verse vs. full-stem climax) while writing the script.
+3. **Value-First Subtraction & Honest Expectation Setting (MKBHD Studio — *The MKBHD Method*)**:
+   - **Ruthless Value Subtraction (The Lost iPhone Rule)**: What you cut is as important as what you keep. Even if a side tangent or anecdote is dramatic or funny, cut it if it distracts from the core promise of the video.
+   - **Honest Expectation-Setting Intros**: Avoid chaotic flying-text hype openers when the video is a deep investigative breakdown. Use the first 5–10 seconds to both hook the viewer and establish the exact intellectual expectation and tone.
+
+### B. 3Blue1Brown (`3b1b/manim` & `3b1b/videos`) Code & Mathematical Choreography Laws
+When designing and coding Manim scenes (`manim` / `manimgl`) for FLUXD:
+1. **Functions as Live Spatial Transformations**: Never treat Manim as a LaTeX slide deck. Following Grant Sanderson's `OpeningManimExample` (`3b1b/manim/example_scenes.py`), visualize mechanisms as geometric transformations—`NumberPlane` linear matrix shears, `ComplexPlane` non-linear mappings (`prepare_for_nonlinear_transform()` + `apply_complex_function`), `ParametricCurve` trajectories, and `ImplicitFunction` contours.
+2. **Persistent Semantic Variable Color-Coding (`t2c` & `isolate`)**:
+   - Map every key variable or physical entity to a consistent semantic color across the entire video (`t2c={"A": BLUE, "B": TEAL, "C": GREEN}` or FLUXD brand accents `#3A5BFF`, `#FF531A`, `#19D3C5`, `#FFCC00`).
+   - Format LaTeX with raw strings (`R"\sum_{n = 1}^\infty {1 \over n^2}"`), prefer `\over` instead of `\frac` to preserve symbol draw order, and pass `isolate=[...]` so sub-terms can be indexed (`equation[R"\infty"]`) and highlighted via `FlashAround`, `Indicate`, or `TransformFromCopy`.
+3. **Algebraic Morphing via `TransformMatchingStrings` / `TransformMatchingTex` with `path_arc`**:
+   - When rearranging equations, morph matching symbols along curved arcs (`path_arc=90 * DEG` or `-30 * DEG`) with explicit `matched_keys=[...]` and `key_map={"+": "-", "2": R"\sqrt"}` so the viewer visually tracks where every term moves.
+4. **Reactive Declarative Updaters (`ValueTracker`, `always_redraw`, `f_always`, `make_number_changeable`)**:
+   - Drive continuous multi-step proofs from a `ValueTracker` parameter instead of hardcoding disconnected static keyframes.
+   - Bind dependent geometry per-frame with `always_redraw(lambda: axes.get_h_line(dot.get_left()))`, `label.always.next_to(brace, UP)`, and `f_always(dot.move_to, lambda: axes.i2gp(x_tracker.get_value(), graph))`.
+   - Embed live reactive decimal readouts directly inside equations via `tex.make_number_changeable("4.00")` + `add_updater` or `ChangeDecimalToValue`.
+5. **Declarative Grouping, `LaggedStart` & Camera Frame Choreography (`3b1b/videos/CLAUDE.md`)**:
+   - Place configuration constants at the top of the file and encapsulate custom constructs in `get_*` helper methods.
+   - Build `VGroup`s declaratively (`VGroup(*[...])`) and position them via `.arrange()`, `.next_to()`, and `.move_to()` rather than brittle manual coordinate math; use `color_gradient(colors, n)` for spectrums.
+   - Use `LaggedStart(*animations, lag_ratio=0.1)` or `FadeIn(objects, lag_ratio=0.1)` for staggered entrances, and choreograph camera moves via `self.frame.animate` (using `.fix_in_frame()` for 2D labels inside 3D scenes).
+
+### C. MKBHD Studio Motion Design, Color & Sound Design Laws (Michael, Ellis, Rufus & Vin)
+1. **Radical Vector Simplification Before Animation (Michael)**:
+   - Spend more care getting the static vector design clean than adding flashy animation plugins. When depicting an interface, document, or system, strip out 80% of the peripheral chrome and keep only the 2–3 iconic vector elements needed to recognize it, so the viewer's eye never wonders which detail to read.
+2. **Zero-Delay Verbal-Visual Lock & 1-Thing-at-a-Time Staging (Michael)**:
+   - Never allow a 0.5s–1.0s lag between the spoken word and the visual highlight. When the narrator says *"that term"* or *"the original"*, the spotlight, eye-trace, or transform must hit on that exact syllable.
+   - Introduce complex comparisons sequentially (Step 1: core shapes -> Step 2: context frame -> Step 3: motion -> Step 4: strip away the frame and spotlight the exact delta) so the viewer experiences zero visual strain.
+   - Apply asymmetric easing (slow start, fast middle, long smooth settle) to every moving keyframe, and use subtle multi-pass glow + posterized (`12fps`) `Turbulent Displace` / `wiggle` when contrasting hand-drawn intuition with exact geometry.
+3. **Sound Design & Musical Stem Architecture (Ellis & Rufus)**:
+   - **Subliminal & Transitional Music**: Never run flat background music for 20–30+ seconds like an ad. Use multi-stem music tracks to carry subliminal momentum (e.g., rhythmic bass/drums or Karplus-Strong plucks) and use stem swells as transitional segues between chapters.
+   - **Rule 1 — Screen Mass Dictates Pitch & Easing Envelope**: Things that move make a sound. An object that fills 80% of the frame is massive in "video life" even if small in real life—give it a low-pitched, mass-heavy air whoosh whose amplitude envelope matches its easing curve (and use an abrupt heavy rock/mechanical thud if a movement stops with zero easing).
+   - **Rule 2 — Silence Makes a Sound (Reverb Tails & Believable Ambience)**: Never drop audio to dead digital zero (`-inf dB`). Fill dramatic silences with a long spatial **reverb tail** (defining the room/void size) and layer subtle **environmental ambience** (like distant outdoor air or room tone) so extreme visuals feel subconsciously real.
+   - **Rule 3 — Emotional Sonic Archetypes**: Pick foley that carries emotional resonance over dry literalism (e.g., layering a warm flare crackle + bell-tree shimmer for glowing mid-air path traces). Sound design is best when invisible.
+
+---
+
+## 2. Operating Philosophy, Core Pillars & The FLUXD Content Matrix
 
 ### The 4 Core Pillars (Do Not Default Everything to Cinema)
 Rotate intentionally across all four pillars:
 1. **Physics, Mathematics & Astrophysics (M.Sc. Physics Rigor)**: Thermodynamics, optics & wave physics ($13.5\text{ nm}$ EUV lithography, Rayleigh criterion), analytic number theory & complex analysis (Riemann zeta function $\zeta(s)$, analytic continuation, explicit formula harmonics), electromagnetism & synchronous AC grids ($50\text{ Hz}$ phase lock), orbital mechanics ($\Delta v$, Kessler cascade), fluid dynamics, and partial differential equations.
 2. **Geopolitics & Strategic Chokepoints**: Subsea fiber-optic cables, semiconductor supply chains (ASML, TSMC's Silicon Shield), transboundary hydro-politics, rare-earth refining, and maritime corridors.
 3. **India & Global Socio-Economic Systems**: Urban network paradoxes (Braess's paradox, induced demand), agrarian & groundwater economics, fiscal & energy transitions, and quantitative macro data (RBI DBIE, MOSPI, Survey of India compliant maps).
-4. **Cinema, Literature, Architecture, Gaming & Cultural History**: Visual/acoustic craft breakdowns, game-design history (e.g., DMA Design's 1995 *Race'n'Chase* pathfinding bug), cultural history, and high-curiosity book, documentary, or video recommendations that open a bigger intellectual door.
+4. **Cinema, Literature, Architecture, Gaming & Cultural History**: Visual/acoustic craft breakdowns, game-design history (e.g., DMA Design's 1995 *Race'n'Chase* pathfinding bug, Rupa Biswas's *Aaj Shonibar* in *GTA 6*), cultural history, and high-curiosity book, documentary, or video recommendations that open a bigger intellectual door.
 
 ### FLUXD Content Matrix (Pillar × Editorial Angle Ideation Engine)
 Whenever the creator asks for new video ideas, a content calendar, or a topic brainstorm, cross the **4 Core Pillars (rows)** against **6 Proven Editorial Angles (columns)** without forced mashups:
@@ -69,22 +99,20 @@ Whenever the creator asks for new video ideas, a content calendar, or a topic br
 
 ---
 
-## 2. Phase 1 Deliverable Blueprint (What to Output on Every Idea / Script Request)
+## 3. Phase 1 Deliverable Blueprint (What to Output on Every Idea / Script Request)
 
 When the creator brings an idea or asks for research and a script, deliver a clean, high-signal **Phase 1 Content Director Blueprint** in chat containing:
 
 1. **Plain Continuous Spoken Script (At the Very Top)**:
-   - 100% English by default.
-   - **Zero em-dashes (`—`)** anywhere in the script, captions, or on-screen text (use commas, colons, or periods instead).
+   - 100% English by default; **zero em-dashes (`—`)** anywhere.
    - No table cells, no bracket tags (`[PAUSE]`), and no robotic beat markers inside the top spoken script so the creator can read, fact-check, and record it straight through in one natural take.
-   - Do not enforce a 45–60s cap; allow full narrative depth under 3 minutes (`< 2:59`).
-   - End with a **complete, resolved closing line** (and any closing watch/read recommendation, such as 3Blue1Brown, placed naturally at the very end) before the 3.0s post-voiceover FLUXD logo animation outro.
+   - Passes the **Varun Grover + AniThing 4th-Draft Spoken Test**: simple concrete cold open (zero flowery poetry), oral memory cadence, unexplained real-world intrigue nuggets, zero cliché transitions, pre-climax preamble stripped (*Masaan* rule), and a **complete, resolved closing punchline** before the 3.0s post-VO FLUXD logo outro.
 2. **Verified Investigative Research Dossier (For Fact-Checking)**:
    - Every external claim, date, quote, theorem, or dataset grounded with clickable primary-source URLs so the creator can verify every fact before recording.
-3. **Dynamic `@lemo-opuscar` + Manim Python Shot & Clip Plan**:
+3. **Dynamic `@lemo-opuscar` + 3Blue1Brown Manim Shot, Stem & Sound Plan**:
    - A compact beat-by-beat table mapping each section of the script to:
-     - **Real Dynamic Video Clips / Archival B-Roll / YouTuber Clips** (e.g., lecture footage, YouTuber explainer clips, documentary clips, portraits, official icons, and posters).
-     - **Progressive, Non-Looping 60fps Manim Python (`manim`) Mathematical / Mechanism Clips** (listing the exact step-by-step L1 → L2 → L3 evidence animation that unfolds across the beat without looping).
-     - **Uncluttered Lemo-Opuscar Single-Focus Layering** (one focal visual per shot, 3–5 word Active-Word Karaoke subtitles in `Bricolage Grotesque Bold`, clean `SOURCES:` footer, subtle creator attribution pills, and the 3.0s post-VO `[ Φ-2 ] [ FLUXD ]` Blink 04 -> Blink 03 outro).
+     - **Real Dynamic Video Clips / Archival B-Roll / YouTuber Clips** (verified via Wikimedia/Internet Archive/YouTube and `fluxd_pixabay_fetch.py search-video` with `isAiGenerated: false`).
+     - **Progressive, Non-Looping 60fps 3Blue1Brown-Style Manim Proofs** (specifying `ValueTracker` parameters, `t2c` variable colors, `TransformMatchingStrings` equation arcs, `always_redraw` / `f_always` geometric bindings, and L1 → L2 → L3 progressive evidence).
+     - **MKBHD Studio Staging & Sound Architecture** (single-focus uncluttered staging, zero-delay syllable-locked spotlights, stem intensity level, mass-scaled eased whooshes, and reverb-tail / ambience beds over pauses).
 4. **Instagram Story Share One-Liners (3 Angles) & 2026 SEO Reel Caption**:
    - Above-the-fold hook (`<125 characters`), narrative body (zero em-dashes), 5-hashtag cap, and bottom `[...]` search keyword block.

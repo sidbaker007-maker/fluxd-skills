@@ -1,0 +1,10 @@
+Tag: v04-2026.11.05-core-skills-v1.0
+Tree Hash: 2552d38f587ef096c34e8f69ba189f0edaa22961
+Total Files: 6
+
+skills/brand-kit-designer/SKILL.md
+skills/brand-kit-designer/evals/evals.json
+skills/brand-kit-designer/references/color-and-typography-theory.md
+skills/brand-kit-designer/references/logo-construction-and-anti-slop.md
+skills/brand-kit-designer/scripts/brand_audit.py
+skills/brand-kit-designer/scripts/generate_brand_board.py

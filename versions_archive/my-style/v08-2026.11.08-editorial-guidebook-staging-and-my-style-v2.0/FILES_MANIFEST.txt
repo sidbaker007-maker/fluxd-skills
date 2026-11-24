@@ -1,0 +1,26 @@
+Tag: v08-2026.11.08-editorial-guidebook-staging-and-my-style-v2.0
+Tree Hash: dd9f20135f5aba999c977fddded86f197cb2823a
+Total Files: 22
+
+skills/my-style/SKILL.md
+skills/my-style/assets/brand/fluxd/01-logos-svg/favicon.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-mark-phi2-dark-bg.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-mark-phi2-light-bg.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-mark-phi2-monochrome-ink.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-mark-phi2-monochrome-paper.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-primary-lockup-dark-bg.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-primary-lockup-light-bg.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-seal-badge.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-wordmark-framed-dark-bg.svg
+skills/my-style/assets/brand/fluxd/01-logos-svg/logo-wordmark-framed-light-bg.svg
+skills/my-style/assets/brand/fluxd/02-animations-html-svg/blink-01a-phi2-shutter-blink.html
+skills/my-style/assets/brand/fluxd/02-animations-html-svg/blink-01b-framed-wordmark-blink.html
+skills/my-style/assets/brand/fluxd/02-animations-html-svg/blink-03-alternating-phase-strobe.html
+skills/my-style/assets/brand/fluxd/02-animations-html-svg/blink-04-phi2-to-framed-fluxd-cut.html
+skills/my-style/assets/brand/fluxd/03-tokens-and-guidelines/BRAND-GUIDELINES.md
+skills/my-style/assets/brand/fluxd/03-tokens-and-guidelines/brand-tokens.json
+skills/my-style/assets/brand/fluxd/03-tokens-and-guidelines/fluxd-brand-variables.css
+skills/my-style/assets/motion-designer-preset.json
+skills/my-style/assets/style_metrics.json
+skills/my-style/references/comment-change-and-i-ll-dm-you-my-list-of-20-cha-notes.md
+skills/my-style/references/comment-rehook-and-i-ll-dm-you-a-free-pdf-with-2-notes.md
