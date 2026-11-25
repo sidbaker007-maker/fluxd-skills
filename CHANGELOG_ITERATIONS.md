@@ -62,3 +62,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 
 ## `v17-2026.11.25-humanizer-v4.0.0` (2026-11-25) — Added humanizer v4.0.0 (blader/humanizer) 26-pattern AI-writing tell remover
 - Imported `humanizer` v4.0.0 (`https://github.com/blader/humanizer`), built on Wikipedia's Signs of AI writing to strip 26 structural AI tells (contrasts, one-line closers, staged openers, forced triads, overuse of dashes, inflated significance, and stock AI vocabulary) while preserving verified facts and oral cadence.
+
+## `v18-2026.11.25-diagram-design-v2.6` (2026-11-25) — Added diagram-design v2.6 (cathrynlavery/diagram-design) 52-type HTML/SVG/PNG schematic engine
+- Imported `diagram-design` v2.6 (`https://github.com/cathrynlavery/diagram-design`) with 71 reference specifications across 52 visual diagram types, 9 geometry/contrast verification and export scripts (`verify_geometry.py`, `self_check.py`, `export_svg.py`), 7 templates, and 238 bundled example diagrams (`assets/examples-catalog.json` + `assets/unpack_examples.py`).
