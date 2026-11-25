@@ -65,3 +65,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 
 ## `v18-2026.11.25-diagram-design-v2.6` (2026-11-25) — Added diagram-design v2.6 (cathrynlavery/diagram-design) 52-type HTML/SVG/PNG schematic engine
 - Imported `diagram-design` v2.6 (`https://github.com/cathrynlavery/diagram-design`) with 71 reference specifications across 52 visual diagram types, 9 geometry/contrast verification and export scripts (`verify_geometry.py`, `self_check.py`, `export_svg.py`), 7 templates, and 238 bundled example diagrams (`assets/examples-catalog.json` + `assets/unpack_examples.py`).
+
+## `v19-2026.11.25-taste-skill-v2.5.1` (2026-11-25) — Added taste-skill v2.5.1 (Leonxlnx/taste-skill) anti-slop frontend & UI system
+- Imported `taste-skill` v2.5.1 (`https://github.com/Leonxlnx/taste-skill` / `design-taste-frontend`) with 9 house rules, 22 reference guides, palette/typography libraries, 12 headless verification scripts (`gate.js`, `consistency.js`, `copy-lint.js`), and 1,443 SVG/JS/CSS/HTML component assets (`assets/assets-code-catalog.json` + `assets/unpack_assets.py`).
