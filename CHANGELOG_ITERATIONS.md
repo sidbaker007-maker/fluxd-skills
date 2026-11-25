@@ -59,3 +59,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 - Added MKBHD Studio editing, motion design, and sound design laws (radical vector simplification, zero-delay syllable-locked spotlights, 1-thing-at-a-time staging, asymmetric easing, mass-scaled whooshes, and spatial reverb tails / ambience over silences).
 - Added 3Blue1Brown (`3b1b/manim` & `3b1b/videos`) code architecture laws (`NumberPlane`/`ComplexPlane` transformations, persistent `t2c` variable colors with `isolate`, `TransformMatchingStrings` with curved `path_arc`, reactive `ValueTracker` + `always_redraw` + `f_always` + `make_number_changeable`, declarative `VGroup`s, and `LaggedStart`).
 
+
+## `v17-2026.11.25-humanizer-v4.0.0` (2026-11-25) — Added humanizer v4.0.0 (blader/humanizer) 26-pattern AI-writing tell remover
+- Imported `humanizer` v4.0.0 (`https://github.com/blader/humanizer`), built on Wikipedia's Signs of AI writing to strip 26 structural AI tells (contrasts, one-line closers, staged openers, forced triads, overuse of dashes, inflated significance, and stock AI vocabulary) while preserving verified facts and oral cadence.

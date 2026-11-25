@@ -1,0 +1,11 @@
+.claude-plugin/marketplace.json
+.claude-plugin/plugin.json
+.cursor-plugin/plugin.json
+AGENTS.md
+CHANGELOG.md
+LICENSE
+README.md
+SKILL.md
+agents/openai.yaml
+package.json
+scripts/validate-package.py
