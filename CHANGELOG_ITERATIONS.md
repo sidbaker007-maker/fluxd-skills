@@ -68,3 +68,6 @@ Every historical iteration of the FLUXD skills suite is preserved as a chronolog
 
 ## `v19-2026.11.25-taste-skill-v2.5.1` (2026-11-25) — Added taste-skill v2.5.1 (Leonxlnx/taste-skill) anti-slop frontend & UI system
 - Imported `taste-skill` v2.5.1 (`https://github.com/Leonxlnx/taste-skill` / `design-taste-frontend`) with 9 house rules, 22 reference guides, palette/typography libraries, 12 headless verification scripts (`gate.js`, `consistency.js`, `copy-lint.js`), and 1,443 SVG/JS/CSS/HTML component assets (`assets/assets-code-catalog.json` + `assets/unpack_assets.py`).
+
+## `v20-2026.11.25-bmad-method-v7` (2026-11-25) — Added bmad-method v7 (bmad-code-org/bmad-method) 32-skill agile development & ideation suite
+- Imported `bmad-method` v7 (`https://github.com/bmad-code-org/bmad-method`) bundling all 32 sub-skills across `core-tools` (`bmad`, `bmad-brainstorming`, `bmad-forge-idea`, `bmad-deep-recon`, `bmad-advanced-elicitation`, `bmad-review`, `bmad-party-mode`, `bmad-ingest`, `bmad-shard-pro`), `method` (`bmad-build`, `bmad-architecture`, `bmad-ux`, `bmad-code-review`, plus Mary, Winston, Amelia, John, Sofia, Sally), `founder` (Nadia), and `toolsmith` (Smithy, `bmad-eval`), with the full 612-file tree in `bmad-catalog.json` (`unpack_bmad.py`).
