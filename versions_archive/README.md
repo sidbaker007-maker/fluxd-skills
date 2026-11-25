@@ -1,7 +1,7 @@
 # Historical Versions Archive (`versions_archive/`)
 
 Every historical iteration of every skill is preserved in two ways inside this repository:
-1. **Native Git Commits & Annotated Tags (`v01` through `v16`)**: Run `git checkout <tag>` to restore the exact full working tree at any historical milestone.
+1. **Native Git Commits & Annotated Tags (`v01` through `v22`)**: Run `git checkout <tag>` to restore the exact full working tree at any historical milestone.
 2. **Browsable Side-by-Side Directory (`versions_archive/<skill>/<tag>/`)**: Browse each distinct iteration's `SKILL.md` and file manifest directly in the GitHub web UI.
 
 ## Skill Iteration Matrix
@@ -16,6 +16,7 @@ Every historical iteration of every skill is preserved in two ways inside this r
 - **`v14-2026.11.21-content-director-v6.0-progressive-manim`** (12 files): [`versions_archive/content-director/v14-2026.11.21-content-director-v6.0-progressive-manim/SKILL.md`](./content-director/v14-2026.11.21-content-director-v6.0-progressive-manim/SKILL.md)
 - **`v15-2026.11.22-pixabay-fetcher-and-skill-creator-v2.0`** (13 files): [`versions_archive/content-director/v15-2026.11.22-pixabay-fetcher-and-skill-creator-v2.0/SKILL.md`](./content-director/v15-2026.11.22-pixabay-fetcher-and-skill-creator-v2.0/SKILL.md)
 - **`v16-2026.11.25-masterclass-3b1b-synthesis`** (13 files): [`versions_archive/content-director/v16-2026.11.25-masterclass-3b1b-synthesis/SKILL.md`](./content-director/v16-2026.11.25-masterclass-3b1b-synthesis/SKILL.md)
+- **`v22-2026.11.25-content-director-v9.0-unified-10-skill-workflow`** (13 files): [`versions_archive/content-director/v22-2026.11.25-content-director-v9.0-unified-10-skill-workflow/SKILL.md`](./content-director/v22-2026.11.25-content-director-v9.0-unified-10-skill-workflow/SKILL.md)
 
 ### `motion-designer`
 - **`v01-2026.11.03-motion-designer-v1.0`** (132 files): [`versions_archive/motion-designer/v01-2026.11.03-motion-designer-v1.0/SKILL.md`](./motion-designer/v01-2026.11.03-motion-designer-v1.0/SKILL.md)
@@ -47,3 +48,18 @@ Every historical iteration of every skill is preserved in two ways inside this r
 ### `skill-creator`
 - **`v04-2026.11.05-core-skills-v1.0`** (18 files): [`versions_archive/skill-creator/v04-2026.11.05-core-skills-v1.0/SKILL.md`](./skill-creator/v04-2026.11.05-core-skills-v1.0/SKILL.md)
 
+
+### `humanizer`
+- **`v17-2026.11.25-humanizer-v4.0.0`** (11 files): [`versions_archive/humanizer/v17-2026.11.25-humanizer-v4.0.0/SKILL.md`](./humanizer/v17-2026.11.25-humanizer-v4.0.0/SKILL.md)
+
+### `diagram-design`
+- **`v18-2026.11.25-diagram-design-v2.6`** (90 files): [`versions_archive/diagram-design/v18-2026.11.25-diagram-design-v2.6/SKILL.md`](./diagram-design/v18-2026.11.25-diagram-design-v2.6/SKILL.md)
+
+### `taste-skill`
+- **`v19-2026.11.25-taste-skill-v2.5.1`** (78 files): [`versions_archive/taste-skill/v19-2026.11.25-taste-skill-v2.5.1/SKILL.md`](./taste-skill/v19-2026.11.25-taste-skill-v2.5.1/SKILL.md)
+
+### `bmad-method`
+- **`v20-2026.11.25-bmad-method-v7`** (49 files): [`versions_archive/bmad-method/v20-2026.11.25-bmad-method-v7/SKILL.md`](./bmad-method/v20-2026.11.25-bmad-method-v7/SKILL.md)
+
+### `open-montage`
+- **`v21-2026.11.25-open-montage-v1.0`** (81 files): [`versions_archive/open-montage/v21-2026.11.25-open-montage-v1.0/SKILL.md`](./open-montage/v21-2026.11.25-open-montage-v1.0/SKILL.md)
